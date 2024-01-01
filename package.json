@@ -37,6 +37,6 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "next": "14.0.4"
+    "next": "14.0.5-canary.17"
   }
 }
