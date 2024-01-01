@@ -1,26 +1,26 @@
-# next-middleware
+# next-easy-middlewares
 
-`next-middleware` is a simple utility for creating path-based middleware in Next.js applications. Simplify multi-middleware management in few easy steps.
+`next-easy-middlewares` is a simple utility for creating path-based middleware in Next.js applications. Simplify multi-middleware management in few easy steps.
 
 ## Installation
 
 ```bash
-npm install next-middleware
+npm install next-easy-middlewares
 ```
 
 ```bash
-pnpm add next-middleware
+pnpm add next-easy-middlewares
 ```
 
 ```bash
-bun add next-middleware
+bun add next-easy-middlewares
 ```
 
 ## Usage
 
 `/middleware.ts`
 ```ts
-import { createMiddleware } from 'next-middleware';
+import { createMiddleware } from 'next-easy-middlewares';
 import { type NextRequest, NextResponse } from 'next/server';
 
 // Define your middleware functions

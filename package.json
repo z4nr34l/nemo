@@ -1,5 +1,5 @@
 {
-  "name": "next-middleware",
+  "name": "next-easy-middlewares",
   "version": "1.0.0",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -14,11 +14,11 @@
     "Path"
   ],
   "author": "Z4NR34L <software@zanreal.net>",
-  "repository": "https://github.com/z4nr34l/next-middleware",
+  "repository": "https://github.com/z4nr34l/next-easy-middlewares",
   "bugs": {
-    "url": "https://github.com/z4nr34l/next-middleware/issues"
+    "url": "https://github.com/z4nr34l/next-easy-middlewares/issues"
   },
-  "homepage": "https://github.com/z4nr34l/next-middleware#readme",
+  "homepage": "https://github.com/z4nr34l/next-easy-middlewares#readme",
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "dev": "tsup src/index.ts --format esm,cjs --watch --dts",
