@@ -19,6 +19,7 @@ bun add next-easy-middlewares
 ## Usage
 
 `/middleware.ts`
+
 ```ts
 import { createMiddleware } from 'next-easy-middlewares';
 import { type NextRequest, NextResponse } from 'next/server';
