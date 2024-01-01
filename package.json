@@ -1,5 +1,5 @@
 {
-  "name": "@shared/middleware",
+  "name": "next-middleware",
   "version": "1.0.0",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -23,9 +23,6 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@vercel/postgres-kysely": "^0.6.0",
-    "kysely": "^0.26.3",
-    "next": "14.0.5-canary.17",
-    "zod": "^3.22.4"
+    "next": "14.0.4"
   }
 }
