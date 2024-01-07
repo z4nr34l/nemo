@@ -1,6 +1,6 @@
 # next-easy-middlewares
 
-`next-easy-middlewares` is a simple utility for creating path-based middleware in Next.js applications. Simplify multi-middleware management in few easy steps.
+`next-easy-middlewares` is a simple utility for creating path-based middleware in Next.js applications. Simplify multi-middleware management and reduce general boilerplate in few easy steps with that package.
 
 ## Installation
 
@@ -18,31 +18,20 @@ bun add next-easy-middlewares
 
 ## Usage
 
-`/middleware.ts`
+### Basic definition
+
+Code in `middleware.ts` file:
 
 ```ts
 import { createMiddleware } from 'next-easy-middlewares';
 import { type NextRequest, NextResponse } from 'next/server';
 
-// Define your middleware functions
-const blogMiddleware = async (request: NextRequest): Promise<NextResponse> => {
-  // Your blog-specific logic here
-  console.log('Blog middleware');
-  return NextResponse.next();
+const middlewares = {
+  // define your middlewares here...
 };
 
-const docsMiddleware = async (request: NextRequest): Promise<NextResponse> => {
-  // Your docs-specific logic here
-  console.log('Docs middleware');
-  return NextResponse.next();
-};
-
-// Create path-based middleware
-export const middleware = createMiddleware({
-  '/blog': blogMiddleware,
-  '/docs': docsMiddleware,
-  '/docs/:path*': docsMiddleware,
-});
+// Create middlewares helper
+export const middleware = createMiddleware(middlewares);
 
 export const config = {
   /*
@@ -57,22 +46,145 @@ export const config = {
 };
 ```
 
-## Explanation
+## Matcher types
 
-When you are defining middlewares, there is small difference in key definition: `:path*`, which includes all sub-paths as well.
+### Simple
 
 ```ts
-export const middleware = createMiddleware({
+// ...
+
+const middlewares = {
+  // This will match /blog route only
   '/blog': blogMiddleware,
+  // This will match /docs route only
   '/docs': docsMiddleware,
-  '/docs/:path*': docsMiddleware,
-});
+};
 ```
 
-In this example middleware would be executed for paths:
+### Path
 
-- `/blog`
-- `/docs`
-- `/docs/*`
+```ts
+// ...
+
+const middlewares = {
+  // This will match routes starting with /blog/*
+  '/blog/:path*': blogMiddleware,
+  // This will match routes starting with /docs/*
+  '/docs/:path*': docsMiddleware,
+};
+```
+
+### Dynamic segments
+
+```ts
+// ...
+
+const middlewares = {
+  // This will match /blog/[slug] routes only
+  '/blog/[slug]': blogMiddleware,
+  // This will match /blog/[slug]/view routes only
+  '/blog/[slug]/view': blogViewMiddleware,
+};
+```
+
+### RegEx
+
+```ts
+// ...
+
+const middlewares = {
+  // This will match any url in /posts that's next segment is number-typed
+  // Example: /posts/123, but not /posts/asd
+  'regex:^/posts/\\d+$': regexMiddleware,
+};
+```
+
+## Middlewares defining
+
+### Inline
+
+```ts
+// ...
+
+const middlewares = {
+  // This will match /blog route only
+  '/blog': async (request: NextRequest) => {
+    console.log('Middleware for /blog', request.nextUrl.pathname);
+    return NextResponse.next();
+  },
+};
+```
+
+### Reference
+
+```ts
+// ...
+
+const blogMiddleware = async (request: NextRequest) => {
+  console.log('Middleware for /blog', request.nextUrl.pathname);
+  return NextResponse.next();
+};
+
+const middlewares = {
+  // This will match /blog route only
+  '/blog': blogMiddleware,
+};
+```
+
+### Import
+
+Recommended good practice!
+
+```ts
+import { blogMiddleware } from '@/app/(blog)/_middleware';
+
+// ...
+
+const middlewares = {
+  // This will match /blog route only
+  '/blog': blogMiddleware,
+};
+```
+
+## Middleware chaining
+
+This packages can intercept `NextResponse.next()` returned from middleware function to chain middlewares for same matcher.
+
+```ts
+// ...
+
+const middlewares = {
+  // This will match /blog route only and execute both middlewares for it
+  '/blog': [blogMiddleware, blogSecondMiddleware],
+};
+```
+
+## Global middlewares
+
+You can define global middleware that would be executed in every middleware execution in your application.
+I've implemented runtime policy, so you can decide if it will be executed before/after (or both) than rest of defined middlewares.
+
+```ts
+// ...
+
+const globalMiddlewares = {
+  before: authMiddleware,
+  after: analyticsMiddleware,
+};
+
+const middlewares = {
+  // define your middlewares here...
+};
+
+// Create middlewares helper
+export const middleware = createMiddleware(middlewares, globalMiddlewares);
+
+// ...
+```
+
+## Motivation
+
+I'm working with Next.js project for a few years now, after Vercel moved multiple `/**/_middleware.ts` files to a single `/middleware.ts` file, there was a unfilled gap - but just for now.
+After a 2023 retro I had found that there is no good solution for that problem, so I took matters into my own hands. I wanted to share that motivation with everyone here, as I think that we all need to remember how it all started.
 
 Hope it will save you some time and would make your project DX better!
