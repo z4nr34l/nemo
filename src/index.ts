@@ -14,11 +14,17 @@ export function createMiddleware(pathMiddlewareMap: MiddlewareMap) {
 
     const [matchingKey, pathMiddleware] =
       Object.entries(pathMiddlewareMap).find(([key]) => {
-        if (key.includes(':path*')) {
-          return path.startsWith(key.replace(/:path\*/, ''));
+        const isRegexKey = key.startsWith('regex:');
+        const matchPattern = isRegexKey ? key.replace('regex:', '') : key;
+
+        if (isRegexKey) {
+          const regex = new RegExp(matchPattern);
+          return regex.test(path);
+        } else if (matchPattern.includes(':path*')) {
+          return path.startsWith(matchPattern.replace(/:path\*/, ''));
         }
         const dynamicPathRegex = new RegExp(
-          `^${key.replace(/\[.*?\]/g, '([^/]+?)')}$`,
+          `^${matchPattern.replace(/\[.*?\]/g, '(.+?)')}$`,
         );
         return dynamicPathRegex.test(path);
       }) || [];
@@ -27,6 +33,7 @@ export function createMiddleware(pathMiddlewareMap: MiddlewareMap) {
       return pathMiddleware(request);
     }
 
+    // If no match is found, return NextResponse.next()
     return NextResponse.next();
   };
 }

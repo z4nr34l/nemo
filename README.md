@@ -62,6 +62,12 @@ export const middleware = createMiddleware({
     console.log('Blog view middleware');
     return NextResponse.next();
   },
+  // Matches via regex, in that case only urls that are using numbers after `posts` segment
+  // example: /posts/123
+  'regex:^/posts/\\d+$': async (request: NextRequest) => {
+    console.log('Regex middleware', request.nextUrl.pathname);
+    return NextResponse.next();
+  },
 });
 
 export const config = {
