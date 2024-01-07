@@ -28,7 +28,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 const middlewares = {
   // define your middlewares here...
-}
+};
 
 // Create middlewares helper
 export const middleware = createMiddleware(middlewares);
@@ -58,7 +58,7 @@ const middlewares = {
   '/blog': blogMiddleware,
   // This will match /docs route only
   '/docs': docsMiddleware,
-}
+};
 ```
 
 ### Path
@@ -71,7 +71,7 @@ const middlewares = {
   '/blog/:path*': blogMiddleware,
   // This will match routes starting with /docs/*
   '/docs/:path*': docsMiddleware,
-}
+};
 ```
 
 ### Dynamic segments
@@ -84,7 +84,7 @@ const middlewares = {
   '/blog/[slug]': blogMiddleware,
   // This will match /blog/[slug]/view routes only
   '/blog/[slug]/view': blogViewMiddleware,
-}
+};
 ```
 
 ### RegEx
@@ -96,7 +96,7 @@ const middlewares = {
   // This will match any url in /posts that's next segment is number-typed
   // Example: /posts/123, but not /posts/asd
   'regex:^/posts/\\d+$': regexMiddleware,
-}
+};
 ```
 
 ## Middlewares defining
@@ -112,7 +112,7 @@ const middlewares = {
     console.log('Middleware for /blog', request.nextUrl.pathname);
     return NextResponse.next();
   },
-}
+};
 ```
 
 ### Reference
@@ -123,12 +123,12 @@ const middlewares = {
 const blogMiddleware = async (request: NextRequest) => {
   console.log('Middleware for /blog', request.nextUrl.pathname);
   return NextResponse.next();
-}
+};
 
 const middlewares = {
   // This will match /blog route only
   '/blog': blogMiddleware,
-}
+};
 ```
 
 ### Import
@@ -141,12 +141,12 @@ import { blogMiddleware } from '@/app/(blog)/_middleware';
 const middlewares = {
   // This will match /blog route only
   '/blog': blogMiddleware,
-}
+};
 ```
 
 ## Middleware chaining
 
-This packages can intercept `NextResponse.next()` returned from middleware function to chain middlewares for same matcher. 
+This packages can intercept `NextResponse.next()` returned from middleware function to chain middlewares for same matcher.
 
 ```ts
 // ...
@@ -154,7 +154,7 @@ This packages can intercept `NextResponse.next()` returned from middleware funct
 const middlewares = {
   // This will match /blog route only and execute both middlewares for it
   '/blog': [blogMiddleware, blogSecondMiddleware],
-}
+};
 ```
 
 ## Global middlewares
@@ -167,12 +167,12 @@ I've implemented runtime policy, so you can decide if it will be executed before
 
 const globalMiddlewares = {
   before: authMiddleware,
-  after: analyticsMiddleware
-}
+  after: analyticsMiddleware,
+};
 
 const middlewares = {
   // define your middlewares here...
-}
+};
 
 // Create middlewares helper
 export const middleware = createMiddleware(middlewares, globalMiddlewares);
