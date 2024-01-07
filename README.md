@@ -18,66 +18,20 @@ bun add next-easy-middlewares
 
 ## Usage
 
-`/middleware.ts`
+### Basic definition
+
+Code in `middleware.ts` file:
 
 ```ts
 import { createMiddleware } from 'next-easy-middlewares';
 import { type NextRequest, NextResponse } from 'next/server';
 
-// Define your middleware functions
-const blogMiddleware = async (request: NextRequest): Promise<NextResponse> => {
-  // Your blog-specific logic here
-  console.log('Blog middleware');
-  return NextResponse.next();
-};
+const middlewares = {
+  // define your middlewares here...
+}
 
-const docsMiddleware = async (request: NextRequest): Promise<NextResponse> => {
-  // Your docs-specific logic here
-  console.log('Docs middleware');
-  return NextResponse.next();
-};
-
-const blogPostMiddleware = async (
-  request: NextRequest,
-): Promise<NextResponse> => {
-  // Your docs-specific logic here
-  console.log('Blog post middleware', request.nextUrl.pathname);
-  return NextResponse.next();
-};
-
-// Create path-based middleware
-export const middleware = createMiddleware({
-  // This will match /blog route only
-  '/blog': blogMiddleware,
-  // This will match /docs route only
-  '/docs': docsMiddleware,
-  // This will match all routes that are starting with /docs/
-  '/docs/:path*': docsMiddleware,
-  // This will match all dynamic routes for /blog/[slug], but only them
-  '/blog/[slug]': blogMiddleware,
-  // This will match all dynamic routes for /blog/[slug]/view, but only them
-  // To chain middleware functions, just provide them as an array
-  '/blog/[slug]/view': [
-    async (request: NextRequest): Promise<NextResponse> => {
-      // Your blog post's view path specific logic here
-      console.log('Blog view middleware');
-      return NextResponse.next();
-    },
-    // Chained middleware is only executed if previous returns NextResponse.next()
-    async (request: NextRequest): Promise<NextResponse> => {
-      // Your blog post's view path specific logic here
-      console.log('Blog view chained middleware');
-      return NextResponse.next();
-    }
-  ],
-  // Matches via regex, in that case only urls that are using numbers after `posts` segment
-  // example: /posts/123
-  // Also you can define middleware logic in-line style
-  'regex:^/posts/\\d+$': async (request: NextRequest) => {
-    console.log('Regex middleware', request.nextUrl.pathname);
-    return NextResponse.next();
-  },
-});
+// Create middlewares helper
+export const middleware = createMiddleware(middlewares);
 
 export const config = {
   /*
@@ -90,6 +44,140 @@ export const config = {
    */
   matcher: ['/((?!api/|_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
 };
+```
+
+## Matcher types
+
+### Simple
+
+```ts
+// ...
+
+const middlewares = {
+  // This will match /blog route only
+  '/blog': blogMiddleware,
+  // This will match /docs route only
+  '/docs': docsMiddleware,
+}
+```
+
+### Path
+
+```ts
+// ...
+
+const middlewares = {
+  // This will match routes starting with /blog/*
+  '/blog/:path*': blogMiddleware,
+  // This will match routes starting with /docs/*
+  '/docs/:path*': docsMiddleware,
+}
+```
+
+### Dynamic segments
+
+```ts
+// ...
+
+const middlewares = {
+  // This will match /blog/[slug] routes only
+  '/blog/[slug]': blogMiddleware,
+  // This will match /blog/[slug]/view routes only
+  '/blog/[slug]/view': blogViewMiddleware,
+}
+```
+
+### RegEx
+
+```ts
+// ...
+
+const middlewares = {
+  // This will match any url in /posts that's next segment is number-typed
+  // Example: /posts/123, but not /posts/asd
+  'regex:^/posts/\\d+$': regexMiddleware,
+}
+```
+
+## Middlewares defining
+
+### Inline
+
+```ts
+// ...
+
+const middlewares = {
+  // This will match /blog route only
+  '/blog': async (request: NextRequest) => {
+    console.log('Middleware for /blog', request.nextUrl.pathname);
+    return NextResponse.next();
+  },
+}
+```
+
+### Reference
+
+```ts
+// ...
+
+const blogMiddleware = async (request: NextRequest) => {
+  console.log('Middleware for /blog', request.nextUrl.pathname);
+  return NextResponse.next();
+}
+
+const middlewares = {
+  // This will match /blog route only
+  '/blog': blogMiddleware,
+}
+```
+
+### Import
+
+```ts
+import { blogMiddleware } from '@/app/(blog)/_middleware';
+
+// ...
+
+const middlewares = {
+  // This will match /blog route only
+  '/blog': blogMiddleware,
+}
+```
+
+## Middleware chaining
+
+This packages can intercept `NextResponse.next()` returned from middleware function to chain middlewares for same matcher. 
+
+```ts
+// ...
+
+const middlewares = {
+  // This will match /blog route only and execute both middlewares for it
+  '/blog': [blogMiddleware, blogSecondMiddleware],
+}
+```
+
+## Global middlewares
+
+You can define global middleware that would be executed in every middleware execution in your application.
+I've implemented runtime policy, so you can decide if it will be executed before/after (or both) than rest of defined middlewares.
+
+```ts
+// ...
+
+const globalMiddlewares = {
+  before: authMiddleware,
+  after: analyticsMiddleware
+}
+
+const middlewares = {
+  // define your middlewares here...
+}
+
+// Create middlewares helper
+export const middleware = createMiddleware(middlewares, globalMiddlewares);
+
+// ...
 ```
 
 ## Motivation
