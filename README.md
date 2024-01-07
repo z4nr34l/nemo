@@ -1,6 +1,6 @@
 # next-easy-middlewares
 
-`next-easy-middlewares` is a simple utility for creating path-based middleware in Next.js applications. Simplify multi-middleware management in few easy steps.
+`next-easy-middlewares` is a simple utility for creating path-based middleware in Next.js applications. Simplify multi-middleware management and reduce general boilerplate in few easy steps with that package.
 
 ## Installation
 
