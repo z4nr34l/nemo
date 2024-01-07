@@ -1,6 +1,6 @@
 {
   "name": "next-easy-middlewares",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -12,6 +12,9 @@
     "Pathname",
     "Route",
     "Path"
+  ],
+  "files": [
+    "dist"
   ],
   "author": "Z4NR34L <software@zanreal.net>",
   "repository": "https://github.com/z4nr34l/next-easy-middlewares",
