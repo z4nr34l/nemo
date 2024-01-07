@@ -1,4 +1,5 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 type MiddlewareMap = Record<
   string,
@@ -16,14 +17,16 @@ export function createMiddleware(pathMiddlewareMap: MiddlewareMap) {
         if (key.includes(':path*')) {
           return path.startsWith(key.replace(/:path\*/, ''));
         }
-        return path === key;
+        const dynamicPathRegex = new RegExp(
+          `^${key.replace(/\[.*?\]/g, '([^/]+?)')}$`,
+        );
+        return dynamicPathRegex.test(path);
       }) || [];
 
     if (matchingKey && pathMiddleware) {
       return pathMiddleware(request);
     }
 
-    // If no match is found, return NextResponse.next()
     return NextResponse.next();
   };
 }
