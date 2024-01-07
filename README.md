@@ -56,14 +56,23 @@ export const middleware = createMiddleware({
   // This will match all dynamic routes for /blog/[slug], but only them
   '/blog/[slug]': blogMiddleware,
   // This will match all dynamic routes for /blog/[slug]/view, but only them
-  // Also you can define middleware logic in-line style
-  '/blog/[slug]/view': async (request: NextRequest): Promise<NextResponse> => {
-    // Your blog post's view path specific logic here
-    console.log('Blog view middleware');
-    return NextResponse.next();
-  },
+  // To chain middleware functions, just provide them as an array
+  '/blog/[slug]/view': [
+    async (request: NextRequest): Promise<NextResponse> => {
+      // Your blog post's view path specific logic here
+      console.log('Blog view middleware');
+      return NextResponse.next();
+    },
+    // Chained middleware is only executed if previous returns NextResponse.next()
+    async (request: NextRequest): Promise<NextResponse> => {
+      // Your blog post's view path specific logic here
+      console.log('Blog view chained middleware');
+      return NextResponse.next();
+    }
+  ],
   // Matches via regex, in that case only urls that are using numbers after `posts` segment
   // example: /posts/123
+  // Also you can define middleware logic in-line style
   'regex:^/posts/\\d+$': async (request: NextRequest) => {
     console.log('Regex middleware', request.nextUrl.pathname);
     return NextResponse.next();
