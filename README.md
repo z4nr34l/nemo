@@ -133,6 +133,8 @@ const middlewares = {
 
 ### Import
 
+Recommended good practice!
+
 ```ts
 import { blogMiddleware } from '@/app/(blog)/_middleware';
 
