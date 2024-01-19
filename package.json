@@ -26,7 +26,8 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "lint": "eslint \"**/*.ts*\"",
-    "generate:component": "turbo gen react-component"
+    "generate:component": "turbo gen react-component",
+    "clean": "rm -rf node_modules && rm -rf .turbo && rm -rf dist"
   },
   "devDependencies": {
     "@shared/eslint-config": "workspace:*",
