@@ -1,6 +1,6 @@
 {
   "name": "next-easy-middlewares",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -40,6 +40,6 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "next": "14.0.5-canary.17"
+    "next": "14.1.0"
   }
 }
