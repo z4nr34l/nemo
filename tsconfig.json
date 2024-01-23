@@ -1,11 +1,3 @@
 {
-  "extends": "@shared/ts-config/react-library.json",
-  "include": [
-    "."
-  ],
-  "exclude": [
-    "dist",
-    "build",
-    "node_modules"
-  ]
+  "extends": "@vercel/style-guide/typescript/node20"
 }
