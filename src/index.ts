@@ -52,7 +52,7 @@ export function createMiddleware(
 
     await executeGlobalMiddleware('after');
 
-    return response || NextResponse.next();
+    return response ?? NextResponse.next();
   };
 }
 
