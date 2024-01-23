@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-type MiddlewareFunction = (request: NextRequest) => Promise<NextResponse>;
+export type MiddlewareFunction = (request: NextRequest) => Promise<NextResponse>;
 
 export type MiddlewareConfig = Record<
   string,
