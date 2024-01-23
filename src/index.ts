@@ -1,9 +1,9 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-type MiddlewareFunction = (request: NextRequest) => Promise<NextResponse>;
+export type MiddlewareFunction = (request: NextRequest) => Promise<NextResponse>;
 
-type MiddlewareConfig = Record<
+export type MiddlewareConfig = Record<
   string,
   MiddlewareFunction | MiddlewareFunction[]
 >;
@@ -52,7 +52,7 @@ export function createMiddleware(
 
     await executeGlobalMiddleware('after');
 
-    return response || NextResponse.next();
+    return response ?? NextResponse.next();
   };
 }
 
