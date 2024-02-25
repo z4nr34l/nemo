@@ -18,7 +18,7 @@ export function createMiddleware(
     const path = request.nextUrl.pathname || '/';
     let response: NextResponse | null = null;
 
-    const executeGlobalMiddleware = async (type: 'before' | 'after') => {
+    const executeGlobalMiddleware = async (type: 'before' | 'after'): Promise<void> => {
       const globalMiddlewareFn = globalMiddleware?.[type];
       if (globalMiddlewareFn) {
         const result = await executeMiddleware(request, globalMiddlewareFn);
@@ -61,7 +61,7 @@ async function executeMiddleware(
   middleware: MiddlewareFunction,
 ): Promise<NextResponse | null> {
   const result = await middleware(request);
-  return result instanceof NextResponse && result !== NextResponse.next()
+  return result !== NextResponse.next()
     ? result
     : null;
 }
