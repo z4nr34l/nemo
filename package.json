@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/z4nr34l/next-easy-middlewares/issues"
   },
-  "homepage": "https://github.com/z4nr34l/next-easy-middlewares#readme"
+  "homepage": "https://github.com/z4nr34l/next-easy-middlewares#readme",
+  "devDependencies": {
+    "turbo": "latest"
+  }
 }
