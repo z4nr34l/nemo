@@ -15,6 +15,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Analyze package
         uses: SonarSource/sonarqube-scan-action@v1.1.0
         env:
