@@ -25,4 +25,4 @@ jobs:
           args:
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_ID }}
             -Dsonar.sources=./src
-            -Dsonar.projectBaseDir=packages/next-easy-middlewares
+            -Dsonar.projectBaseDir=./packages/next-easy-middlewares
