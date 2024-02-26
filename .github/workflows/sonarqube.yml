@@ -19,7 +19,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Analyze package
-        uses: SonarSource/sonarqube-scan-action@v1.1.0
+        uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
