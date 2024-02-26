@@ -1,8 +1,15 @@
 {
   "name": "next-easy-middlewares-root",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "examples/*"
   ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "clean": "turbo clean",
+    "lint": "turbo run lint"
+  },
   "license": "MIT",
   "keywords": [
     "Next.js",
