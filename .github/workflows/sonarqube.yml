@@ -14,6 +14,10 @@ jobs:
   Analysis:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: packages/next-easy-middlewares
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -28,4 +32,3 @@ jobs:
           args:
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_ID }}
             -Dsonar.sources=./src
-            -Dsonar.projectBaseDir=./packages/next-easy-middlewares
