@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build:
+  analyze_package:
     name: Analyze package
     runs-on: ubuntu-latest
     permissions: read-all
