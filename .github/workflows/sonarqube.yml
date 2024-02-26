@@ -1,28 +1,28 @@
-name: SonarQube
+name: SonarQube analysis
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  pull-requests: read
 
 jobs:
-  analyze_package:
-    name: Analyze package
+  Analysis:
     runs-on: ubuntu-latest
-    permissions: read-all
+
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - uses: sonarsource/sonarqube-scan-action@master
-        with:
-          projectBaseDir: packages/next-easy-middlewares
+      - name: Analyze package
+        uses: SonarSource/sonarqube-scan-action@v1.1.0
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      # If you wish to fail your job when the Quality Gate is red, uncomment the
-      # following lines. This would typically be used to fail a deployment.
-      # - uses: sonarsource/sonarqube-quality-gate-action@master
-      #   timeout-minutes: 5
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args:
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_ID }}
+            -Dsonar.sources=./src
+            -Dsonar.projectBaseDir=packages/next-easy-middlewares
