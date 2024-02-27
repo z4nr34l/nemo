@@ -2,8 +2,13 @@ name: SonarQube
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  pull-requests: read
 
 jobs:
   analyze_package:
@@ -17,7 +22,11 @@ jobs:
       - uses: sonarsource/sonarqube-scan-action@master
         with:
           projectBaseDir: packages/next-easy-middlewares
+          args:
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_ID }}
+            -Dsonar.sources=./src
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       # If you wish to fail your job when the Quality Gate is red, uncomment the
