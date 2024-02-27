@@ -1,7 +1,9 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-export type MiddlewareFunction = (request: NextRequest) => Promise<NextResponse>;
+export type MiddlewareFunction = (
+  request: NextRequest,
+) => Promise<NextResponse>;
 
 export type MiddlewareConfig = Record<
   string,
@@ -21,7 +23,9 @@ export function createMiddleware(
     let response: NextResponse | null = null;
 
     // Function to execute global middleware before or after path-specific middleware
-    const executeGlobalMiddleware = async (type: 'before' | 'after'): Promise<void> => {
+    const executeGlobalMiddleware = async (
+      type: 'before' | 'after',
+    ): Promise<void> => {
       const globalMiddlewareFn = globalMiddleware?.[type];
       if (globalMiddlewareFn) {
         // Execute global middleware and update response if applicable
@@ -34,7 +38,9 @@ export function createMiddleware(
     await executeGlobalMiddleware('before');
 
     // Iterate through pathMiddlewareMap to find matching middleware for the current path
-    for (const [key, middlewareFunctions] of Object.entries(pathMiddlewareMap)) {
+    for (const [key, middlewareFunctions] of Object.entries(
+      pathMiddlewareMap,
+    )) {
       // Check if the key is a regex pattern or a direct match
       const isRegexKey = key.startsWith('regex:');
       const matchPattern = isRegexKey ? key.replace('regex:', '') : key;
@@ -45,7 +51,9 @@ export function createMiddleware(
         (!isRegexKey && pathMiddlewareMatchesPath(path, matchPattern))
       ) {
         // Extract middleware functions and handle if it's an array or single function
-        const middlewares = Array.isArray(middlewareFunctions) ? middlewareFunctions : [middlewareFunctions];
+        const middlewares = Array.isArray(middlewareFunctions)
+          ? middlewareFunctions
+          : [middlewareFunctions];
 
         // Iterate through middlewares and execute them sequentially
         for (const middlewareFunction of middlewares) {
@@ -73,7 +81,6 @@ export function createMiddleware(
     return response ?? NextResponse.next();
   };
 }
-
 
 async function executeMiddleware(
   request: NextRequest,

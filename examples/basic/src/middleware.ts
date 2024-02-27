@@ -1,17 +1,17 @@
-import { createMiddleware } from "next-easy-middlewares";
-import { type NextRequest, NextResponse } from "next/server";
+import { createMiddleware } from 'next-easy-middlewares';
+import { type NextRequest, NextResponse } from 'next/server';
 
 const middlewares = {
-  "/page1": [
+  '/page1': [
     async (request: NextRequest) => {
-      console.log("Middleware for /page1", request.nextUrl.pathname);
+      console.log('Middleware for /page1', request.nextUrl.pathname);
       return NextResponse.next();
     },
   ],
-  "/page2": [
+  '/page2': [
     async (request: NextRequest) => {
-      console.log("Middleware for /page2", request.nextUrl.pathname);
-      return NextResponse.redirect("http://localhost:3000/page1");
+      console.log('Middleware for /page2', request.nextUrl.pathname);
+      return NextResponse.redirect('http://localhost:3000/page1');
     },
   ],
 };
@@ -20,5 +20,5 @@ const middlewares = {
 export const middleware = createMiddleware(middlewares);
 
 export const config = {
-  matcher: ["/((?!api/|_next/|_static|_vercel|[\\w-]+\\.\\w+).*)"],
+  matcher: ['/((?!api/|_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
 };
