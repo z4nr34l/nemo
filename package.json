@@ -23,6 +23,7 @@
     "build": "turbo run build",
     "clean": "turbo clean",
     "dev": "turbo run dev --parallel",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo run lint",
     "prepare": "husky install"
   },
