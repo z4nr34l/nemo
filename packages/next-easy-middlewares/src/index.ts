@@ -1,7 +1,10 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-export type CustomMiddleware = (...args: any) => any;
+export type CustomMiddleware<T = any> = (
+  request: any,
+  ...args: any
+) => T | Promise<T>;
 
 export type MiddlewareFunction = (
   request: NextRequest,
