@@ -1,8 +1,11 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- We need to accept literally any values in type assertion
 export type CustomMiddleware<T = any> = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- We need to accept any request type
   request: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- We need to accept any additional props for external packages
   ...args: any
 ) => T | Promise<T>;
 
@@ -34,6 +37,7 @@ export function createMiddleware(
       pathMiddlewareMap,
     )) {
       if (matchesPath(key, path)) {
+        // eslint-disable-next-line no-await-in-loop -- need to await middleware to ensure it has been run
         response = await executePathMiddleware(request, middlewareFunctions);
         if (isRedirect(response)) break;
       }
@@ -54,6 +58,7 @@ async function executePathMiddleware(
     : [middlewareFunctions];
 
   for (const middlewareFunction of middlewares) {
+    // eslint-disable-next-line no-await-in-loop -- need to await middleware to ensure it has been run
     const result = await executeMiddleware(request, middlewareFunction);
     if (result) return result;
   }
