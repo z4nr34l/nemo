@@ -1,16 +1,5 @@
 {
   "name": "next-easy-middlewares-root",
-  "workspaces": [
-    "packages/*",
-    "examples/*"
-  ],
-  "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev --parallel",
-    "clean": "turbo clean",
-    "lint": "turbo run lint"
-  },
-  "license": "MIT",
   "keywords": [
     "Next.js",
     "Middleware",
@@ -19,13 +8,34 @@
     "Route",
     "Path"
   ],
-  "author": "Z4NR34L <software@zanreal.net>",
-  "repository": "https://github.com/z4nr34l/next-easy-middlewares",
+  "homepage": "https://github.com/z4nr34l/next-easy-middlewares#readme",
   "bugs": {
     "url": "https://github.com/z4nr34l/next-easy-middlewares/issues"
   },
-  "homepage": "https://github.com/z4nr34l/next-easy-middlewares#readme",
+  "repository": "https://github.com/z4nr34l/next-easy-middlewares",
+  "license": "MIT",
+  "author": "Z4NR34L <software@zanreal.net>",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "clean": "turbo clean",
+    "dev": "turbo run dev --parallel",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "lint": "turbo run lint",
+    "prepare": "husky install"
+  },
+  "prettier": "@vercel/style-guide/prettier",
   "devDependencies": {
+    "@commitlint/cli": "^18.4.3",
+    "@commitlint/config-conventional": "^18.4.3",
+    "@commitlint/config-pnpm-scopes": "^18.4.3",
+    "@vercel/style-guide": "^5.1.0",
+    "husky": "^8.0.3",
+    "prettier": "^3.1.1",
+    "prettier-plugin-tailwindcss": "^0.5.9",
     "turbo": "latest"
   }
 }

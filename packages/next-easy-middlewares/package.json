@@ -1,10 +1,6 @@
 {
   "name": "next-easy-middlewares",
-  "version": "1.0.7",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "license": "MIT",
+  "version": "1.0.8",
   "keywords": [
     "Next.js",
     "Middleware",
@@ -13,20 +9,28 @@
     "Route",
     "Path"
   ],
-  "files": [
-    "dist"
-  ],
-  "author": "Z4NR34L <software@zanreal.net>",
-  "repository": "https://github.com/z4nr34l/next-easy-middlewares",
+  "homepage": "https://github.com/z4nr34l/next-easy-middlewares#readme",
   "bugs": {
     "url": "https://github.com/z4nr34l/next-easy-middlewares/issues"
   },
-  "homepage": "https://github.com/z4nr34l/next-easy-middlewares#readme",
+  "repository": "https://github.com/z4nr34l/next-easy-middlewares",
+  "license": "MIT",
+  "author": "Z4NR34L <software@zanreal.net>",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
+    "clean": "rm -rf node_modules && rm -rf .turbo && rm -rf dist",
     "dev": "tsup --watch",
-    "lint": "eslint \"**/*.ts*\"",
-    "clean": "rm -rf node_modules && rm -rf .turbo && rm -rf dist"
+    "lint": "eslint \"**/*.ts*\""
+  },
+  "prettier": "@vercel/style-guide/prettier",
+  "dependencies": {
+    "next": "14.1.0"
   },
   "devDependencies": {
     "@swc/core": "^1.3.101",
@@ -37,9 +41,5 @@
     "react": "^18.2.0",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3"
-  },
-  "dependencies": {
-    "next": "14.1.0"
-  },
-  "prettier": "@vercel/style-guide/prettier"
+  }
 }
