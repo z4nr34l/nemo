@@ -1,23 +1,26 @@
-# Nextra Docs Template
+# docs
 
-This is a template for creating documentation with [Nextra](https://nextra.site).
+This is a Next.js application generated with
+[Create Fumadocs](https://github.com/fuma-nama/fumadocs).
 
-[**Live Demo →**](https://nextra-docs-template.vercel.app)
+Run development server:
 
-[![](.github/screenshot.png)](https://nextra-docs-template.vercel.app)
+```bash
+npm run dev
+# or
+pnpm dev
+# or
+yarn dev
+```
 
-## Quick Start
+Open http://localhost:3000 with your browser to see the result.
 
-Click the button to clone this repository and deploy it on Vercel:
+## Learn More
 
-[![](https://vercel.com/button)](https://vercel.com/new/clone?s=https%3A%2F%2Fgithub.com%2Fshuding%2Fnextra-docs-template&showOptionalTeamCreation=false)
+To learn more about Next.js and Fumadocs, take a look at the following
+resources:
 
-## Local Development
-
-First, run `pnpm i` to install the dependencies.
-
-Then, run `pnpm dev` to start the development server and visit localhost:3000.
-
-## License
-
-This project is licensed under the MIT License.
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js
+  features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [Fumadocs](https://fumadocs.vercel.app) - learn about Fumadocs
