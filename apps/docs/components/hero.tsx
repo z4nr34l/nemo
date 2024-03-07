@@ -27,7 +27,7 @@ function Globe() {
       style={{
         transform: 'translateY(0px) scale(1.002)',
       }}
-      viewBox="-1 -1 802 402"
+      viewBox="-1 0 802 400"
       width="100%"
     >
       <g data-testid="globe-wireframe">
