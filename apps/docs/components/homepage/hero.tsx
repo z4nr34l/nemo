@@ -21,7 +21,7 @@ function Content() {
           Next Easy Middlewares
         </h1>
         <p className="text-muted-foreground">
-          Untangle your requests and simplify code
+          Untangle your requests and simplify middlewares mess
         </p>
       </div>
       <div className="col-span-2" />

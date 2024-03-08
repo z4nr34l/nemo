@@ -1,5 +1,5 @@
 import { ReactElement } from 'react';
-import { Hero } from '@/components/hero';
+import { Hero } from '@/components/homepage/hero';
 
 export default function HomePage(): ReactElement {
   return (
