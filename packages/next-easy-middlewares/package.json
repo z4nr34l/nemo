@@ -1,6 +1,6 @@
 {
   "name": "next-easy-middlewares",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "keywords": [
     "Next.js",
     "Middleware",
@@ -9,7 +9,7 @@
     "Route",
     "Path"
   ],
-  "homepage": "https://git.new/next-middleware",
+  "homepage": "https://next-easy-middlewares.vercel.app",
   "bugs": {
     "url": "https://github.com/z4nr34l/next-easy-middlewares/issues"
   },
