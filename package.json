@@ -16,6 +16,7 @@
   "license": "MIT",
   "author": "Z4NR34L <software@zanreal.net>",
   "workspaces": [
+    "apps/*",
     "packages/*",
     "examples/*"
   ],
