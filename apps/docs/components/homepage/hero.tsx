@@ -12,23 +12,23 @@ export function Hero() {
 
 function Content() {
   return (
-    <div className="absolute inset-0 grid grid-cols-12 grid-rows-6">
-      <div className="row-span-3 col-span-12" />
+    <div className="md:absolute p-8 md:p-0 inset-0 flex flex-col items-start justify-center md:grid grid-cols-12 grid-rows-4 md:grid-rows-6">
+      <div className="row-span-1 md:row-span-3 col-span-12" />
 
-      <div className="col-span-2" />
+      <div className="col-span-1 md:col-span-2" />
       <div className="col-span-8 flex flex-col items-start justify-between">
-        <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">
           Next Easy Middlewares
         </h1>
         <p className="text-muted-foreground">
           Untangle your requests and simplify middlewares mess
         </p>
       </div>
-      <div className="col-span-2" />
+      <div className="col-span-1 md:col-span-2" />
 
-      <div className="col-span-2" />
-      <div className="col-span-8 flex flex-col items-start justify-end">
-        <div className="supports-[backdrop-filter]:bg-background/50 backdrop-blur-xl bg-background pr-4 pl-6 py-2 border rounded-full flex items-center justify-center gap-x-4">
+      <div className="hidden md:block md:col-span-2" />
+      <div className="col-span-12 md:col-span-8 flex flex-col items-start justify-end mt-6 md:mt-0 md:w-full h-full">
+        <div className="supports-[backdrop-filter]:bg-background/50 backdrop-blur-xl bg-background pr-4 pl-6 py-2 border rounded-full flex items-center justify-center gap-x-4 w-full md:w-auto">
           <code>
             <pre>bun add next-easy-middlewares</pre>
           </code>
@@ -38,14 +38,14 @@ function Content() {
           />
         </div>
       </div>
-      <div className="col-span-2" />
+      <div className="hidden md:block" />
     </div>
   );
 }
 
 function Guides() {
   return (
-    <div className="absolute inset-0 grid grid-cols-12 grid-rows-6 gap-px bg-muted">
+    <div className="hidden md:grid absolute inset-0 grid-cols-12 grid-rows-6 gap-px bg-muted">
       {Array(72)
         .fill('')
         .map((_, id) => (
