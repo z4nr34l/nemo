@@ -1,15 +1,51 @@
+import { CopyButton } from '@/components/copy-button';
+
 export function Hero() {
   return (
     <div className="relative w-full">
       <Guides />
       <Globe />
+      <Content />
+    </div>
+  );
+}
+
+function Content() {
+  return (
+    <div className="absolute inset-0 grid grid-cols-12 grid-rows-6">
+      <div className="row-span-3 col-span-12" />
+
+      <div className="col-span-2" />
+      <div className="col-span-8 flex flex-col items-start justify-between">
+        <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold">
+          Next Easy Middlewares
+        </h1>
+        <p className="text-muted-foreground">
+          Untangle your requests and simplify code
+        </p>
+      </div>
+      <div className="col-span-2" />
+
+      <div className="col-span-2" />
+      <div className="col-span-8 flex flex-col items-start justify-end">
+        <div className="supports-[backdrop-filter]:bg-background/50 backdrop-blur-xl bg-background px-4 py-2 border rounded-full flex items-center justify-center gap-x-4">
+          <code>
+            <pre>bun add next-easy-middlewares</pre>
+          </code>
+          <CopyButton
+            value="bun add next-easy-middlewares"
+            className="relative top-0"
+          />
+        </div>
+      </div>
+      <div className="col-span-2" />
     </div>
   );
 }
 
 function Guides() {
   return (
-    <div className="absolute inset-0 grid grid-cols-12 grid-rows-6 divide-muted gap-px bg-muted">
+    <div className="absolute inset-0 grid grid-cols-12 grid-rows-6 gap-px bg-muted">
       {Array(72)
         .fill('')
         .map((_, id) => (
@@ -191,13 +227,9 @@ function Globe() {
             id="lllldll31-gradient"
             r="0"
           >
-            <stop offset="0" stopColor="hsl(var(--foreground))"></stop>
-            <stop offset="0.4" stopColor="hsl(var(--foreground))"></stop>
-            <stop
-              offset="1"
-              stopColor="hsl(var(--foreground))"
-              stopOpacity="0"
-            ></stop>
+            <stop offset="0" stopColor="#f59e0b"></stop>
+            <stop offset="0.4" stopColor="#f59e0b"></stop>
+            <stop offset="1" stopColor="#f59e0b" stopOpacity="0"></stop>
             <animate
               attributeName="cx"
               dur="5.5s"
@@ -241,6 +273,7 @@ function Globe() {
             keyTimes="0;0.082;0.164;0.245;0.327;0.409;0.491;0.573;0.655;0.736;0.818;1"
             repeatCount="indefinite"
             values="0;1;1;1;1;1;1;1;1;1;0;0"
+            begin="4s"
           ></animate>
         </path>
         <defs>
@@ -266,6 +299,7 @@ function Globe() {
               keyTimes="0;0.082;0.164;0.245;0.327;0.409;0.491;0.573;0.655;0.736;0.818;1"
               repeatCount="indefinite"
               values="698.142;698.142;598.762;499.381;473.703;400;326.297;252.594;201.238;101.858;101.858;0"
+              begin="4s"
             ></animate>
             <animate
               attributeName="cy"
@@ -274,6 +308,7 @@ function Globe() {
               keyTimes="0;0.082;0.164;0.245;0.327;0.409;0.491;0.573;0.655;0.736;0.818;1"
               repeatCount="indefinite"
               values="133.333;133.333;133.333;133.333;66.667;66.667;66.667;66.667;133.333;133.333;133.333;0"
+              begin="4s"
             ></animate>
             <animate
               attributeName="r"
@@ -282,6 +317,7 @@ function Globe() {
               keyTimes="0;0.082;0.164;0.245;0.327;0.409;0.491;0.573;0.655;0.736;0.818;1"
               repeatCount="indefinite"
               values="0;50;50;50;50;50;50;50;50;50;0;0"
+              begin="4s"
             ></animate>
           </radialGradient>
         </defs>
@@ -302,6 +338,7 @@ function Globe() {
             keyTimes="0;0.091;0.182;0.273;0.364;0.455;0.545;0.636;0.727;0.818;1"
             repeatCount="indefinite"
             values="0;1;1;1;1;1;1;1;1;0;0"
+            begin="8s"
           ></animate>
         </path>
         <defs>
@@ -313,13 +350,9 @@ function Globe() {
             id="llldlll35-gradient"
             r="0"
           >
-            <stop offset="0" stopColor="hsl(var(--foreground))"></stop>
-            <stop offset="0.4" stopColor="hsl(var(--foreground))"></stop>
-            <stop
-              offset="1"
-              stopColor="hsl(var(--foreground))"
-              stopOpacity="0"
-            ></stop>
+            <stop offset="0" stopColor="#ef4444"></stop>
+            <stop offset="0.4" stopColor="#ef4444"></stop>
+            <stop offset="1" stopColor="#ef4444" stopOpacity="0"></stop>
             <animate
               attributeName="cx"
               dur="5.5s"
@@ -327,6 +360,7 @@ function Globe() {
               keyTimes="0;0.091;0.182;0.273;0.364;0.455;0.545;0.636;0.727;0.818;1"
               repeatCount="indefinite"
               values="621.108;621.108;547.406;473.703;400;400;300.619;201.238;101.858;101.858;0"
+              begin="8s"
             ></animate>
             <animate
               attributeName="cy"
@@ -335,6 +369,7 @@ function Globe() {
               keyTimes="0;0.091;0.182;0.273;0.364;0.455;0.545;0.636;0.727;0.818;1"
               repeatCount="indefinite"
               values="66.667;66.667;66.667;66.667;66.667;133.333;133.333;133.333;133.333;133.333;0"
+              begin="8s"
             ></animate>
             <animate
               attributeName="r"
@@ -343,6 +378,7 @@ function Globe() {
               keyTimes="0;0.091;0.182;0.273;0.364;0.455;0.545;0.636;0.727;0.818;1"
               repeatCount="indefinite"
               values="0;66.667;66.667;66.667;66.667;66.667;66.667;66.667;66.667;0;0"
+              begin="8s"
             ></animate>
           </radialGradient>
         </defs>
@@ -363,6 +399,7 @@ function Globe() {
             keyTimes="0;0.082;0.164;0.245;0.327;0.409;0.491;0.573;0.655;0.736;0.818;1"
             repeatCount="indefinite"
             values="0;1;1;1;1;1;1;1;1;1;0;0"
+            begin="12s"
           ></animate>
         </path>
         <defs>
@@ -388,6 +425,7 @@ function Globe() {
               keyTimes="0;0.082;0.164;0.245;0.327;0.409;0.491;0.573;0.655;0.736;0.818;1"
               repeatCount="indefinite"
               values="746.41;746.41;630.94;515.47;525.708;531.468;400;268.532;137.063;5.595;5.595;0"
+              begin="12s"
             ></animate>
             <animate
               attributeName="cy"
@@ -396,6 +434,7 @@ function Globe() {
               keyTimes="0;0.082;0.164;0.245;0.327;0.409;0.491;0.573;0.655;0.736;0.818;1"
               repeatCount="indefinite"
               values="200;200;200;200;266.667;333.333;333.333;333.333;333.333;333.333;333.333;0"
+              begin="12s"
             ></animate>
             <animate
               attributeName="r"
@@ -404,6 +443,7 @@ function Globe() {
               keyTimes="0;0.082;0.164;0.245;0.327;0.409;0.491;0.573;0.655;0.736;0.818;1"
               repeatCount="indefinite"
               values="0;100;100;100;100;100;100;100;100;100;0;0"
+              begin="12s"
             ></animate>
           </radialGradient>
         </defs>
@@ -424,6 +464,7 @@ function Globe() {
             keyTimes="0;0.082;0.164;0.245;0.327;0.409;0.491;0.573;0.655;0.736;0.818;1"
             repeatCount="indefinite"
             values="0;1;1;1;1;1;1;1;1;1;0;0"
+            begin="16s"
           ></animate>
         </path>
         <defs>
@@ -435,13 +476,9 @@ function Globe() {
             id="lllddlll34-gradient"
             r="0"
           >
-            <stop offset="0" stopColor="hsl(var(--foreground))"></stop>
-            <stop offset="0.4" stopColor="hsl(var(--foreground))"></stop>
-            <stop
-              offset="1"
-              stopColor="hsl(var(--foreground))"
-              stopOpacity="0"
-            ></stop>
+            <stop offset="0" stopColor="#f59e0b"></stop>
+            <stop offset="0.4" stopColor="#f59e0b"></stop>
+            <stop offset="1" stopColor="#f59e0b" stopOpacity="0"></stop>
             <animate
               attributeName="cx"
               dur="5.5s"
@@ -449,6 +486,7 @@ function Globe() {
               keyTimes="0;0.082;0.164;0.245;0.327;0.409;0.491;0.573;0.655;0.736;0.818;1"
               repeatCount="indefinite"
               values="698.142;698.142;598.762;499.381;400;400;400;274.292;148.584;22.876;22.876;0"
+              begin="16s"
             ></animate>
             <animate
               attributeName="cy"
@@ -457,6 +495,7 @@ function Globe() {
               keyTimes="0;0.082;0.164;0.245;0.327;0.409;0.491;0.573;0.655;0.736;0.818;1"
               repeatCount="indefinite"
               values="133.333;133.333;133.333;133.333;133.333;200;266.667;266.667;266.667;266.667;266.667;0"
+              begin="16s"
             ></animate>
             <animate
               attributeName="r"
@@ -465,6 +504,7 @@ function Globe() {
               keyTimes="0;0.082;0.164;0.245;0.327;0.409;0.491;0.573;0.655;0.736;0.818;1"
               repeatCount="indefinite"
               values="0;66.667;66.667;66.667;66.667;66.667;66.667;66.667;66.667;66.667;0;0"
+              begin="16s"
             ></animate>
           </radialGradient>
         </defs>
@@ -485,6 +525,7 @@ function Globe() {
             keyTimes="0;0.091;0.182;0.273;0.364;0.455;0.545;0.636;0.727;0.818;1"
             repeatCount="indefinite"
             values="0;1;1;1;1;1;1;1;1;0;0"
+            begin="20s"
           ></animate>
         </path>
         <defs>
@@ -510,6 +551,7 @@ function Globe() {
               keyTimes="0;0.091;0.182;0.273;0.364;0.455;0.545;0.636;0.727;0.818;1"
               repeatCount="indefinite"
               values="777.124;777.124;651.416;525.708;515.47;400;284.53;169.06;53.59;53.59;0"
+              begin="20s"
             ></animate>
             <animate
               attributeName="cy"
@@ -518,6 +560,7 @@ function Globe() {
               keyTimes="0;0.091;0.182;0.273;0.364;0.455;0.545;0.636;0.727;0.818;1"
               repeatCount="indefinite"
               values="266.667;266.667;266.667;266.667;200;200;200;200;200;200;0"
+              begin="20s"
             ></animate>
             <animate
               attributeName="r"
@@ -526,6 +569,7 @@ function Globe() {
               keyTimes="0;0.091;0.182;0.273;0.364;0.455;0.545;0.636;0.727;0.818;1"
               repeatCount="indefinite"
               values="0;50;50;50;50;50;50;50;50;0;0"
+              begin="20s"
             ></animate>
           </radialGradient>
         </defs>

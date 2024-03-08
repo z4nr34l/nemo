@@ -21,6 +21,14 @@ const config = {
       },
     },
     extend: {
+      fontFamily: {
+        serif: ['var(--font-geist-sans)'],
+        sans: ['var(--font-geist-sans)'],
+        mono: ['var(--font-geist-mono)'],
+        heading: ['var(--font-geist-sans)'],
+        display: ['var(--font-geist-sans)'],
+        body: ['var(--font-geist-sans)'],
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
