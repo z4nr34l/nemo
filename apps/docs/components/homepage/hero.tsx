@@ -28,13 +28,13 @@ function Content() {
 
       <div className="col-span-2" />
       <div className="col-span-8 flex flex-col items-start justify-end">
-        <div className="supports-[backdrop-filter]:bg-background/50 backdrop-blur-xl bg-background px-4 py-2 border rounded-full flex items-center justify-center gap-x-4">
+        <div className="supports-[backdrop-filter]:bg-background/50 backdrop-blur-xl bg-background pr-4 pl-6 py-2 border rounded-full flex items-center justify-center gap-x-4">
           <code>
             <pre>bun add next-easy-middlewares</pre>
           </code>
           <CopyButton
             value="bun add next-easy-middlewares"
-            className="relative top-0"
+            className="relative top-0 right-0"
           />
         </div>
       </div>
