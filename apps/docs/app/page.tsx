@@ -89,7 +89,10 @@ export default function HomePage(): ReactElement {
               missing!
             </p>
           </div>
-          <Link href="https://github.com/z4nr34l/next-easy-middlewares">
+          <Link
+            href="https://github.com/z4nr34l/next-easy-middlewares"
+            target="_blank"
+          >
             <Button
               variant="secondary"
               size="lg"
