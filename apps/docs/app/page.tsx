@@ -6,8 +6,8 @@ import { Activity, Github, Globe, Link2, PackageOpen } from 'lucide-react';
 
 export default function HomePage(): ReactElement {
   return (
-    <main className="p-4 xl:p-0">
-      <div className="relative max-w-5xl mx-auto border my-[150px] bg-background divide-y divide-muted">
+    <main className="px-4 xl:px-0 py-[150px]">
+      <div className="relative max-w-5xl mx-auto border bg-background divide-y divide-muted">
         <Hero />
 
         <div className="grid lg:grid-cols-3 bg-muted gap-px">
@@ -107,6 +107,16 @@ export default function HomePage(): ReactElement {
             </Link>
           </div>
         </div>
+      </div>
+      <div className="relative max-w-5xl mx-auto">
+        <p className="text-muted-foreground text-xs text-right">
+          Handcrafted by{' '}
+          <Link href="/">
+            <Button variant="link" className="p-0">
+              Z4NR34L
+            </Button>
+          </Link>
+        </p>
       </div>
     </main>
   );
