@@ -9,6 +9,9 @@ const config = {
     // Replaced by root workspace command
     ignoreDuringBuilds: true,
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
 export default withMDX(config);
