@@ -1,14 +1,17 @@
-import { pageTree } from '../source';
-import { DocsLayout } from 'fumadocs-ui/layout';
-import type { ReactNode } from 'react';
+import { DocsLayout } from 'next-docs-ui/layout';
+import { type ReactNode } from 'react';
+import { tree } from '../source';
 
 export default function RootDocsLayout({ children }: { children: ReactNode }) {
   return (
     <DocsLayout
-      tree={pageTree}
+      tree={tree}
       nav={{
         title: 'Next Easy Middlewares',
         githubUrl: 'https://github.com/z4nr34l/next-easy-middlewares',
+      }}
+      sidebar={{
+        collapsible: false,
       }}
     >
       {children}

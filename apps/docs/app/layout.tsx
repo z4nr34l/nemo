@@ -1,5 +1,5 @@
 import './global.css';
-import { RootProvider } from 'fumadocs-ui/provider';
+import { RootProvider } from 'next-docs-ui/provider';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import type { ReactNode } from 'react';
