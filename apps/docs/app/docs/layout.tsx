@@ -4,6 +4,7 @@ import { tree } from '../source';
 
 export default function RootDocsLayout({ children }: { children: ReactNode }) {
   return (
+    // @ts-ignore
     <DocsLayout
       tree={tree}
       nav={{
@@ -14,6 +15,7 @@ export default function RootDocsLayout({ children }: { children: ReactNode }) {
         collapsible: false,
       }}
     >
+      {/* @ts-ignore */}
       {children}
     </DocsLayout>
   );

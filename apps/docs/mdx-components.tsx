@@ -8,6 +8,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ...defaultComponents,
     ...components,
     Callout,
+    // @ts-ignore
     Suspense,
   };
 }

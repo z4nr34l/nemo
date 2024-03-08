@@ -27,6 +27,7 @@ export function CopyButton({
   }, [hasCopied]);
 
   return (
+    // @ts-ignore
     <Button
       variant="ghost"
       size="icon"

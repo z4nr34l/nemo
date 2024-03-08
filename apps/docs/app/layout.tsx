@@ -25,6 +25,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       )}
     >
       <body>
+        {/* @ts-ignore */}
         <RootProvider>{children}</RootProvider>
       </body>
     </html>

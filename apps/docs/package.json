@@ -20,13 +20,15 @@
     "next-docs-zeta": "6.0.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "remark-mdx-images": "^3.0.0",
+    "remark-smartypants": "^2.1.0",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "@types/mdx": "2.0.10",
-    "@types/react": "^18.2.64",
-    "@types/react-dom": "^18.2.21",
+    "@types/mdx": "^2.0.11",
+    "@types/react": "^18.2.22",
+    "@types/react-dom": "^18.2.19",
     "autoprefixer": "10.4.16",
     "postcss": "8.4.32",
     "tailwindcss": "3.4.1",

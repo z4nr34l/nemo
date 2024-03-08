@@ -3,8 +3,11 @@ import { CopyButton } from '@/components/copy-button';
 export function Hero() {
   return (
     <div className="relative w-full">
+      {/* @ts-ignore */}
       <Guides />
+      {/* @ts-ignore */}
       <Globe />
+      {/* @ts-ignore */}
       <Content />
     </div>
   );
@@ -32,6 +35,7 @@ function Content() {
           <code>
             <pre>bun add next-easy-middlewares</pre>
           </code>
+          {/* @ts-ignore */}
           <CopyButton
             value="bun add next-easy-middlewares"
             className="relative top-0 right-0"

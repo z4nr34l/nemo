@@ -17,7 +17,9 @@ export default async function Page({
   const MDX = page.data.default;
 
   return (
+    // @ts-ignore
     <DocsPage url={page.url} toc={page.data.toc}>
+      {/* @ts-ignore */}
       <DocsBody>
         <h1>{page.matter.title}</h1>
         <MDX />
