@@ -5,6 +5,7 @@ import { GeistMono } from 'geist/font/mono';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { Viewport } from 'next';
+import { Analytics } from '@vercel/analytics/react';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -27,6 +28,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <body>
         {/* @ts-ignore */}
         <RootProvider>{children}</RootProvider>
+        <Analytics />
       </body>
     </html>
   );
