@@ -1,10 +1,16 @@
-import createMDX from 'fumadocs-mdx/config';
+import createNextDocsMDX from 'next-docs-mdx/config';
+import remarkMdxImages from 'remark-mdx-images';
+import remarkSmartypants from 'remark-smartypants';
 
-const withMDX = createMDX();
+const withFumaMDX = createNextDocsMDX({
+  mdxOptions: {
+    remarkPlugins: [remarkMdxImages, remarkSmartypants],
+  },
+});
 
 /** @type {import('next').NextConfig} */
 const config = {
   reactStrictMode: true,
 };
 
-export default withMDX(config);
+export default withFumaMDX(config);
