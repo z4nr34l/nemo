@@ -2,12 +2,13 @@ import { ReactElement } from 'react';
 import { Hero } from '@/components/homepage/hero';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Activity, Globe, Link2, PackageOpen } from 'lucide-react';
+import { Activity, Github, Globe, Link2, PackageOpen } from 'lucide-react';
 
 export default function HomePage(): ReactElement {
   return (
     <main className="relative max-w-5xl mx-auto border my-[150px] bg-background divide-y divide-muted">
       <Hero />
+
       <div className="grid lg:grid-cols-3 bg-muted gap-x-px">
         <div className="p-4 lg:px-10 lg:py-14 bg-background flex flex-col items-start justify-start gap-6">
           <h2 className="text-4xl font-bold text-muted-foreground">
@@ -74,6 +75,30 @@ export default function HomePage(): ReactElement {
               </p>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="grid bg-muted gap-x-px">
+        <div className="p-4 lg:px-12 lg:py-12 bg-background flex flex-col md:flex-row items-start md:items-center justify-start gap-6">
+          <div className="flex flex-col flex-1">
+            <h3 className="font-bold text-3xl">
+              Want to help with this project?
+            </h3>
+            <p className="text-muted-foreground">
+              Review existing issues, make an PR&apos;s with what&apos;s
+              missing!
+            </p>
+          </div>
+          <Link href="https://github.com/z4nr34l/next-easy-middlewares">
+            <Button
+              variant="secondary"
+              size="lg"
+              className="rounded-full flex items-center justify-center gap-x-4"
+            >
+              <Github className="w-6 h-6" />
+              GitHub
+            </Button>
+          </Link>
         </div>
       </div>
     </main>
