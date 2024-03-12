@@ -116,7 +116,7 @@ export default function HomePage(): ReactElement {
       <div className="relative max-w-5xl mx-auto">
         <p className="text-muted-foreground text-xs text-right">
           Handcrafted by {/* @ts-ignore */}
-          <Link href="/">
+          <Link href="https://www.zanreal.net">
             {/* @ts-ignore */}
             <Button variant="link" className="p-0">
               Z4NR34L
