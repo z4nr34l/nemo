@@ -7,6 +7,10 @@ const middlewares = {
       console.log('Middleware for /page1', request.nextUrl.pathname);
       return NextResponse.next();
     },
+    async (request: NextRequest) => {
+      console.log('Middleware 2 for /page1', request.nextUrl.pathname);
+      return NextResponse.next();
+    },
   ],
   '/page2': [
     async (request: NextRequest) => {
