@@ -39,7 +39,6 @@ export function createMiddleware(
       if (matchesPath(key, path)) {
         // eslint-disable-next-line no-await-in-loop -- need to await middleware to ensure it has been run
         response = await executePathMiddleware(request, middlewareFunctions);
-        if (isRedirect(response)) break;
       }
     }
 
@@ -52,18 +51,35 @@ export function createMiddleware(
 async function executePathMiddleware(
   request: NextRequest,
   middlewareFunctions: MiddlewareFunction | MiddlewareFunction[],
-): Promise<NextResponse | null> {
+): Promise<NextResponse> {
   const middlewares = Array.isArray(middlewareFunctions)
     ? middlewareFunctions
     : [middlewareFunctions];
 
+  let response = NextResponse.next({
+    request,
+  });
+
   for (const middlewareFunction of middlewares) {
+    // Execute the middleware with the current request and response
     // eslint-disable-next-line no-await-in-loop -- need to await middleware to ensure it has been run
     const result = await executeMiddleware(request, middlewareFunction);
-    if (result) return result;
+
+    // If the middleware returns a response, use it for the next middleware
+    if (result instanceof NextResponse) {
+      response = result;
+
+      if (isRedirect(result) && result.headers.get('location')) {
+        request.headers.set(
+          'x-redirect-url',
+          String(result.headers.get('location')),
+        );
+      }
+    }
   }
 
-  return null;
+  // Return the final response after all middleware have executed
+  return handleMiddlewareRedirect(request, response);
 }
 
 async function executeGlobalMiddleware(
@@ -96,6 +112,21 @@ function matchesPath(pattern: string, path: string): boolean {
     `^${pattern.replace(/\[.*?\]/g, '([^/]+?)')}$`,
   );
   return dynamicPathRegex.test(path);
+}
+
+function handleMiddlewareRedirect(
+  request: NextRequest,
+  response: NextResponse,
+): NextResponse {
+  const redirect = request.headers.get('x-redirect-url');
+
+  if (redirect) {
+    return NextResponse.redirect(redirect, {
+      headers: request.headers,
+    });
+  }
+
+  return response;
 }
 
 function isRedirect(response: NextResponse | null): boolean {

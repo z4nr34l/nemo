@@ -15,11 +15,6 @@
   "repository": "https://github.com/z4nr34l/next-easy-middlewares",
   "license": "MIT",
   "author": "Z4NR34L <software@zanreal.net>",
-  "workspaces": [
-    "apps/*",
-    "packages/*",
-    "examples/*"
-  ],
   "scripts": {
     "build": "turbo run build",
     "clean": "turbo clean",

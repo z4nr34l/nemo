@@ -9,7 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "next": "14.1.0",
+    "next": "latest",
     "next-auth": "^4.24.6",
     "next-easy-middlewares": "workspace:*",
     "react": "^18",
