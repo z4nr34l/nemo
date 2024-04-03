@@ -15,7 +15,7 @@ const middlewares = {
   '/page2': [
     async (request: NextRequest) => {
       console.log('Middleware for /page2', request.nextUrl.pathname);
-      return NextResponse.redirect('http://localhost:3000/page1');
+      return NextResponse.redirect('http://localhost:3001/page1');
     },
   ],
 };
