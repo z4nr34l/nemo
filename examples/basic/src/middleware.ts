@@ -5,10 +5,15 @@ const middlewares = {
   '/page1': [
     async (request: NextRequest) => {
       console.log('Middleware for /page1', request.nextUrl.pathname);
+      request.cookies.set('passed-cookie', 'cookie-value');
       return NextResponse.next();
     },
     async (request: NextRequest) => {
-      console.log('Middleware 2 for /page1', request.nextUrl.pathname);
+      console.log('Chained middleware for /page1', request.nextUrl.pathname);
+      console.log(
+        'Passed cookie value: ',
+        request.cookies.get('passed-cookie'),
+      );
       return NextResponse.next();
     },
   ],
