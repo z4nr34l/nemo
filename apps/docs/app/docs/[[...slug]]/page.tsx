@@ -1,6 +1,7 @@
 import { getPage, pages } from '@/app/source';
 import type { Metadata } from 'next';
 import { DocsBody, DocsPage } from 'next-docs-ui/page';
+import { RollButton } from 'next-docs-ui/components/roll-button';
 import { notFound } from 'next/navigation';
 
 export default async function Page({
@@ -19,6 +20,7 @@ export default async function Page({
   return (
     // @ts-ignore
     <DocsPage url={page.url} toc={page.data.toc}>
+      <RollButton />
       {/* @ts-ignore */}
       <DocsBody>
         <h1>{page.matter.title}</h1>

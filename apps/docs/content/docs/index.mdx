@@ -1,17 +1,49 @@
 ---
-title: Coming Soon
-description: Documentation is coming soon!
+title: Getting Started
+description: Getting started with Next Easy Middlewares
 ---
 
-Documentation is already under construction, it will come soon.
+import { Tab, Tabs } from 'next-docs-ui/components/tabs';
 
-## What in mean time?
+## Motivation
 
-<Cards>
-  <Card title="Meet Z4RN34L" href="https://www.zanreal.net" target="_blank" />
-  <Card
-    title="Checkout readme"
-    href="https://github.com/z4nr34l/next-easy-middlewares#readme"
-    target="_blank"
-  />
-</Cards>
+I'm working with Next.js project for a few years now, after Vercel moved multiple `/**/_middleware.ts` files to a single `/middleware.ts` file, there was a unfilled gap - but just for now. After a 2023 retro I had found that there is no good solution for that problem, so I took matters into my own hands. I wanted to share that motivation with everyone here, as I think that we all need to remember how it all started.
+
+Hope it will save you some time and would make your project DX better!
+
+## Installation
+
+Paste installation command into your terminal to install package.
+
+<Tabs items={['Bun', 'PNPM', 'NPM', 'Yarn']}>
+  <Tab value="Bun">```bash bun add next-easy-middlewares ```</Tab>
+  <Tab value="PNPM">```bash pnpm add next-easy-middlewares ```</Tab>
+  <Tab value="NPM">```bash npm install next-easy-middlewares ```</Tab>
+  <Tab value="Yarn">```bash yarn add next-easy-middlewares ```</Tab>
+</Tabs>
+
+## Basic middleware usage
+
+```typescript title="/middleware.ts" {5,9}
+import { createMiddleware } from 'next-easy-middlewares';
+import { type NextRequest, NextResponse } from 'next/server';
+
+const middlewares = {
+  // define your middlewares here...
+};
+
+// Create middlewares helper
+export const middleware = createMiddleware(middlewares);
+
+export const config = {
+  /*
+   * Match all paths except for:
+   * 1. /api/ routes
+   * 2. /_next/ (Next.js internals)
+   * 3. /_static (inside /public)
+   * 4. /_vercel (Vercel internals)
+   * 5. Static files (e.g. /favicon.ico, /sitemap.xml, /robots.txt, etc.)
+   */
+  matcher: ['/((?!api/|_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+};
+```
