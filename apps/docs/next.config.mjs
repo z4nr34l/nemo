@@ -5,6 +5,7 @@ import remarkSmartypants from 'remark-smartypants';
 const withFumaMDX = createNextDocsMDX({
   mdxOptions: {
     remarkPlugins: [remarkMdxImages, remarkSmartypants],
+    lastModifiedTime: 'git',
   },
 });
 

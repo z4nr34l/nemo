@@ -1,0 +1,16 @@
+---
+title: Simple matcher
+description: Simple matcher type and how to use it.
+---
+
+```typescript
+// ...
+
+const middlewares = {
+  // This will match /blog route only
+  '/blog': blogMiddleware,
+  // This will match /docs route only
+  '/docs': docsMiddleware,
+};
+```
+
