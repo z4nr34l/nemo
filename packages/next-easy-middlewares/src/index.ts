@@ -31,7 +31,14 @@ export function createMiddleware(
     const path = request.nextUrl.pathname || '/';
     let response: NextResponse | null = null;
 
-    await executeGlobalMiddleware('before', request, globalMiddleware);
+    const beforeResult = await executeGlobalMiddleware(
+      'before',
+      request,
+      globalMiddleware,
+    );
+    if (beforeResult) {
+      return beforeResult;
+    }
 
     for (const [key, middlewareFunctions] of Object.entries(
       pathMiddlewareMap,
@@ -42,7 +49,14 @@ export function createMiddleware(
       }
     }
 
-    await executeGlobalMiddleware('after', request, globalMiddleware);
+    const afterResult = await executeGlobalMiddleware(
+      'after',
+      request,
+      globalMiddleware,
+    );
+    if (afterResult) {
+      return afterResult;
+    }
 
     return response ?? NextResponse.next();
   };
@@ -86,12 +100,19 @@ async function executeGlobalMiddleware(
   type: 'before' | 'after',
   request: NextRequest,
   globalMiddleware?: Record<string, MiddlewareFunction>,
-): Promise<void> {
+): Promise<NextResponse | null> {
   const globalMiddlewareFn = globalMiddleware?.[type];
   if (globalMiddlewareFn) {
     const result = await executeMiddleware(request, globalMiddlewareFn);
-    if (result && isRedirect(result)) return;
+    if (result && isRedirect(result)) {
+      request.headers.set(
+        'x-redirect-url',
+        result.headers.get('location') || '',
+      );
+      return result;
+    }
   }
+  return null;
 }
 
 async function executeMiddleware(
