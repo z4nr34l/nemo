@@ -37,7 +37,7 @@ export function createMiddleware(
       globalMiddleware,
     );
     if (beforeResult) {
-      return beforeResult;
+      return handleMiddlewareRedirect(request, beforeResult);
     }
 
     for (const [key, middlewareFunctions] of Object.entries(
@@ -55,7 +55,7 @@ export function createMiddleware(
       globalMiddleware,
     );
     if (afterResult) {
-      return afterResult;
+      return handleMiddlewareRedirect(request, afterResult);
     }
 
     return response ?? NextResponse.next();
@@ -75,8 +75,6 @@ async function executePathMiddleware(
   });
 
   for (const middlewareFunction of middlewares) {
-    // Execute the middleware with the current request and response
-    // eslint-disable-next-line no-await-in-loop -- need to await middleware to ensure it has been run
     const result = await executeMiddleware(request, middlewareFunction);
 
     // If the middleware returns a response, use it for the next middleware
@@ -109,6 +107,10 @@ async function executeGlobalMiddleware(
         'x-redirect-url',
         result.headers.get('location') || '',
       );
+      result.cookies.getAll().forEach((cookie) => {
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string -- intentionally using toString() to append the cookie
+        request.headers.append('set-cookie', cookie.toString());
+      });
       return result;
     }
   }
@@ -127,10 +129,10 @@ function matchesPath(pattern: string, path: string): boolean {
   if (pattern.startsWith('regex:')) {
     return new RegExp(pattern.replace('regex:', '')).test(path);
   } else if (pattern.includes(':path*')) {
-    return path.startsWith(pattern.replace(/:path\*/, ''));
+    return path.startsWith(pattern.replace(/:path\\*/, ''));
   }
   const dynamicPathRegex = new RegExp(
-    `^${pattern.replace(/\[.*?\]/g, '([^/]+?)')}$`,
+    `^${pattern.replace(/\\[.*?\\]/g, '([^/]+?)')}$`,
   );
   return dynamicPathRegex.test(path);
 }
@@ -142,9 +144,16 @@ function handleMiddlewareRedirect(
   const redirect = request.headers.get('x-redirect-url');
 
   if (redirect) {
-    return NextResponse.redirect(redirect, {
+    const redirectResponse = NextResponse.redirect(redirect, {
       headers: request.headers,
     });
+
+    // Copy cookies from the original response to the redirect response
+    response.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie);
+    });
+
+    return redirectResponse;
   }
 
   return response;
