@@ -1,9 +1,11 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-// Define custom middleware types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- We need to accept literally any values in type assertion
 export type CustomMiddleware<T = any> = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- We need to accept any request type
   request: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- We need to accept any additional props for external packages
   ...args: any
 ) => T | Promise<T>;
 
@@ -42,6 +44,7 @@ export function createMiddleware(
       pathMiddlewareMap,
     )) {
       if (matchesPath(key, path)) {
+        // eslint-disable-next-line no-await-in-loop -- need to wait for middleware to execute
         response = await executePathMiddleware(request, middlewareFunctions);
       }
     }
@@ -72,6 +75,7 @@ async function executePathMiddleware(
   });
 
   for (const middlewareFunction of middlewares) {
+    // eslint-disable-next-line no-await-in-loop -- need to wait for middleware to execute
     const result = await executeMiddleware(request, middlewareFunction);
 
     // If the middleware returns a response, use it for the next middleware
@@ -105,6 +109,7 @@ async function executeGlobalMiddleware(
         result.headers.get('location') || '',
       );
       result.cookies.getAll().forEach((cookie) => {
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string -- need to append cookies to headers
         request.headers.append('set-cookie', cookie.toString());
       });
       return result;
