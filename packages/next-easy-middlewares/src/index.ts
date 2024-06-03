@@ -45,7 +45,11 @@ export function createMiddleware(
     )) {
       if (matchesPath(key, path)) {
         // eslint-disable-next-line no-await-in-loop -- need to wait for middleware to execute
-        response = await executePathMiddleware(request, middlewareFunctions);
+        response = await executePathMiddleware(
+          request,
+          middlewareFunctions,
+          response,
+        );
       }
     }
 
@@ -65,34 +69,47 @@ export function createMiddleware(
 async function executePathMiddleware(
   request: NextRequest,
   middlewareFunctions: MiddlewareFunction | MiddlewareFunction[],
-): Promise<NextResponse> {
-  const middlewares = Array.isArray(middlewareFunctions)
-    ? middlewareFunctions
-    : [middlewareFunctions];
+  initialResponse: NextResponse | null,
+): Promise<NextResponse | null> {
+  if (!Array.isArray(middlewareFunctions)) {
+    // eslint-disable-next-line no-param-reassign -- need to reassign middlewareFunctions
+    middlewareFunctions = [middlewareFunctions];
+  }
 
-  let response = NextResponse.next({
-    request,
-  });
+  let response = initialResponse;
 
-  for (const middlewareFunction of middlewares) {
+  for (const middleware of middlewareFunctions) {
     // eslint-disable-next-line no-await-in-loop -- need to wait for middleware to execute
-    const result = await executeMiddleware(request, middlewareFunction);
-
-    // If the middleware returns a response, use it for the next middleware
-    if (result instanceof NextResponse) {
+    const result = await executeMiddleware(request, middleware, response);
+    if (result) {
       response = result;
-
-      if (isRedirect(result) && result.headers.get('location')) {
-        request.headers.set(
-          'x-redirect-url',
-          String(result.headers.get('location')),
-        );
-      }
     }
   }
 
-  // Return the final response after all middleware have executed
-  return handleMiddlewareRedirect(request, response);
+  return response;
+}
+
+async function executeMiddleware(
+  request: NextRequest,
+  middleware: MiddlewareFunction,
+  currentResponse: NextResponse | null,
+): Promise<NextResponse | null> {
+  const result = await middleware(request);
+
+  // Merge headers from the current response into the result
+  if (currentResponse) {
+    currentResponse.headers.forEach((value, key) => {
+      result.headers.set(key, value);
+    });
+  }
+
+  // If the result is a redirect or an error status, return it immediately
+  if (isRedirect(result) || result.status >= 400) {
+    return result;
+  }
+
+  // Otherwise, return the result
+  return result;
 }
 
 async function executeGlobalMiddleware(
@@ -102,7 +119,7 @@ async function executeGlobalMiddleware(
 ): Promise<NextResponse | null> {
   const globalMiddlewareFn = globalMiddleware?.[type];
   if (globalMiddlewareFn) {
-    const result = await executeMiddleware(request, globalMiddlewareFn);
+    const result = await executeMiddleware(request, globalMiddlewareFn, null);
     if (result && isRedirect(result)) {
       request.headers.set(
         'x-redirect-url',
@@ -116,14 +133,6 @@ async function executeGlobalMiddleware(
     }
   }
   return null;
-}
-
-async function executeMiddleware(
-  request: NextRequest,
-  middleware: MiddlewareFunction,
-): Promise<NextResponse | null> {
-  const result = await middleware(request);
-  return result !== NextResponse.next() ? result : null;
 }
 
 function matchesPath(pattern: string, path: string): boolean {
