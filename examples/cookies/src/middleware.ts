@@ -8,22 +8,20 @@ const middlewares = {
       return NextResponse.next();
     }
 
-    const nextResponse = NextResponse.redirect('http://localhost:3003/demo', {
-      status: 302,
-    });
+    request.nextUrl.pathname = 'demo/' + request.nextUrl.pathname;
 
-    nextResponse.cookies.set({
+    const response = NextResponse.redirect(request.nextUrl);
+
+    response.cookies.set({
       name: 'test',
       value: 'test',
-      httpOnly: true,
-      secure: true,
       path: '/',
       expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365),
       sameSite: 'strict',
       maxAge: 1000 * 60 * 60 * 24 * 365,
     });
 
-    return nextResponse;
+    return response;
   },
 };
 
