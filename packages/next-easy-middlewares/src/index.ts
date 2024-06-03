@@ -1,5 +1,4 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- We need to accept literally any values in type assertion
 export type CustomMiddleware<T = any> = (
@@ -72,7 +71,7 @@ async function executePathMiddleware(
   initialResponse: NextResponse | null,
 ): Promise<NextResponse | null> {
   if (!Array.isArray(middlewareFunctions)) {
-    // eslint-disable-next-line no-param-reassign -- need to reassign middlewareFunctions
+    // eslint-disable-next-line no-param-reassign -- need to update function signature
     middlewareFunctions = [middlewareFunctions];
   }
 
@@ -83,6 +82,9 @@ async function executePathMiddleware(
     const result = await executeMiddleware(request, middleware, response);
     if (result) {
       response = result;
+
+      // eslint-disable-next-line no-param-reassign -- need to update request with response
+      request = updateRequestWithResponse(request, response);
     }
   }
 
@@ -96,19 +98,16 @@ async function executeMiddleware(
 ): Promise<NextResponse | null> {
   const result = await middleware(request);
 
-  // Merge headers from the current response into the result
   if (currentResponse) {
     currentResponse.headers.forEach((value, key) => {
       result.headers.set(key, value);
     });
   }
 
-  // If the result is a redirect or an error status, return it immediately
   if (isRedirect(result) || result.status >= 400) {
     return result;
   }
 
-  // Otherwise, return the result
   return result;
 }
 
@@ -151,15 +150,15 @@ function handleMiddlewareRedirect(
   request: NextRequest,
   response: NextResponse,
 ): NextResponse {
-  const redirect = request.headers.get('x-redirect-url');
+  const redirectUrl = request.headers.get('x-redirect-url');
 
-  if (redirect) {
-    const redirectResponse = NextResponse.redirect(redirect, {
-      headers: request.headers,
+  if (redirectUrl) {
+    const redirectResponse = NextResponse.redirect(redirectUrl, {
+      headers: request.headers, // Transfer original headers to the redirect response
     });
 
-    // Copy cookies from the original response to the redirect response
-    response.cookies.getAll().forEach((cookie) => {
+    // Copy cookies from the original request to the redirect response
+    request.cookies.getAll().forEach((cookie) => {
       redirectResponse.cookies.set(cookie);
     });
 
@@ -173,4 +172,34 @@ function isRedirect(response: NextResponse | null): boolean {
   return Boolean(
     response && [301, 302, 303, 307, 308].includes(response.status),
   );
+}
+
+function updateRequestWithResponse(
+  request: NextRequest,
+  response: NextResponse,
+): NextRequest {
+  const updatedHeaders = new Headers(request.headers);
+
+  // Merge headers from the response into the request headers
+  response.headers.forEach((value, key) => {
+    updatedHeaders.set(key, value);
+  });
+
+  // Create a new URL object with the same parameters as the original request
+  const updatedUrl = new URL(request.url);
+
+  // Create a new NextRequest object with the updated headers
+  const updatedRequest = new NextRequest(updatedUrl, {
+    headers: updatedHeaders,
+    method: request.method,
+    body: request.body,
+    referrer: request.referrer,
+  });
+
+  // Merge cookies from the response into the request cookies
+  response.cookies.getAll().forEach((cookie) => {
+    updatedRequest.cookies.set(cookie.name, cookie.value);
+  });
+
+  return updatedRequest;
 }
