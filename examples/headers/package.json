@@ -9,10 +9,10 @@
     "start": "next start"
   },
   "dependencies": {
-    "next": "latest",
+    "next": "15.0.0-rc.0",
     "next-easy-middlewares": "workspace:*",
-    "react": "^18",
-    "react-dom": "^18"
+    "react": "19.0.0-rc.0",
+    "react-dom": "19.0.0-rc.0"
   },
   "devDependencies": {
     "@types/node": "^20",
