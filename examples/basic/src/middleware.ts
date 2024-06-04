@@ -4,10 +4,11 @@ import { type NextRequest, NextResponse } from 'next/server';
 const middlewares = {
   '/page1': [
     async (request: NextRequest) => {
+      const response = NextResponse.next();
       console.log('Middleware for /page1', request.nextUrl.pathname);
-      request.cookies.set('passed-cookie', 'cookie-value');
-      request.headers.set('x-custom-header', 'header-value');
-      return NextResponse.next();
+      response.cookies.set('passed-cookie', 'cookie-value');
+      response.headers.set('x-custom-header', 'header-value');
+      return response;
     },
     async (request: NextRequest) => {
       console.log('Chained middleware for /page1', request.nextUrl.pathname);
@@ -21,10 +22,20 @@ const middlewares = {
   ],
   '/page2': [
     async (request: NextRequest) => {
+      const response = NextResponse.next();
       console.log('Middleware for /page2', request.nextUrl.pathname);
-      request.cookies.set('passed-cookie', 'cookie-value');
-      request.headers.set('x-custom-header', 'header-value');
-      return NextResponse.redirect('http://localhost:3001/page1');
+      response.cookies.set('passed-cookie', 'cookie-value');
+      response.headers.set('x-custom-header', 'header-value');
+      return response;
+    },
+    async (request: NextRequest) => {
+      const redirectUrl = 'http://localhost:3001/page1'; // Redirect within the same domain
+      console.log('Redirecting to:', redirectUrl);
+
+      const response = NextResponse.redirect(redirectUrl, {
+        headers: request.headers, // Transfer original headers to the redirect response
+      });
+      return response;
     },
     async (request: NextRequest) => {
       console.log('Chained middleware for /page2', request.nextUrl.pathname);
