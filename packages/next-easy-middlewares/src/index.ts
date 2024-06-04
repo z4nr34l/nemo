@@ -21,10 +21,6 @@ export type MiddlewareConfig = Record<
   | CustomMiddleware[]
 >;
 
-export interface NextMiddlewareConfig {
-  matcher: string[];
-}
-
 export function createMiddleware(
   pathMiddlewareMap: MiddlewareConfig,
   globalMiddleware?: Record<string, MiddlewareFunction>,
