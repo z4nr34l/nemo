@@ -124,10 +124,12 @@ async function executeGlobalMiddleware(
         'x-redirect-url',
         result.headers.get('location') || '',
       );
-      result.cookies.getAll().forEach((cookie) => {
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string -- need to append cookies to headers
-        request.headers.append('set-cookie', cookie.toString());
-      });
+      if (result.cookies) {
+        result.cookies.getAll().forEach((cookie) => {
+          // eslint-disable-next-line @typescript-eslint/no-base-to-string -- need to append cookies to headers
+          request.headers.append('set-cookie', cookie.toString());
+        });
+      }
       return result;
     }
   }
@@ -158,9 +160,11 @@ function handleMiddlewareRedirect(
     });
 
     // Copy cookies from the original request to the redirect response
-    request.cookies.getAll().forEach((cookie) => {
-      redirectResponse.cookies.set(cookie);
-    });
+    if (request.cookies) {
+      request.cookies.getAll().forEach((cookie) => {
+        redirectResponse.cookies.set(cookie);
+      });
+    }
 
     return redirectResponse;
   }
@@ -197,9 +201,11 @@ function updateRequestWithResponse(
   });
 
   // Merge cookies from the response into the request cookies
-  response.cookies.getAll().forEach((cookie) => {
-    updatedRequest.cookies.set(cookie.name, cookie.value);
-  });
+  if (response.cookies) {
+    response.cookies.getAll().forEach((cookie) => {
+      updatedRequest.cookies.set(cookie.name, cookie.value);
+    });
+  }
 
   return updatedRequest;
 }
