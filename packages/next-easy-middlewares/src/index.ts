@@ -21,7 +21,7 @@ export type MiddlewareConfig = Record<
   | CustomMiddleware[]
 >;
 
-export function createMiddleware(
+export default function createMiddleware(
   pathMiddlewareMap: MiddlewareConfig,
   globalMiddleware?: Record<string, MiddlewareFunction>,
 ): MiddlewareFunction {
