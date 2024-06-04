@@ -2,7 +2,7 @@ import { createMiddleware } from 'next-easy-middlewares';
 import { type NextRequest, NextResponse } from 'next/server';
 
 const middlewares = {
-  '/page1': [
+  '/page1/:path*': [
     async (request: NextRequest) => {
       const response = NextResponse.next();
       console.log('Middleware for /page1', request.nextUrl.pathname);
@@ -53,5 +53,5 @@ const middlewares = {
 export const middleware = createMiddleware(middlewares);
 
 export const config = {
-  matcher: ['/((?!api/|_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+  matcher: ['/page2', '/page1/:path*'],
 };

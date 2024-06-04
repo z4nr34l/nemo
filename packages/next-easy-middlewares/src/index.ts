@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { pathToRegexp } from 'path-to-regexp';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- We need to accept literally any values in type assertion
 export type CustomMiddleware<T = any> = (
@@ -20,13 +21,15 @@ export type MiddlewareConfig = Record<
   | CustomMiddleware[]
 >;
 
+export interface NextMiddlewareConfig {
+  matcher: string[];
+}
+
 export function createMiddleware(
   pathMiddlewareMap: MiddlewareConfig,
   globalMiddleware?: Record<string, MiddlewareFunction>,
 ): MiddlewareFunction {
-  return async function middleware(
-    request: NextRequest,
-  ): Promise<NextResponse> {
+  return async (request: NextRequest): Promise<NextResponse> => {
     const path = request.nextUrl.pathname || '/';
     let response: NextResponse | null = null;
 
@@ -137,13 +140,7 @@ async function executeGlobalMiddleware(
 }
 
 function matchesPath(pattern: string, path: string): boolean {
-  const _pattern = `^${pattern
-    // Path segments
-    .replace(/:path\*$/, '.*')
-    // Dynamic segments
-    .replace(/\[.*?\]/g, '([^/]+?)')}$`;
-
-  return new RegExp(_pattern).test(path);
+  return pathToRegexp(pattern).test(path);
 }
 
 function handleMiddlewareRedirect(
