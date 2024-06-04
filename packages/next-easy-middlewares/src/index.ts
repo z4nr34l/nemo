@@ -137,15 +137,13 @@ async function executeGlobalMiddleware(
 }
 
 function matchesPath(pattern: string, path: string): boolean {
-  if (pattern.startsWith('regex:')) {
-    return new RegExp(pattern.replace('regex:', '')).test(path);
-  } else if (pattern.includes(':path*')) {
-    return path.startsWith(pattern.replace(/:path\\*/, ''));
-  }
-  const dynamicPathRegex = new RegExp(
-    `^${pattern.replace(/\\[.*?\\]/g, '([^/]+?)')}$`,
-  );
-  return dynamicPathRegex.test(path);
+  const _pattern = `^${pattern
+    // Path segments
+    .replace(/:path\*$/, '.*')
+    // Dynamic segments
+    .replace(/\[.*?\]/g, '([^/]+?)')}$`;
+
+  return new RegExp(_pattern).test(path);
 }
 
 function handleMiddlewareRedirect(
