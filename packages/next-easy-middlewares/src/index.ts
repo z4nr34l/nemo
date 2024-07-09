@@ -98,12 +98,12 @@ async function executeMiddleware(
   const result = await middleware(request);
 
   if (currentResponse) {
-    currentResponse.headers?.forEach((value, key) => {
-      result.headers.set(key, value);
+    currentResponse?.headers.forEach((value, key) => {
+      result?.headers.set(key, value);
     });
   }
 
-  if (isRedirect(result) || result.status >= 400) {
+  if (isRedirect(result) || result?.status >= 400) {
     return result;
   }
 
@@ -165,7 +165,7 @@ function handleMiddlewareRedirect(
 
 function isRedirect(response: NextResponse | null): boolean {
   return Boolean(
-    response && [301, 302, 303, 307, 308].includes(response.status),
+    response && [301, 302, 303, 307, 308].includes(response?.status),
   );
 }
 
@@ -176,7 +176,7 @@ function updateRequestWithResponse(
   const updatedHeaders = new Headers(request.headers);
 
   // Merge headers from the response into the request headers
-  response.headers?.forEach((value, key) => {
+  response.headers.forEach((value, key) => {
     updatedHeaders.set(key, value);
   });
 
