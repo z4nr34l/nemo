@@ -1,0 +1,42 @@
+---
+title: Next-Auth (v5)
+description: Usage with Next-Auth (v5)
+---
+
+## Install and configure Next-Auth
+
+Do to so, please follow the [Getting Started](https://authjs.dev/getting-started) section in Next-Auth Docs.
+
+## Middleware configuration
+
+Here you will find example middleware configuration for Next-Auth package to restrict access to `/page2` route.
+
+```typescript {3,13}
+import createMiddleware from 'next-easy-middlewares';
+import { type NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
+
+const middlewares = {
+  '/page1': [
+    async (request: NextRequest) => {
+      console.log('Middleware for /page1', request.nextUrl.pathname);
+      return NextResponse.next();
+    },
+  ],
+  '/page2': [
+    auth,
+    async (request: NextRequest) => {
+      console.log('Middleware for /page2', request.nextUrl.pathname);
+      return NextResponse.redirect('http://localhost:3002/page1');
+    },
+  ],
+};
+
+// Create middlewares helper
+export const middleware = createMiddleware(middlewares);
+
+export const config = {
+  matcher: ['/((?!api/|_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+};
+```
+
