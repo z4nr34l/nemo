@@ -1,4 +1,4 @@
-import { createMiddleware } from 'next-easy-middlewares';
+import createMiddleware from 'next-easy-middlewares';
 import { type NextRequest, NextResponse } from 'next/server';
 
 const middlewares = {
