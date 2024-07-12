@@ -11,7 +11,7 @@ Do to so, please follow the [Getting Started](https://authjs.dev/getting-started
 
 Here you will find example middleware configuration for Next-Auth package to restrict access to `/page2` route.
 
-```typescript {3,13}
+```typescript {3,13} title="middleware.ts"
 import createMiddleware from 'next-easy-middlewares';
 import { type NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
