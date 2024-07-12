@@ -1,0 +1,13 @@
+{
+  "title": "Docs",
+  "root": true,
+  "pages": [
+    "---General---",
+    "index",
+    "...",
+    "---Matchers---",
+    "...matchers",
+    "---Examples---",
+    "...examples"
+  ]
+}
