@@ -1,12 +1,6 @@
-import createMiddleware, { CustomMiddleware } from 'next-easy-middlewares';
+import createMiddleware from 'next-easy-middlewares';
 import { type NextRequest, NextResponse } from 'next/server';
-import { withAuth } from 'next-auth/middleware';
-
-const customWithAuth = withAuth({
-  pages: {
-    error: '/not-found',
-  },
-}) satisfies CustomMiddleware;
+import { auth } from '@/auth';
 
 const middlewares = {
   '/page1': [
@@ -16,10 +10,10 @@ const middlewares = {
     },
   ],
   '/page2': [
-    customWithAuth,
+    auth,
     async (request: NextRequest) => {
       console.log('Middleware for /page2', request.nextUrl.pathname);
-      return NextResponse.redirect('http://localhost:3000/page1');
+      return NextResponse.redirect('http://localhost:3002/page1');
     },
   ],
 };

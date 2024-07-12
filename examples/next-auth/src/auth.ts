@@ -8,30 +8,19 @@ export const config = {
   },
   providers: [
     CredentialsProvider({
-      async authorize(credentials) {
-        const authResponse = await fetch('/users/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(credentials),
-        });
-
-        if (!authResponse.ok) {
-          return null;
-        }
-
-        const user = await authResponse.json();
-
-        return user;
+      name: 'Credentials',
+      credentials: {
+        username: { label: 'Username', type: 'text', placeholder: 'jsmith' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize() {
+        return { id: 1, name: 'J Smith', email: 'jsmith@example.com' } as never;
       },
     }),
   ],
   callbacks: {
-    authorized({ request, auth }) {
-      const { pathname } = request.nextUrl;
-      if (pathname === '/middleware-example') return !!auth;
-      return true;
+    authorized: async ({ auth }) => {
+      return !!auth;
     },
   },
 } satisfies NextAuthConfig;
