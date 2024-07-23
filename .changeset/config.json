@@ -7,6 +7,9 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
+  "commit_message": {
+    "version": "chore: bump {package} to {version}"
+  },
   "ignore": [
     "docs",
     "basic-example",
