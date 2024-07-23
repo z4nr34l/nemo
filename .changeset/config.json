@@ -1,15 +1,12 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@3.0.2/schema.json",
   "changelog": "@changesets/cli/changelog",
-  "commit": true,
   "fixed": [],
   "linked": [],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "commit_message": {
-    "version": "chore: bump {package} to {version}"
-  },
+  "commit": "chore: bump {package} to {version}",
   "ignore": [
     "docs",
     "basic-example",
