@@ -1,6 +1,6 @@
 {
   "name": "next-easy-middlewares",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "keywords": [
     "Next.js",
     "Middleware",
@@ -30,7 +30,6 @@
   },
   "prettier": "@vercel/style-guide/prettier",
   "dependencies": {
-    "next": "15.0.0-rc.0",
     "path-to-regexp": "^6.2.2"
   },
   "devDependencies": {
@@ -42,5 +41,8 @@
     "react": "19.0.0-rc.0",
     "tsup": "^8.1.0",
     "typescript": "^5.4.5"
+  },
+  "peerDependencies": {
+    "next": ">=13"
   }
 }
