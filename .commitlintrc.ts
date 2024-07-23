@@ -3,7 +3,7 @@ const Configuration = {
     '@commitlint/config-conventional',
     '@commitlint/config-pnpm-scopes',
   ],
-  ignores: [(commit) => commit === 'Version Packages'],
+  ignores: [(commit) => commit.includes('Version Packages')],
   defaultIgnores: true,
 };
 
