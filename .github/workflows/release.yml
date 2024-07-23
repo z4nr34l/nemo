@@ -5,13 +5,7 @@ on:
     branches:
       - main
 
-permissions:
-  actions: read
-  checks: read
-  contents: write
-  statuses: read
-  issues: write
-  pull-requests: write
+permissions: write-all
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
