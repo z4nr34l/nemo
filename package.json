@@ -17,14 +17,18 @@
   "author": "Z4NR34L <software@zanreal.net>",
   "scripts": {
     "build": "turbo run build",
+    "changeset": "changeset",
     "clean": "turbo clean",
     "dev": "turbo run dev --parallel",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "lint": "turbo run lint",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "release": "turbo build --filter=next-easy-middlewares && changeset publish",
+    "version-packages": "changeset version"
   },
   "prettier": "@vercel/style-guide/prettier",
   "devDependencies": {
+    "@changesets/cli": "^2.27.7",
     "@commitlint/cli": "^18.4.3",
     "@commitlint/config-conventional": "^18.4.3",
     "@commitlint/config-pnpm-scopes": "^18.4.3",
