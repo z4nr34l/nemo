@@ -7,8 +7,11 @@ on:
 
 permissions:
   actions: read
+  checks: read
   contents: write
   statuses: read
+  issues: write
+  pull-requests: write
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
