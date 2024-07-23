@@ -4,7 +4,6 @@
   "commit": true,
   "fixed": [],
   "linked": [],
-  "title": "chore: release next-easy-middlewares",
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
