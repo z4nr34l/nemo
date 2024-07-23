@@ -6,7 +6,6 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "commit": "git commit -m \"chore: bump version\"",
   "ignore": [
     "docs",
     "basic-example",
