@@ -44,5 +44,8 @@
   },
   "peerDependencies": {
     "next": ">=13"
+  },
+  "publishConfig": {
+    "provenance": true
   }
 }
