@@ -17,16 +17,6 @@
   "license": "MIT",
   "author": "Z4NR34L <software@zanreal.net>",
   "type": "module",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    },
-    "./package.json": "./package.json",
-    "./README.md": "./README.md",
-    "./CHANGELOG.md": "./CHANGELOG.md"
-  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
