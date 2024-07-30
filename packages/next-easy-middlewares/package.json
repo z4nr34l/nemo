@@ -31,8 +31,9 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "readme.md",
-    "package.json"
+    "README.md",
+    "package.json",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "tsup",
