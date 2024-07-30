@@ -1,17 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextFetchEvent, NextRequest, NextResponse } from 'next/server';
 import { pathToRegexp } from 'path-to-regexp';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- We need to accept literally any values in type assertion
-export type CustomMiddleware<T = any> = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- We need to accept any request type
-  request: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- We need to accept any additional props for external packages
-  ...args: any
-) => T | Promise<T>;
+export type CustomMiddleware = (
+  request: NextRequest,
+  ...args: unknown[]
+) => NextResponse | Response | Promise<NextResponse | Response>;
+
+export type NextMiddleware = (
+  request: NextRequest,
+  event: NextFetchEvent,
+) => Response | NextResponse | Promise<Response | NextResponse>;
 
 export type MiddlewareFunction = (
   request: NextRequest,
-) => Promise<NextResponse>;
+  response: NextResponse | Response | null,
+  event: NextFetchEvent,
+) => NextResponse | Response | Promise<NextResponse | Response>;
 
 export type MiddlewareConfig = Record<
   string,
@@ -21,17 +25,21 @@ export type MiddlewareConfig = Record<
   | CustomMiddleware[]
 >;
 
-export default function createMiddleware(
+export function createMiddleware(
   pathMiddlewareMap: MiddlewareConfig,
   globalMiddleware?: Record<string, MiddlewareFunction>,
-): MiddlewareFunction {
-  return async (request: NextRequest): Promise<NextResponse> => {
+): NextMiddleware {
+  return async (
+    request: NextRequest,
+    event: NextFetchEvent,
+  ): Promise<NextResponse | Response> => {
     const path = request.nextUrl.pathname || '/';
-    let response: NextResponse | null = null;
+    let response: NextResponse | Response | null = null;
 
     const beforeResult = await executeGlobalMiddleware(
       'before',
       request,
+      event,
       globalMiddleware,
     );
     if (beforeResult) {
@@ -42,11 +50,11 @@ export default function createMiddleware(
       pathMiddlewareMap,
     )) {
       if (matchesPath(key, path)) {
-        // eslint-disable-next-line no-await-in-loop -- need to wait for middleware to execute
         response = await executePathMiddleware(
           request,
           middlewareFunctions,
           response,
+          event,
         );
       }
     }
@@ -54,6 +62,7 @@ export default function createMiddleware(
     const afterResult = await executeGlobalMiddleware(
       'after',
       request,
+      event,
       globalMiddleware,
     );
     if (afterResult) {
@@ -67,23 +76,26 @@ export default function createMiddleware(
 async function executePathMiddleware(
   request: NextRequest,
   middlewareFunctions: MiddlewareFunction | MiddlewareFunction[],
-  initialResponse: NextResponse | null,
-): Promise<NextResponse | null> {
+  initialResponse: NextResponse | Response | null,
+  event: NextFetchEvent,
+): Promise<NextResponse | Response | null> {
   if (!Array.isArray(middlewareFunctions)) {
     // eslint-disable-next-line no-param-reassign -- need to update function signature
     middlewareFunctions = [middlewareFunctions];
   }
 
-  let response = initialResponse;
+  const response = initialResponse;
 
   for (const middleware of middlewareFunctions) {
-    // eslint-disable-next-line no-await-in-loop -- need to wait for middleware to execute
-    const result = await executeMiddleware(request, middleware, response);
+    const result = await executeMiddleware(
+      request,
+      middleware,
+      response,
+      event,
+    );
     if (result) {
-      response = result;
-
-      // eslint-disable-next-line no-param-reassign -- need to update request with response
-      request = updateRequestWithResponse(request, response);
+      // eslint-disable-next-line no-param-reassign -- need to update function signature
+      request = updateRequestWithResponse(request, result);
     }
   }
 
@@ -93,9 +105,10 @@ async function executePathMiddleware(
 async function executeMiddleware(
   request: NextRequest,
   middleware: MiddlewareFunction,
-  currentResponse: NextResponse | null,
-): Promise<NextResponse | null> {
-  const result = await middleware(request);
+  currentResponse: NextResponse | Response | null,
+  event: NextFetchEvent,
+): Promise<NextResponse | Response | null> {
+  const result = await middleware(request, currentResponse, event);
 
   if (currentResponse) {
     currentResponse.headers.forEach((value, key) => {
@@ -113,20 +126,25 @@ async function executeMiddleware(
 async function executeGlobalMiddleware(
   type: 'before' | 'after',
   request: NextRequest,
+  event: NextFetchEvent,
   globalMiddleware?: Record<string, MiddlewareFunction>,
-): Promise<NextResponse | null> {
+): Promise<NextResponse | Response | null> {
   const globalMiddlewareFn = globalMiddleware?.[type];
   if (globalMiddlewareFn) {
-    const result = await executeMiddleware(request, globalMiddlewareFn, null);
+    const result = await executeMiddleware(
+      request,
+      globalMiddlewareFn,
+      null,
+      event,
+    );
     if (result && isRedirect(result)) {
       request.headers.set(
         'x-redirect-url',
-        result.headers.get('location') || '',
+        result.headers.get('location') ?? '',
       );
-      if (result.cookies) {
+      if (result instanceof NextResponse) {
         result.cookies.getAll().forEach((cookie) => {
-          // eslint-disable-next-line @typescript-eslint/no-base-to-string -- need to append cookies to headers
-          request.headers.append('set-cookie', cookie.toString());
+          request.cookies.set(cookie);
         });
       }
       return result;
@@ -141,8 +159,8 @@ function matchesPath(pattern: string, path: string): boolean {
 
 function handleMiddlewareRedirect(
   request: NextRequest,
-  response: NextResponse,
-): NextResponse {
+  response: NextResponse | Response,
+): NextResponse | Response {
   const redirectUrl = request.headers.get('x-redirect-url');
 
   if (redirectUrl) {
@@ -151,11 +169,9 @@ function handleMiddlewareRedirect(
     });
 
     // Copy cookies from the original request to the redirect response
-    if (request.cookies) {
-      request.cookies.getAll().forEach((cookie) => {
-        redirectResponse.cookies.set(cookie);
-      });
-    }
+    request.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie);
+    });
 
     return redirectResponse;
   }
@@ -163,7 +179,7 @@ function handleMiddlewareRedirect(
   return response;
 }
 
-function isRedirect(response: NextResponse | null): boolean {
+function isRedirect(response: NextResponse | Response | null): boolean {
   return Boolean(
     response && [301, 302, 303, 307, 308].includes(response.status),
   );
@@ -171,7 +187,7 @@ function isRedirect(response: NextResponse | null): boolean {
 
 function updateRequestWithResponse(
   request: NextRequest,
-  response: NextResponse,
+  response: NextResponse | Response,
 ): NextRequest {
   const updatedHeaders = new Headers(request.headers);
 
@@ -192,7 +208,7 @@ function updateRequestWithResponse(
   });
 
   // Merge cookies from the response into the request cookies
-  if (response.cookies) {
+  if (response instanceof NextResponse) {
     response.cookies.getAll().forEach((cookie) => {
       updatedRequest.cookies.set(cookie.name, cookie.value);
     });

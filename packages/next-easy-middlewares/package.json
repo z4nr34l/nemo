@@ -30,14 +30,14 @@
   },
   "prettier": "@vercel/style-guide/prettier",
   "dependencies": {
-    "path-to-regexp": "^6.2.2"
+    "path-to-regexp": "^7.1.0"
   },
   "devDependencies": {
     "@swc/core": "^1.5.24",
     "@types/node": "20.14.1",
     "@types/react": "^18.3.3",
     "@vercel/style-guide": "^6.0.0",
-    "eslint": "9.4.0",
+    "eslint": "^8",
     "react": "19.0.0-rc.0",
     "tsup": "^8.1.0",
     "typescript": "^5.4.5"
