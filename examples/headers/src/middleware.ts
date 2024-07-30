@@ -8,6 +8,8 @@ import {
 const middlewares = {
   '/': [
     async () => {
+      console.log('middleware');
+
       const response = NextResponse.next();
 
       response.headers.set('x-test-header', 'test-value');

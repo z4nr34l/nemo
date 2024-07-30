@@ -83,11 +83,11 @@ async function executePathMiddleware(
   context: Map<string, unknown>,
 ): Promise<NextResponse | Response | null> {
   if (!Array.isArray(middlewareFunctions)) {
-    // eslint-disable-next-line no-param-reassign -- need to update function signature
+    // eslint-disable-next-line no-param-reassign -- Allow reassignment for type compatibility
     middlewareFunctions = [middlewareFunctions];
   }
 
-  const response = initialResponse;
+  let response = initialResponse;
 
   for (const middleware of middlewareFunctions) {
     const result = await executeMiddleware(
@@ -98,7 +98,8 @@ async function executePathMiddleware(
       context,
     );
     if (result) {
-      // eslint-disable-next-line no-param-reassign -- need to update function signature
+      response = result;
+      // eslint-disable-next-line no-param-reassign -- Allow reassignment for type compatibility
       request = updateRequestWithResponse(request, result);
     }
   }
@@ -123,6 +124,12 @@ async function executeMiddleware(
   if (currentResponse) {
     currentResponse.headers.forEach((value, key) => {
       result.headers.set(key, value);
+    });
+  }
+
+  if (result instanceof NextResponse) {
+    result.cookies.getAll().forEach((cookie) => {
+      request.cookies.set(cookie);
     });
   }
 
@@ -156,19 +163,24 @@ async function executeGlobalMiddleware(
         event,
         context,
       );
-      if (result && isRedirect(result)) {
-        request.headers.set(
-          'x-redirect-url',
-          result.headers.get('location') ?? '',
-        );
+
+      if (result) {
         if (result instanceof NextResponse) {
           result.cookies.getAll().forEach((cookie) => {
             request.cookies.set(cookie);
           });
         }
-        return result;
+
+        if (isRedirect(result)) {
+          request.headers.set(
+            'x-redirect-url',
+            result.headers.get('location') ?? '',
+          );
+          return result;
+        }
+
+        currentResponse = result;
       }
-      currentResponse = result;
     }
   }
   return null;
@@ -186,10 +198,9 @@ function handleMiddlewareRedirect(
 
   if (redirectUrl) {
     const redirectResponse = NextResponse.redirect(redirectUrl, {
-      headers: request.headers, // Transfer original headers to the redirect response
+      headers: request.headers,
     });
 
-    // Copy cookies from the original request to the redirect response
     request.cookies.getAll().forEach((cookie) => {
       redirectResponse.cookies.set(cookie);
     });

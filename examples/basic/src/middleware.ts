@@ -6,7 +6,7 @@ import {
 import { NextResponse } from 'next/server';
 
 const middlewares = {
-  '/page1/:path*': [
+  '/page1{/:path}?': [
     async ({ request }: MiddlewareFunctionProps): Promise<NextResponse> => {
       const response = NextResponse.next();
       console.log('Middleware for /page1', request.nextUrl.pathname);
