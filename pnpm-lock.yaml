@@ -292,11 +292,17 @@ importers:
   packages/next-easy-middlewares:
     dependencies:
       next:
-        specifier: '>=13'
-        version: 14.2.5(@babel/core@7.24.3)(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0)
+        specifier: '>=13.1.0 || rc'
+        version: 14.2.5(@babel/core@7.24.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       path-to-regexp:
         specifier: ^7.1.0
         version: 7.1.0
+      react:
+        specifier: ^18.2.0 || rc
+        version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0 || rc
+        version: 18.2.0(react@18.2.0)
     devDependencies:
       '@swc/core':
         specifier: ^1.5.24
@@ -313,9 +319,6 @@ importers:
       eslint:
         specifier: ^8
         version: 8.57.0
-      react:
-        specifier: 19.0.0-rc.0
-        version: 19.0.0-rc.0
       tsup:
         specifier: ^8.1.0
         version: 8.2.3(@swc/core@1.7.3(@swc/helpers@0.5.12))(jiti@1.21.6)(postcss@8.4.40)(typescript@5.5.4)
@@ -13125,31 +13128,6 @@ snapshots:
       - '@babel/core'
       - babel-plugin-macros
 
-  next@14.2.5(@babel/core@7.24.3)(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0):
-    dependencies:
-      '@next/env': 14.2.5
-      '@swc/helpers': 0.5.5
-      busboy: 1.6.0
-      caniuse-lite: 1.0.30001641
-      graceful-fs: 4.2.11
-      postcss: 8.4.31
-      react: 19.0.0-rc.0
-      react-dom: 19.0.0-rc.0(react@19.0.0-rc.0)
-      styled-jsx: 5.1.1(@babel/core@7.24.3)(react@19.0.0-rc.0)
-    optionalDependencies:
-      '@next/swc-darwin-arm64': 14.2.5
-      '@next/swc-darwin-x64': 14.2.5
-      '@next/swc-linux-arm64-gnu': 14.2.5
-      '@next/swc-linux-arm64-musl': 14.2.5
-      '@next/swc-linux-x64-gnu': 14.2.5
-      '@next/swc-linux-x64-musl': 14.2.5
-      '@next/swc-win32-arm64-msvc': 14.2.5
-      '@next/swc-win32-ia32-msvc': 14.2.5
-      '@next/swc-win32-x64-msvc': 14.2.5
-    transitivePeerDependencies:
-      - '@babel/core'
-      - babel-plugin-macros
-
   next@15.0.0-rc.0(@babel/core@7.24.3)(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0):
     dependencies:
       '@next/env': 15.0.0-rc.0
@@ -14074,13 +14052,6 @@ snapshots:
     dependencies:
       client-only: 0.0.1
       react: 18.2.0
-    optionalDependencies:
-      '@babel/core': 7.24.3
-
-  styled-jsx@5.1.1(@babel/core@7.24.3)(react@19.0.0-rc.0):
-    dependencies:
-      client-only: 0.0.1
-      react: 19.0.0-rc.0
     optionalDependencies:
       '@babel/core': 7.24.3
 

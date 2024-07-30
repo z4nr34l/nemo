@@ -1,11 +1,6 @@
 import { type NextFetchEvent, NextRequest, NextResponse } from 'next/server';
 import { pathToRegexp } from 'path-to-regexp';
 
-export type CustomMiddleware = (
-  request: NextRequest,
-  ...args: unknown[]
-) => NextResponse | Response | Promise<NextResponse | Response>;
-
 export type NextMiddleware = (
   request: NextRequest,
   event: NextFetchEvent,
@@ -17,13 +12,7 @@ export type MiddlewareFunction = (
   event: NextFetchEvent,
 ) => NextResponse | Response | Promise<NextResponse | Response>;
 
-export type MiddlewareConfig = Record<
-  string,
-  | MiddlewareFunction
-  | CustomMiddleware
-  | MiddlewareFunction[]
-  | CustomMiddleware[]
->;
+export type MiddlewareConfig = Record<string, MiddlewareFunction>;
 
 export function createMiddleware(
   pathMiddlewareMap: MiddlewareConfig,

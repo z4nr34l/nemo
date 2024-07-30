@@ -38,12 +38,13 @@
     "@types/react": "^18.3.3",
     "@vercel/style-guide": "^6.0.0",
     "eslint": "^8",
-    "react": "19.0.0-rc.0",
     "tsup": "^8.1.0",
     "typescript": "^5.4.5"
   },
   "peerDependencies": {
-    "next": ">=13"
+    "next": ">=13.1.0 || rc",
+    "react": "^18.2.0 || rc",
+    "react-dom": "^18.2.0 || rc"
   },
   "publishConfig": {
     "provenance": true
