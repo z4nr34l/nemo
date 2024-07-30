@@ -30,7 +30,9 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "readme.md",
+    "package.json"
   ],
   "scripts": {
     "build": "tsup",
