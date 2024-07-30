@@ -19,6 +19,6 @@ jobs:
         run: pnpm install
 
       - name: Build
-        run: pnpm build
+        run: pnpm build --filter next-easy-middlewares
 
       - run: pnpx pkg-pr-new publish "./packages/next-easy-middlewares"
