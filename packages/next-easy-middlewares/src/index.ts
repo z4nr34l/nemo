@@ -8,7 +8,7 @@ export type NextMiddleware = (
 
 export interface MiddlewareFunctionProps {
   request: NextRequest;
-  response: NextResponse | Response | null;
+  response: NextResponse | Response;
   context: Map<string, unknown>;
   event: NextFetchEvent;
 }
@@ -33,7 +33,7 @@ export function createMiddleware(
     event: NextFetchEvent,
   ): Promise<NextResponse | Response> => {
     const path = request.nextUrl.pathname || '/';
-    let response: NextResponse | Response | null = null;
+    let response: NextResponse | Response = NextResponse.next();
 
     const beforeResult = await executeGlobalMiddleware(
       'before',
@@ -78,10 +78,10 @@ export function createMiddleware(
 async function executePathMiddleware(
   request: NextRequest,
   middlewareFunctions: MiddlewareFunction | MiddlewareFunction[],
-  initialResponse: NextResponse | Response | null,
+  initialResponse: NextResponse | Response,
   event: NextFetchEvent,
   context: Map<string, unknown>,
-): Promise<NextResponse | Response | null> {
+): Promise<NextResponse | Response> {
   if (!Array.isArray(middlewareFunctions)) {
     // eslint-disable-next-line no-param-reassign -- Allow reassignment for type compatibility
     middlewareFunctions = [middlewareFunctions];
@@ -107,54 +107,20 @@ async function executePathMiddleware(
   return response;
 }
 
-async function executeMiddleware(
-  request: NextRequest,
-  middleware: MiddlewareFunction,
-  currentResponse: NextResponse | Response | null,
-  event: NextFetchEvent,
-  context: Map<string, unknown>,
-): Promise<NextResponse | Response | null> {
-  const result = await middleware({
-    request,
-    response: currentResponse,
-    event,
-    context,
-  });
-
-  if (currentResponse) {
-    currentResponse.headers.forEach((value, key) => {
-      result.headers.set(key, value);
-    });
-  }
-
-  if (result instanceof NextResponse) {
-    result.cookies.getAll().forEach((cookie) => {
-      request.cookies.set(cookie);
-    });
-  }
-
-  if (isRedirect(result)) {
-    request.headers.set('x-redirect-url', result.headers.get('location') ?? '');
-    return result;
-  }
-
-  return result;
-}
-
 async function executeGlobalMiddleware(
   type: 'before' | 'after',
   request: NextRequest,
   event: NextFetchEvent,
   context: Map<string, unknown>,
   globalMiddleware?: Record<string, MiddlewareFunction | MiddlewareFunction[]>,
-): Promise<NextResponse | Response | null> {
+): Promise<NextResponse | Response> {
   const globalMiddlewareFns = globalMiddleware?.[type];
   if (globalMiddlewareFns) {
     const middlewareFunctions = Array.isArray(globalMiddlewareFns)
       ? globalMiddlewareFns
       : [globalMiddlewareFns];
 
-    let currentResponse: NextResponse | Response | null = null;
+    let currentResponse: NextResponse | Response = NextResponse.next();
 
     for (const middleware of middlewareFunctions) {
       const result = await executeMiddleware(
@@ -184,7 +150,41 @@ async function executeGlobalMiddleware(
       }
     }
   }
-  return null;
+  return NextResponse.next();
+}
+
+async function executeMiddleware(
+  request: NextRequest,
+  middleware: MiddlewareFunction,
+  currentResponse: NextResponse | Response,
+  event: NextFetchEvent,
+  context: Map<string, unknown>,
+): Promise<NextResponse | Response | null> {
+  const result = await middleware({
+    request,
+    response: currentResponse,
+    event,
+    context,
+  });
+
+  if (currentResponse) {
+    currentResponse.headers.forEach((value, key) => {
+      result.headers.set(key, value);
+    });
+  }
+
+  if (result instanceof NextResponse) {
+    result.cookies.getAll().forEach((cookie) => {
+      request.cookies.set(cookie);
+    });
+  }
+
+  if (isRedirect(result)) {
+    request.headers.set('x-redirect-url', result.headers.get('location') ?? '');
+    return result;
+  }
+
+  return result;
 }
 
 function matchesPath(pattern: string, path: string): boolean {
