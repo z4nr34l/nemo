@@ -133,7 +133,8 @@ async function executeMiddleware(
     });
   }
 
-  if (isRedirect(result) || result.status >= 400) {
+  if (isRedirect(result)) {
+    request.headers.set('x-redirect-url', result.headers.get('location') ?? '');
     return result;
   }
 
