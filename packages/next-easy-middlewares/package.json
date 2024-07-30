@@ -23,7 +23,8 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./readme.md": "./readme.md"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
