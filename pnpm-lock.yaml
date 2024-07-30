@@ -292,16 +292,16 @@ importers:
   packages/next-easy-middlewares:
     dependencies:
       next:
-        specifier: '>=13.1.0 || rc'
+        specifier: '>=13.1.0 || ^15.0.0'
         version: 14.2.5(@babel/core@7.24.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       path-to-regexp:
         specifier: ^7.1.0
         version: 7.1.0
       react:
-        specifier: ^18.2.0 || rc
+        specifier: ^18.2.0 || ^19.0.0
         version: 18.2.0
       react-dom:
-        specifier: ^18.2.0 || rc
+        specifier: ^18.2.0 || ^19.0.0
         version: 18.2.0(react@18.2.0)
     devDependencies:
       '@swc/core':
