@@ -6,18 +6,28 @@ export type NextMiddleware = (
   event: NextFetchEvent,
 ) => Response | NextResponse | Promise<Response | NextResponse>;
 
+export interface MiddlewareFunctionProps {
+  request: NextRequest;
+  response: NextResponse | Response | null;
+  context: Map<string, unknown>;
+  event: NextFetchEvent;
+}
+
 export type MiddlewareFunction = (
-  request: NextRequest,
-  response: NextResponse | Response | null,
-  event: NextFetchEvent,
+  props: MiddlewareFunctionProps,
 ) => NextResponse | Response | Promise<NextResponse | Response>;
 
-export type MiddlewareConfig = Record<string, MiddlewareFunction>;
+export type MiddlewareConfig = Record<
+  string,
+  MiddlewareFunction | MiddlewareFunction[]
+>;
 
 export function createMiddleware(
   pathMiddlewareMap: MiddlewareConfig,
-  globalMiddleware?: Record<string, MiddlewareFunction>,
+  globalMiddleware?: Record<string, MiddlewareFunction | MiddlewareFunction[]>,
 ): NextMiddleware {
+  const context = new Map<string, unknown>();
+
   return async (
     request: NextRequest,
     event: NextFetchEvent,
@@ -29,6 +39,7 @@ export function createMiddleware(
       'before',
       request,
       event,
+      context,
       globalMiddleware,
     );
     if (beforeResult) {
@@ -44,6 +55,7 @@ export function createMiddleware(
           middlewareFunctions,
           response,
           event,
+          context,
         );
       }
     }
@@ -52,6 +64,7 @@ export function createMiddleware(
       'after',
       request,
       event,
+      context,
       globalMiddleware,
     );
     if (afterResult) {
@@ -67,6 +80,7 @@ async function executePathMiddleware(
   middlewareFunctions: MiddlewareFunction | MiddlewareFunction[],
   initialResponse: NextResponse | Response | null,
   event: NextFetchEvent,
+  context: Map<string, unknown>,
 ): Promise<NextResponse | Response | null> {
   if (!Array.isArray(middlewareFunctions)) {
     // eslint-disable-next-line no-param-reassign -- need to update function signature
@@ -81,6 +95,7 @@ async function executePathMiddleware(
       middleware,
       response,
       event,
+      context,
     );
     if (result) {
       // eslint-disable-next-line no-param-reassign -- need to update function signature
@@ -96,8 +111,14 @@ async function executeMiddleware(
   middleware: MiddlewareFunction,
   currentResponse: NextResponse | Response | null,
   event: NextFetchEvent,
+  context: Map<string, unknown>,
 ): Promise<NextResponse | Response | null> {
-  const result = await middleware(request, currentResponse, event);
+  const result = await middleware({
+    request,
+    response: currentResponse,
+    event,
+    context,
+  });
 
   if (currentResponse) {
     currentResponse.headers.forEach((value, key) => {
@@ -116,27 +137,38 @@ async function executeGlobalMiddleware(
   type: 'before' | 'after',
   request: NextRequest,
   event: NextFetchEvent,
-  globalMiddleware?: Record<string, MiddlewareFunction>,
+  context: Map<string, unknown>,
+  globalMiddleware?: Record<string, MiddlewareFunction | MiddlewareFunction[]>,
 ): Promise<NextResponse | Response | null> {
-  const globalMiddlewareFn = globalMiddleware?.[type];
-  if (globalMiddlewareFn) {
-    const result = await executeMiddleware(
-      request,
-      globalMiddlewareFn,
-      null,
-      event,
-    );
-    if (result && isRedirect(result)) {
-      request.headers.set(
-        'x-redirect-url',
-        result.headers.get('location') ?? '',
+  const globalMiddlewareFns = globalMiddleware?.[type];
+  if (globalMiddlewareFns) {
+    const middlewareFunctions = Array.isArray(globalMiddlewareFns)
+      ? globalMiddlewareFns
+      : [globalMiddlewareFns];
+
+    let currentResponse: NextResponse | Response | null = null;
+
+    for (const middleware of middlewareFunctions) {
+      const result = await executeMiddleware(
+        request,
+        middleware,
+        currentResponse,
+        event,
+        context,
       );
-      if (result instanceof NextResponse) {
-        result.cookies.getAll().forEach((cookie) => {
-          request.cookies.set(cookie);
-        });
+      if (result && isRedirect(result)) {
+        request.headers.set(
+          'x-redirect-url',
+          result.headers.get('location') ?? '',
+        );
+        if (result instanceof NextResponse) {
+          result.cookies.getAll().forEach((cookie) => {
+            request.cookies.set(cookie);
+          });
+        }
+        return result;
       }
-      return result;
+      currentResponse = result;
     }
   }
   return null;
