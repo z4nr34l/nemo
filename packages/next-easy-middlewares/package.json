@@ -24,10 +24,10 @@
       "default": "./dist/index.js"
     },
     "./package.json": "./package.json",
-    "./readme.md": "./readme.md"
+    "./README.md": "./README.md",
+    "./CHANGELOG.md": "./CHANGELOG.md"
   },
   "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
