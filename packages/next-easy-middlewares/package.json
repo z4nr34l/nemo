@@ -16,7 +16,6 @@
   "repository": "https://github.com/z4nr34l/next-easy-middlewares",
   "license": "MIT",
   "author": "Z4NR34L <software@zanreal.net>",
-  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
