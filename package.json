@@ -41,5 +41,10 @@
   "packageManager": "pnpm@9.5.0",
   "publishConfig": {
     "provenance": true
+  },
+  "pnpm": {
+    "overrides": {
+      "eslint": "^8"
+    }
   }
 }

@@ -1,9 +1,15 @@
-import createMiddleware from 'next-easy-middlewares';
-import { type NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import {
+  createMiddleware,
+  type MiddlewareConfig,
+  type MiddlewareFunctionProps,
+} from 'next-easy-middlewares';
 
 const middlewares = {
   '/': [
-    async (request: NextRequest) => {
+    async () => {
+      console.log('middleware');
+
       const response = NextResponse.next();
 
       response.headers.set('x-test-header', 'test-value');
@@ -11,7 +17,7 @@ const middlewares = {
 
       return response;
     },
-    async (request: NextRequest) => {
+    async ({ request }: MiddlewareFunctionProps) => {
       const response = NextResponse.next();
 
       // Copy headers from the request to the response
@@ -39,7 +45,7 @@ const middlewares = {
       return response;
     },
   ],
-};
+} satisfies MiddlewareConfig;
 
 // Create middlewares helper
 export const middleware = createMiddleware(middlewares);

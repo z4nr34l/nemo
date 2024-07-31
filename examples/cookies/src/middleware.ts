@@ -1,8 +1,8 @@
-import createMiddleware from 'next-easy-middlewares';
-import { type NextRequest, NextResponse } from 'next/server';
+import { createMiddleware, type MiddlewareConfig } from 'next-easy-middlewares';
+import { NextResponse } from 'next/server';
 
 const middlewares = {
-  '/': async (request: NextRequest) => {
+  '/': async ({ request }) => {
     // Loop prevention
     if (request.nextUrl.pathname.startsWith('/demo')) {
       return NextResponse.next();
@@ -23,7 +23,7 @@ const middlewares = {
 
     return response;
   },
-};
+} satisfies MiddlewareConfig;
 
 // Create middlewares helper
 export const middleware = createMiddleware(middlewares);
