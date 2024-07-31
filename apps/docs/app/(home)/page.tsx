@@ -8,7 +8,6 @@ export default function HomePage(): ReactElement {
   return (
     <main className="px-4 xl:px-0 py-[150px]">
       <div className="relative max-w-5xl mx-auto border bg-background divide-y divide-muted">
-        {/* @ts-ignore */}
         <Hero />
 
         <div className="grid lg:grid-cols-3 bg-muted gap-px">
@@ -17,9 +16,7 @@ export default function HomePage(): ReactElement {
               <span className="text-foreground">Simplify</span> your middlewares{' '}
               <span className="text-foreground">now</span>!
             </h2>
-            {/* @ts-ignore */}
             <Link href="/docs">
-              {/* @ts-ignore */}
               <Button className="rounded-full">Get started</Button>
             </Link>
           </div>
@@ -52,9 +49,9 @@ export default function HomePage(): ReactElement {
             <div className="flex items-center justify-start gap-6">
               <Globe className="h-6 w-6 min-w-6 text-muted-foreground" />
               <div>
-                <h3 className="text-xl font-medium">Global middlewares</h3>
+                <h3 className="text-xl font-medium">Shared context</h3>
                 <p className="text-muted-foreground text-sm">
-                  Run functions before or after other middlewares
+                  Functions can share context between each other
                 </p>
               </div>
             </div>
@@ -95,12 +92,10 @@ export default function HomePage(): ReactElement {
                 missing!
               </p>
             </div>
-            {/* @ts-ignore */}
             <Link
               href="https://github.com/z4nr34l/next-easy-middlewares"
               target="_blank"
             >
-              {/* @ts-ignore */}
               <Button
                 variant="secondary"
                 size="lg"
@@ -115,9 +110,8 @@ export default function HomePage(): ReactElement {
       </div>
       <div className="relative max-w-5xl mx-auto">
         <p className="text-muted-foreground text-xs text-right">
-          Handcrafted by {/* @ts-ignore */}
+          Handcrafted by&nbsp;
           <Link href="https://www.rescale.build">
-            {/* @ts-ignore */}
             <Button variant="link" className="p-0">
               Rescale
             </Button>
