@@ -1,11 +1,11 @@
 import './global.css';
-import { RootProvider } from 'next-docs-ui/provider';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { Viewport } from 'next';
 import { Analytics } from '@vercel/analytics/react';
+import Provider from '@/app/components/provider';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -26,8 +26,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       )}
     >
       <body>
-        {/* @ts-ignore */}
-        <RootProvider>{children}</RootProvider>
+        <Provider>{children}</Provider>
         <Analytics />
       </body>
     </html>
