@@ -38,6 +38,7 @@ export function createMiddleware(
     const beforeResult = await executeGlobalMiddleware(
       'before',
       request,
+      response,
       event,
       context,
       globalMiddleware,
@@ -52,8 +53,8 @@ export function createMiddleware(
       if (matchesPath(key, path)) {
         response = await executePathMiddleware(
           request,
-          middlewareFunctions,
           response,
+          middlewareFunctions,
           event,
           context,
         );
@@ -63,6 +64,7 @@ export function createMiddleware(
     const afterResult = await executeGlobalMiddleware(
       'after',
       request,
+      response,
       event,
       context,
       globalMiddleware,
@@ -77,8 +79,8 @@ export function createMiddleware(
 
 async function executePathMiddleware(
   request: NextRequest,
+  response: NextResponse | Response,
   middlewareFunctions: MiddlewareFunction | MiddlewareFunction[],
-  initialResponse: NextResponse | Response,
   event: NextFetchEvent,
   context: Map<string, unknown>,
 ): Promise<NextResponse | Response> {
@@ -86,8 +88,6 @@ async function executePathMiddleware(
     // eslint-disable-next-line no-param-reassign -- Allow reassignment for type compatibility
     middlewareFunctions = [middlewareFunctions];
   }
-
-  let response = initialResponse;
 
   for (const middleware of middlewareFunctions) {
     const result = await executeMiddleware(
@@ -110,6 +110,7 @@ async function executePathMiddleware(
 async function executeGlobalMiddleware(
   type: 'before' | 'after',
   request: NextRequest,
+  response: NextResponse | Response,
   event: NextFetchEvent,
   context: Map<string, unknown>,
   globalMiddleware?: Record<string, MiddlewareFunction | MiddlewareFunction[]>,
@@ -120,13 +121,11 @@ async function executeGlobalMiddleware(
       ? globalMiddlewareFns
       : [globalMiddlewareFns];
 
-    let currentResponse: NextResponse | Response = NextResponse.next();
-
     for (const middleware of middlewareFunctions) {
       const result = await executeMiddleware(
         request,
         middleware,
-        currentResponse,
+        response,
         event,
         context,
       );
@@ -146,7 +145,7 @@ async function executeGlobalMiddleware(
           return result;
         }
 
-        currentResponse = result;
+        response = result as NextResponse;
       }
     }
   }
