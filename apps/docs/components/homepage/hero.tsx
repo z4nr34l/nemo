@@ -43,7 +43,7 @@ function Content() {
           />
         </div>
         <Link href="/docs">
-          <Button className="rounded-full">Get started</Button>
+          <Button className="rounded-full h-12 px-8">Get started</Button>
         </Link>
       </div>
       <div className="hidden md:block" />
