@@ -1,4 +1,6 @@
 import { CopyButton } from '@/components/copy-button';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export function Hero() {
   return (
@@ -19,7 +21,7 @@ function Content() {
       <div className="row-span-1 md:row-span-3 col-span-12" />
 
       <div className="col-span-1 md:col-span-2" />
-      <div className="col-span-8 flex flex-col items-start justify-between">
+      <div className="col-span-8 flex flex-col items-start justify-between h-full">
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">
           Next Easy Middlewares
         </h1>
@@ -30,17 +32,19 @@ function Content() {
       <div className="col-span-1 md:col-span-2" />
 
       <div className="hidden md:block md:col-span-2" />
-      <div className="col-span-12 md:col-span-8 flex flex-col items-start justify-end mt-6 md:mt-0 md:w-full h-full">
+      <div className="col-span-12 md:col-span-8 flex flex-col items-start justify-end mt-6 md:mt-0 md:w-full h-full gap-4 lg:flex-row lg:items-end lg:justify-start lg:gap-8">
         <div className="supports-[backdrop-filter]:bg-background/50 backdrop-blur-xl bg-background pr-4 pl-6 py-2 border rounded-full flex items-center justify-center gap-x-4 w-full md:w-auto">
           <code>
             <pre>bun add next-easy-middlewares</pre>
           </code>
-          {/* @ts-ignore */}
           <CopyButton
             value="bun add next-easy-middlewares"
             className="relative top-0 right-0"
           />
         </div>
+        <Link href="/docs">
+          <Button className="rounded-full">Get started</Button>
+        </Link>
       </div>
       <div className="hidden md:block" />
     </div>

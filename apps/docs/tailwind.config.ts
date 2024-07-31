@@ -1,5 +1,5 @@
 import type { Config } from 'tailwindcss';
-import { docsUi, docsUiPlugins } from 'next-docs-ui/tailwind-plugin';
+import { createPreset } from 'fumadocs-ui/tailwind-plugin';
 
 const config = {
   darkMode: ['class'],
@@ -8,8 +8,8 @@ const config = {
     './app/**/*.{ts,tsx}',
     './content/**/*.{md,mdx}',
     './mdx-components.{ts,tsx}',
-    './node_modules/next-docs-ui/dist/**/*.js',
-    '../../node_modules/next-docs-ui/dist/**/*.js',
+    './node_modules/fumadocs-ui/dist/**/*.js',
+    '../../node_modules/fumadocs-ui/dist/**/*.js',
   ],
   prefix: '',
   theme: {
@@ -85,7 +85,8 @@ const config = {
       },
     },
   },
-  plugins: [...docsUiPlugins, docsUi, require('tailwindcss-animate')],
+  plugins: [require('tailwindcss-animate')],
+  presets: [createPreset()],
 } satisfies Config;
 
 export default config;
