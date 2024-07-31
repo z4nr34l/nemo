@@ -4,7 +4,7 @@ import { createMDXSource, defaultSchemas } from 'fumadocs-mdx';
 import { icons } from 'lucide-react';
 import { z } from 'zod';
 import { map } from './../.map';
-import { create } from './components/icon';
+import { create } from '@/components/icon';
 
 export const docs = loader({
   baseUrl: '/docs',

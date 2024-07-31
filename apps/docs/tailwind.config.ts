@@ -8,8 +8,8 @@ const config = {
     './app/**/*.{ts,tsx}',
     './content/**/*.{md,mdx}',
     './mdx-components.{ts,tsx}',
-    './node_modules/next-docs-ui/dist/**/*.js',
-    '../../node_modules/next-docs-ui/dist/**/*.js',
+    './node_modules/fumadocs-ui/dist/**/*.js',
+    '../../node_modules/fumadocs-ui/dist/**/*.js',
   ],
   prefix: '',
   theme: {

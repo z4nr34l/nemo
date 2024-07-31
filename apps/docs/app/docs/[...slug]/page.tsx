@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { type ReactNode } from 'react';
 import { docs } from '@/app/source';
-import { PageView } from '@/app/components/page-view';
+import { PageView } from '@/components/ui/page-view';
 
 export const dynamicParams = false;
 export const dynamic = 'force-static';

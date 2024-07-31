@@ -1,6 +1,5 @@
 import { type ReactElement } from 'react';
 import { DocsBody, DocsPage } from 'fumadocs-ui/page';
-import { RollButton } from 'fumadocs-ui/components/roll-button';
 import { notFound } from 'next/navigation';
 import { docs } from '@/app/source';
 
@@ -25,7 +24,6 @@ export function PageView({
       lastUpdate={page.data.exports.lastModified}
       full={page.data.full}
     >
-      <RollButton />
       <DocsBody className="dark:prose-invert">
         <h1 className="text-3xl font-bold text-foreground sm:text-4xl">
           {page.data.title}

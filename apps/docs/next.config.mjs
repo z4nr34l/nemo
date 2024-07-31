@@ -11,14 +11,18 @@ import {
 } from 'fumadocs-docgen';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-import { transformerTwoslash } from 'fumadocs-twoslash';
+import {
+  transformerNotationDiff,
+  transformerNotationHighlight,
+} from '@shikijs/transformers';
 
 const withMDX = createMDX({
   mdxOptions: {
     rehypeCodeOptions: {
       transformers: [
         ...rehypeCodeDefaultOptions.transformers,
-        transformerTwoslash(),
+        transformerNotationHighlight(),
+        transformerNotationDiff(),
         {
           name: 'fumadocs:remove-escape',
           code(element) {

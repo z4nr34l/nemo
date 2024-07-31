@@ -1,67 +1,132 @@
 ---
 title: Getting Started
 description: Getting started with Next Easy Middlewares
+icon: Book
 ---
 
+import {Tab, Tabs} from 'fumadocs-ui/components/tabs';
+import {Step, Steps} from 'fumadocs-ui/components/steps';
 
+## Installation
 
-import {Tab, Tabs} from 'next-docs-ui/components/tabs';
+<Steps>
+  <Step>
+    ### Paste installation command into your terminal to install package.
+
+    <Tabs items={['Bun', 'PNPM', 'NPM', 'Yarn']}>
+      <Tab value="Bun">
+        ```bash title="Terminal"
+        bun add next-easy-middlewares
+        ```
+      </Tab>
+      <Tab value="PNPM">
+        ```bash title="Terminal"
+        pnpm add next-easy-middlewares
+        ```
+      </Tab>
+      <Tab value="NPM">
+        ```bash title="Terminal"
+        npm install next-easy-middlewares
+        ```
+      </Tab>
+      <Tab value="Yarn">
+        ```bash title="Terminal"
+        yarn add next-easy-middlewares
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+  <Step>
+    ### Import the package inside middleware.ts file.
+
+    (or create it if you don't have one yet)
+
+    ```typescript title="middleware.ts"
+    import { createMiddleware } from 'next-easy-middlewares';  // [!code ++]
+
+    // [...]
+    ```
+  </Step>
+  <Step>
+    ### Use the createMiddleware function to create a middleware helper.
+
+    ```typescript title="middleware.ts"
+    import { createMiddleware } from 'next-easy-middlewares';
+
+    export const middleware = createMiddleware(/* your functions will go here */); // [!code ++]
+
+    // [...]
+    ```
+  </Step>
+  <Step>
+    ### Define your middlewares config and update the createMiddleware function parameters.
+
+    ```typescript title="middleware.ts"
+    import { createMiddleware } from 'next-easy-middlewares'; // [!code --]
+    import { createMiddleware, type MiddlewareFunctionProps } from 'next-easy-middlewares'; // [!code ++]
+
+    const middlewares = { // [!code ++]
+      '/': [ // [!code ++]
+        async ({request, response}: MiddlewareFunctionProps) => { // [!code ++]
+          console.log('Hello from next-easy-middlewares', request.nextUrl.pathname); // [!code ++]
+          return response; // [!code ++]
+        }, // [!code ++]
+      ], // [!code ++]
+    }; // [!code ++]
+
+    export const middleware = createMiddleware(/* your functions will go here */); // [!code --]
+    export const middleware = createMiddleware(middlewares); // [!code ++]
+
+    // [...]
+    ```
+
+    After that step, you should see an `Hello from next-easy-middlewares` message in your console for every request made to your application.
+  </Step>
+  <Step>
+    ### Optimize your middleware execution to not execute it on every signle request.
+
+    ```typescript title="middleware.ts"
+    // [...]
+
+    export const config = { // [!code ++]
+      matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'], // [!code ++]
+    }; // [!code ++]
+    ```
+
+    That will prevent your middleware from executing on routes:
+    1. `/_next/` (Next.js internals)
+    2. `/_static` (inside /public)
+    3. `/_vercel` (Vercel internals)
+    4. Static files (e.g. `/favicon.ico`, `/sitemap.xml`, `/robots.txt`, etc.)
+  </Step>
+  <Step>
+    ### Finally, let's put it all together.
+
+    ```typescript title="middleware.ts"
+    import { createMiddleware, type MiddlewareFunctionProps } from 'next-easy-middlewares';
+
+    const middlewares = {
+      '/': [
+        async ({request, response}: MiddlewareFunctionProps) => {
+          console.log('Hello from next-easy-middlewares', request.nextUrl.pathname);
+          return response;
+        },
+      ],
+    };
+
+    export const middleware = createMiddleware(middlewares);
+
+    export const config = {
+      matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+    };
+    ```
+
+    That's how should your `middleware.ts` file looks like after all steps.
+  </Step>
+</Steps>
 
 ## Motivation
 
 I'm working with Next.js project for a few years now, after Vercel moved multiple `/**/_middleware.ts` files to a single `/middleware.ts` file, there was a unfilled gap - but just for now. After a 2023 retro I had found that there is no good solution for that problem, so I took matters into my own hands. I wanted to share that motivation with everyone here, as I think that we all need to remember how it all started.
 
 Hope it will save you some time and would make your project DX better!
-
-## Installation
-
-Paste installation command into your terminal to install package.
-
-<Tabs items={['Bun', 'PNPM', 'NPM', 'Yarn']}>
-  <Tab value="Bun">
-    ```bash
-    bun add next-easy-middlewares
-    ```
-  </Tab>
-  <Tab value="PNPM">
-    ```bash
-    pnpm add next-easy-middlewares
-    ```
-  </Tab>
-  <Tab value="NPM">
-    ```bash
-    npm install next-easy-middlewares
-    ```
-  </Tab>
-  <Tab value="Yarn">
-    ```bash
-    yarn add next-easy-middlewares
-    ```
-  </Tab>
-</Tabs>
-
-## Basic usage
-
-```typescript title="middleware.ts" {1, 5,9}
-import { createMiddleware } from 'next-easy-middlewares';
-import { type NextRequest, NextResponse } from 'next/server';
-
-const middlewares = {
-  // define your middlewares here...
-};
-
-// Create middlewares helper
-export const middleware = createMiddleware(middlewares);
-
-export const config = {
-  /*
-   * Match all paths except for:
-   * 1. /api/ routes
-   * 2. /_next/ (Next.js internals)
-   * 3. /_static (inside /public)
-   * 4. /_vercel (Vercel internals)
-   * 5. Static files (e.g. /favicon.ico, /sitemap.xml, /robots.txt, etc.)
-   */
-  matcher: ['/((?!api/|_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
-};
-```

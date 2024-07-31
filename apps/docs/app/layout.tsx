@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { Viewport } from 'next';
 import { Analytics } from '@vercel/analytics/react';
-import Provider from '@/app/components/provider';
+import Provider from '@/components/provider';
 
 export const viewport: Viewport = {
   width: 'device-width',
