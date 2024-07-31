@@ -27,7 +27,6 @@ export function createMiddleware(
   globalMiddleware?: Record<string, MiddlewareFunction | MiddlewareFunction[]>,
 ): NextMiddleware {
   const context = new Map<string, unknown>();
-  let response: NextResponse = NextResponse.next();
 
   return async (
     request: NextRequest,
@@ -64,6 +63,8 @@ export function createMiddleware(
       ...afterGlobalMiddleware.flat(),
     ];
 
+    let response: NextResponse = NextResponse.next();
+
     for (const middleware of allMiddlewareFunctions) {
       response = await executeMiddleware(
         request,
@@ -72,10 +73,11 @@ export function createMiddleware(
         event,
         context,
       );
+
       request = updateRequestWithResponse(request, response);
     }
 
-    return response ?? NextResponse.next();
+    return response;
   };
 }
 
