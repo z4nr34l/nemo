@@ -159,7 +159,7 @@ async function executeMiddleware(
   currentResponse: NextResponse | Response,
   event: NextFetchEvent,
   context: Map<string, unknown>,
-): Promise<NextResponse | Response | null> {
+): Promise<NextResponse | Response> {
   const result = await middleware({
     request,
     response: currentResponse,
@@ -212,7 +212,7 @@ function handleMiddlewareRedirect(
   return response;
 }
 
-function isRedirect(response: NextResponse | Response | null): boolean {
+function isRedirect(response: NextResponse | Response): boolean {
   return Boolean(
     response && [301, 302, 303, 307, 308].includes(response.status),
   );
