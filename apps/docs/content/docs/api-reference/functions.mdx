@@ -15,7 +15,7 @@ This example shows all props that are provided for your usage.
 ```ts title="Function definition"
 import {type MiddlewareFunctionProps} from "next-easy-middlewares";
 
-async ({request, response, context, event}: MiddlewareFunctionProps) => { // [!code focus]
+async ({request, response, context, event}: MiddlewareFunctionProps) => {
   return response
 }
 ```
@@ -39,7 +39,7 @@ async ({request, response, context, event}: MiddlewareFunctionProps) => { // [!c
 
 ### Explanation
 
-#### `request`
+#### Prop: `request`
 
 Type: [NextRequest](https://nextjs.org/docs/app/api-reference/functions/next-request)
 
@@ -47,21 +47,23 @@ That's a user middleware's request passed to function, which can be later **upda
 
 For example in case of authorization processes or custom headers/cookies management this prop can differ from its entry form.
 
-#### `response`
+#### Prop: `response`
 
 Type: [NextResponse](https://nextjs.org/docs/app/api-reference/functions/next-response)
 
 This property contains `NextResponse.next()` (only for first executed function in chain), which can be **updated** by other functions in chain.
 
-#### `context`
+#### Prop: `context`
 
 Type: [Map\<string, unknown\>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
 
 This property contains context shared across whole execution chain for every function.
 
-If you want to know more about Map interface usage please refer to these [docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map).
+<Callout>
+  If you want to know more about Map interface usage please refer to these [docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map).
+</Callout>
 
-#### `event`
+#### Prop: `event`
 
 Type: [NextFetchEvent](https://rc.nextjs.org/docs/app/building-your-application/routing/middleware#waituntil-and-nextfetchevent)
 
