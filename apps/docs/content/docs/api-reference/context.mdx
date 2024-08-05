@@ -13,6 +13,10 @@ It also has a big impact on the performance of the application. By sharing data 
 
 Below you can see an example of how to use the shared context in your middleware functions.
 
+<Callout type="warn">
+  Remember that each request's middleware execution is a separate event instance, so the context is not shared between different requests.
+</Callout>
+
 ```ts title="_middleware.ts"
 async ({request, response, context, event}: MiddlewareFunctionProps) => {
   if(!context.has('user')) { // [!code highlight]
@@ -38,7 +42,3 @@ async ({request, response, context, event}: MiddlewareFunctionProps) => {
 In this example, we are using the shared context to store the user data. We are checking if the user data is already stored in the context. If not, we are fetching the user data and storing it in the context. Then we are using the user data to set a custom header in the response object.
 
 By using the shared context, we can avoid fetching the user data multiple times in the same request, which can improve the performance of the application. We can also share the user data between multiple functions in the execution chain, which can make the code more maintainable and easier to understand.
-
-<Callout type="warn">
-  Remember that each request's middleware execution is a separate event instance, so the context is not shared between different requests.
-</Callout>
