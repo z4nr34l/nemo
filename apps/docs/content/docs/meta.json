@@ -1,14 +1,5 @@
 {
   "title": "Docs",
   "root": true,
-  "pages": [
-    "index",
-    "...",
-    "---API Reference---",
-    "...api-reference",
-    "---Matchers---",
-    "...matchers",
-    "---Examples---",
-    "...examples"
-  ]
+  "pages": ["index", "...", "---API Reference---", "...api-reference"]
 }
