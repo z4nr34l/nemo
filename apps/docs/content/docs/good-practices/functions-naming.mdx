@@ -1,0 +1,30 @@
+---
+title: Functions naming
+description: Naming conventions for middleware functions
+icon: SquareFunction
+---
+
+Avoid using the default `middleware` name or prefix/suffix for your functions. Instead, use a more descriptive name that reflects the purpose of the function. This will make your code easier to understand and maintain.
+
+## Proposal
+
+```ts title="/app/(internal)/_middleware.ts" /internal/
+export const internal = async ({ response }: MiddlewareFunctionProps) => {
+  // function body
+  return response
+}
+```
+
+```ts title="/app/(team)/t/_middleware.ts" /team/
+export const team = async ({ response }: MiddlewareFunctionProps) => {
+  // function body
+  return response
+}
+```
+
+```ts title="/app/_middleware.ts" /analytics/
+export const analytics = async ({ response }: MiddlewareFunctionProps) => {
+  // function body
+  return response
+}
+```

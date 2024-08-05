@@ -20,7 +20,7 @@ Below you can see an example of how to use the shared context in your middleware
 </Callout>
 
 ```ts title="_middleware.ts"
-async ({request, response, context, event}: MiddlewareFunctionProps) => {
+async ({ request, response, context, event }: MiddlewareFunctionProps) => {
   let user = undefined;
 
   if(!context.has('user')) { // [!code highlight]
@@ -31,11 +31,7 @@ async ({request, response, context, event}: MiddlewareFunctionProps) => {
   }
 
   if(!user) {
-    return NextResponse.json({
-        message: 'Unauthorized'
-      }, {
-        status: 401
-      });
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   } else {
     response.headers.set('x-user-id', user.id);
     return response
