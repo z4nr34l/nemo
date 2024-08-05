@@ -1,4 +1,5 @@
 import './global.css';
+import 'fumadocs-ui/twoslash.css';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import type { ReactNode } from 'react';

@@ -4,6 +4,8 @@
   "pages": [
     "index",
     "...",
+    "---API Reference---",
+    "...api-reference",
     "---Matchers---",
     "...matchers",
     "---Examples---",
