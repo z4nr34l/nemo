@@ -20,6 +20,13 @@ async ({request, response, context, event}: MiddlewareFunctionProps) => {
 }
 ```
 
+```json doc-gen:typescript
+{
+  "file": "./types/index.d.ts",
+  "name": "MiddlewareFunctionProps"
+}
+```
+
 <Callout>
   Every function should return an response object (pass from props or return custom).
 </Callout>
@@ -27,15 +34,6 @@ async ({request, response, context, event}: MiddlewareFunctionProps) => {
 <Callout type="warn">
   Response object should be compatible with [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) or [NextResponse](https://nextjs.org/docs/app/api-reference/functions/next-response) interface
 </Callout>
-
-#### Types
-
-```json doc-gen:typescript
-{
-  "file": "./types/index.d.ts",
-  "name": "MiddlewareFunctionProps"
-}
-```
 
 ### Explanation
 
