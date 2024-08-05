@@ -4,6 +4,9 @@ description: Naming conventions for middleware functions
 icon: SquareFunction
 ---
 
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { FolderIcon } from "lucide-react";
+
 Avoid using the default `middleware` name or prefix/suffix for your functions. Instead, use a more descriptive name that reflects the purpose of the function. This will make your code easier to understand and maintain.
 
 ## Proposal
@@ -28,3 +31,9 @@ export const analytics = async ({ response }: MiddlewareFunctionProps) => {
   return response
 }
 ```
+
+### Related topics
+
+<Cards>
+  <Card title="Project structure" icon={<FolderIcon/>} description="How to organize middleware functions" href="/docs/good-practices/project-structure"/>
+</Cards>
