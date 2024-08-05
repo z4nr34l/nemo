@@ -74,7 +74,7 @@ export default function HomePage(): ReactElement {
                 <h3 className="text-xl font-medium">Developer Experience</h3>
                 <p className="text-muted-foreground text-sm">
                   Developers are most important to me, this package will be as
-                  easy and usefull as possible
+                  easy and useful as possible
                 </p>
               </div>
             </div>

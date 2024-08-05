@@ -5,11 +5,8 @@ import Link from 'next/link';
 export function Hero() {
   return (
     <div className="relative w-full">
-      {/* @ts-ignore */}
       <Guides />
-      {/* @ts-ignore */}
       <Globe />
-      {/* @ts-ignore */}
       <Content />
     </div>
   );

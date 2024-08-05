@@ -1,0 +1,72 @@
+---
+title: Functions
+description: Middleware functions standardization, explanation and usage
+icon: Play
+---
+
+This package introduces middleware functions standardization for more elastic approach to development and feature delivery.
+
+## Function schema
+
+This example shows all props that are provided for your usage.
+
+```ts title="_middleware.ts"
+import { type MiddlewareFunctionProps } from "next-easy-middlewares";
+
+async ({ request, response, context, event }: MiddlewareFunctionProps) => {
+  return response
+}
+```
+
+```json doc-gen:typescript
+{
+  "file": "./types/index.d.ts",
+  "name": "MiddlewareFunctionProps"
+}
+```
+
+<Callout>
+  Every function should return an response object (pass from props or return custom).
+</Callout>
+
+<Callout type="warn">
+  Response object should be compatible with [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) or [NextResponse](https://nextjs.org/docs/app/api-reference/functions/next-response) interface
+</Callout>
+
+## Explanation
+
+### Prop:&nbsp;&nbsp;`request`
+
+Type: [NextRequest](https://nextjs.org/docs/app/api-reference/functions/next-request)
+
+That's a user middleware's request passed to function, which can be later **updated** by functions in chain.
+
+For example in case of authorization processes or custom headers/cookies management this prop can differ from its entry form.
+
+### Prop:&nbsp;&nbsp;`response`
+
+Type: [NextResponse](https://nextjs.org/docs/app/api-reference/functions/next-response)
+
+This property contains `NextResponse.next()` (only for first executed function in chain), which can be **updated** by other functions in chain.
+
+### Prop:&nbsp;&nbsp;`context`
+
+Type: [Map\<string, unknown\>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
+
+This property contains context shared across whole execution chain for every function.
+
+<Callout>
+  If you want to know more about Map interface usage please refer to these [docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map).
+</Callout>
+
+### Prop:&nbsp;&nbsp;`event`
+
+Type: [NextFetchEvent](https://rc.nextjs.org/docs/app/building-your-application/routing/middleware#waituntil-and-nextfetchevent)
+
+This property contains event object for serverless functions execution.
+
+<Callout>
+  It can be used to use Next.js 15 new features like ` event.waitUntil()`.
+
+  You can read more there: [Next.js 15 waitUntil](https://rc.nextjs.org/docs/app/building-your-application/routing/middleware#waituntil-and-nextfetchevent)
+</Callout>

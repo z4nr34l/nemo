@@ -1,0 +1,46 @@
+---
+title: Shared context
+description: Shared context between functions across the execution chain
+icon: Waypoints
+---
+
+
+The shared context is a key factor in the middleware functions standardization. It helps to share data between functions, make it easier to maintain, and improve the development experience. A well-structured context can help developers to understand the codebase faster, find the data they need, and make changes more efficiently.
+
+<Callout>
+  It also has a big impact on the performance of the application. By sharing data between functions, you can avoid unnecessary data fetching and processing, which can improve the overall performance of the application.
+</Callout>
+
+## Usage
+
+Below you can see an example of how to use the shared context in your middleware functions.
+
+<Callout type="warn">
+  Remember that each request's middleware execution is a separate event instance, so the context is not shared between different requests.
+</Callout>
+
+```ts title="_middleware.ts"
+async ({ request, response, context, event }: MiddlewareFunctionProps) => {
+  let user = undefined;
+
+  if(!context.has('user')) { // [!code highlight]
+    user = await fetchUser();
+    context.set('user', user); // [!code highlight]
+  } else {
+    user = context.get('user'); // [!code highlight]
+  }
+
+  if(!user) {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  } else {
+    response.headers.set('x-user-id', user.id);
+    return response
+  }
+}
+```
+
+## Explanation
+
+In this example, we are using the shared context to store the user data. We are checking if the user data is already stored in the context. If not, we are fetching the user data and storing it in the context. Then we are using the user data to set a custom header in the response object.
+
+By using the shared context, we can avoid fetching the user data multiple times in the same request, which can improve the performance of the application. We can also share the user data between multiple functions in the execution chain, which can make the code more maintainable and easier to understand.

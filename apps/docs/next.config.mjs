@@ -12,17 +12,25 @@ import {
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import {
+  transformerMetaWordHighlight,
   transformerNotationDiff,
+  transformerNotationErrorLevel,
+  transformerNotationFocus,
   transformerNotationHighlight,
 } from '@shikijs/transformers';
+import { transformerTwoslash } from 'fumadocs-twoslash';
 
 const withMDX = createMDX({
   mdxOptions: {
     rehypeCodeOptions: {
       transformers: [
         ...rehypeCodeDefaultOptions.transformers,
+        transformerTwoslash(),
         transformerNotationHighlight(),
         transformerNotationDiff(),
+        transformerNotationFocus(),
+        transformerNotationErrorLevel(),
+        transformerMetaWordHighlight(),
         {
           name: 'fumadocs:remove-escape',
           code(element) {
