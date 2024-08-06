@@ -13,8 +13,6 @@ This package introduces middleware functions standardization for more elastic ap
 This example shows all props that are provided for your usage.
 
 ```ts title="_middleware.ts"
-import { type MiddlewareFunctionProps } from "next-easy-middlewares";
-
 async ({ request, response, context, event }: MiddlewareFunctionProps) => {
   return response
 }
