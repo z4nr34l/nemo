@@ -1,5 +1,11 @@
 # NEMO
 
+## 1.2.1
+
+### Patch Changes
+
+- 5a48796: Renamed package for easier to remember name
+
 ## 1.2.0
 
 ### Minor Changes
