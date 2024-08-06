@@ -23,6 +23,7 @@
     "next": "15.0.0-rc.0",
     "react": "19.0.0-rc-f6cce072-20240723",
     "react-dom": "19.0.0-rc-f6cce072-20240723",
+    "shiki": "^1.12.1",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.23.8"

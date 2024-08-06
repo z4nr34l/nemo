@@ -3,12 +3,15 @@ import { Hero } from '@/components/homepage/hero';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Activity, Github, Globe, Link2, PackageOpen } from 'lucide-react';
+import { Comparizon } from '@/components/homepage/comparizon';
 
 export default function HomePage(): ReactElement {
   return (
     <main className="px-4 xl:px-0 py-[150px]">
       <div className="relative max-w-5xl mx-auto border bg-background divide-y divide-muted">
         <Hero />
+
+        <Comparizon />
 
         <div className="grid lg:grid-cols-3 bg-muted gap-px">
           <div className="p-8 lg:px-10 lg:py-14 bg-background flex flex-col items-start justify-start gap-6">
