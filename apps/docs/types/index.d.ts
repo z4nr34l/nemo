@@ -19,7 +19,10 @@ type MiddlewareConfig = Record<
 >;
 declare function createMiddleware(
   pathMiddlewareMap: MiddlewareConfig,
-  globalMiddleware?: Record<string, MiddlewareFunction | MiddlewareFunction[]>,
+  globalMiddleware?: Record<
+    'before' | 'after',
+    MiddlewareFunction | MiddlewareFunction[]
+  >,
 ): NextMiddleware;
 
 export {

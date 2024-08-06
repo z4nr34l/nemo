@@ -24,7 +24,10 @@ export type MiddlewareConfig = Record<
 
 export function createMiddleware(
   pathMiddlewareMap: MiddlewareConfig,
-  globalMiddleware?: Record<string, MiddlewareFunction | MiddlewareFunction[]>,
+  globalMiddleware?: Record<
+    'before' | 'after',
+    MiddlewareFunction | MiddlewareFunction[]
+  >,
 ): NextMiddleware {
   const context = new Map<string, unknown>();
 
