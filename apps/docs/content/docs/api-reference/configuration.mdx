@@ -46,8 +46,39 @@ Let's break down the construction:
 
 In this library is used [path-to-regexp](https://github.com/pillarjs/path-to-regexp) package to match the middleware routes path in a same way as Next.js does in config's matcher prop.
 
+<Tabs items={["Simple", "Route segment", "Multiple paths", "Custom"]}>
+  <Tab value="Simple">
+    ```ts title="middleware.ts"
+    const middlewares = {
+      '/api': // middleware functions for /api route // [!code focus]
+    };
+    ```
+  </Tab>
+  <Tab value="Route segment">
+    ```ts title="middleware.ts"
+    const middlewares = {
+      '/team{/:slug}?': // middleware functions for /team/<slug> route // [!code focus]
+    };
+    ```
+  </Tab>
+  <Tab value="Multiple paths">
+    ```ts title="middleware.ts"
+    const middlewares = {
+      '/(home|settings)': // middleware functions for /home or /settings route // [!code focus]
+    };
+    ```
+  </Tab>
+  <Tab value="Custom">
+    ```ts title="middleware.ts"
+    const middlewares = {
+      '/post{/:id(\\d+)}?': // middleware functions for /post/<id> route // [!code focus]
+    };
+    ```
+  </Tab>
+</Tabs>
+
 <Callout type="warn">
-  We use latest library version due to DoS vulnerability in previous versions that Next.js uses. Please refer to [path-to-regexp](https://github.com/pillarjs/path-to-regexp?tab=readme-ov-file#errors) for current regex support information.
+  This library uses latest version of `path-to-regexp` due to DoS vulnerability in previous versions that Next.js uses. Please refer to [path-to-regexp](https://github.com/pillarjs/path-to-regexp?tab=readme-ov-file#errors) for current regex support information.
 </Callout>
 
 ### Middleware function
