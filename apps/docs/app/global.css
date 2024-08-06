@@ -64,45 +64,6 @@
     --input: 0 0% 14.9%;
     --ring: 0 0% 83.1%;
   }
-
-  .shiki {
-    counter-reset: step;
-    counter-increment: step 0;
-    .line {
-      @apply border-l-2 border-transparent max-w-full;
-      &::before {
-        counter-increment: step;
-        @apply mr-6 inline-block w-4 border-transparent text-right text-neutral-600 content-[counter(step)];
-      }
-      &.highlighted,
-      &.diff {
-        @apply -ml-4 -mr-5 inline-block w-[calc(100%+(theme(spacing.5)+theme(spacing.4)))] pl-4;
-      }
-      &.highlighted {
-        @apply border-neutral-500 bg-neutral-800;
-      }
-      &.diff {
-        &.add,
-        &.remove {
-          span:first-child::before {
-            @apply -ml-4 inline-flex w-4;
-          }
-        }
-        &.add {
-          @apply border-blue-500 bg-blue-500/25 before:text-blue-500;
-          span:first-child::before {
-            @apply text-blue-500 content-["+"];
-          }
-        }
-        &.remove {
-          @apply border-orange-500 bg-orange-500/30 opacity-70 *:!text-neutral-400 before:text-orange-500;
-          span:first-child::before {
-            @apply text-orange-500 content-["-"];
-          }
-        }
-      }
-    }
-  }
 }
 
 @layer base {
@@ -111,5 +72,55 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+.shiki {
+  counter-reset: step;
+  counter-increment: step 0;
+  @apply p-0;
+  &.has-focused:not(:hover) {
+    .line:not(.focused) {
+      span {
+        @apply blur-[2px];
+      }
+    }
+  }
+  .line {
+    @apply border-l-2 border-transparent w-full min-w-full box-border pr-4 pl-4 transition-all duration-300;
+    span {
+      @apply transition-all duration-300;
+    }
+    &::before {
+      counter-increment: step;
+      @apply mr-6 inline-block w-4 border-transparent text-right text-neutral-600 content-[counter(step)];
+    }
+    &.highlighted,
+    &.diff {
+      @apply inline-block w-full;
+    }
+    &.highlighted {
+      @apply border-neutral-500 bg-neutral-800 ml-0;
+    }
+    &.diff {
+      &.add,
+      &.remove {
+        span:first-child::before {
+          @apply -ml-4 inline-flex w-4;
+        }
+      }
+      &.add {
+        @apply border-blue-500 bg-blue-500/15 before:text-blue-500;
+        span:first-child::before {
+          @apply text-blue-500 content-["+"];
+        }
+      }
+      &.remove {
+        @apply border-red-500 bg-red-500/15 opacity-70 *:!text-neutral-400 before:text-orange-500;
+        span:first-child::before {
+          @apply text-orange-500 content-["-"];
+        }
+      }
+    }
   }
 }

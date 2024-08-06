@@ -1,9 +1,10 @@
 ---
-title: Getting Started
-description: Getting started with Next Easy Middlewares
+title: Getting started
+description: Get started with next-easy-middlewares
 icon: Book
 ---
 
+import {SquareFunctionIcon, WrenchIcon} from "lucide-react";
 import {Tab, Tabs} from 'fumadocs-ui/components/tabs';
 import {Step, Steps} from 'fumadocs-ui/components/steps';
 
@@ -81,6 +82,11 @@ import {Step, Steps} from 'fumadocs-ui/components/steps';
     ```
 
     After that step, you should see an `Hello from next-easy-middlewares` message in your console for every request made to your application.
+
+    <Cards>
+      <Card href="/docs/api-reference/configuration" title="Configuration" description="Learn more about middlewres configuration" icon={<WrenchIcon/>}/>
+      <Card href="/docs/api-reference/functions" title="Functions" description="Learn more about middlewre functions" icon={<SquareFunctionIcon/>}/>
+    </Cards>
   </Step>
   <Step>
     ### Optimize your middleware execution to not execute it on every signle request.
@@ -98,6 +104,10 @@ import {Step, Steps} from 'fumadocs-ui/components/steps';
     2. `/_static` (inside /public)
     3. `/_vercel` (Vercel internals)
     4. Static files (e.g. `/favicon.ico`, `/sitemap.xml`, `/robots.txt`, etc.)
+
+    <Callout>
+      Reed more about [Next.js middleware configuration](https://nextjs.org/docs/app/api-reference/file-conventions/middleware#config-object-optional)
+    </Callout>
   </Step>
   <Step>
     ### Finally, let's put it all together.

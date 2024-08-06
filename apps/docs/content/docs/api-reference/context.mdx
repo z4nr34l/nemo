@@ -21,14 +21,14 @@ Below you can see an example of how to use the shared context in your middleware
 
 ```ts title="_middleware.ts"
 async ({ request, response, context, event }: MiddlewareFunctionProps) => {
-  let user = undefined;
+  let user = undefined; // [!code focus]
 
-  if(!context.has('user')) { // [!code highlight]
-    user = await fetchUser();
-    context.set('user', user); // [!code highlight]
-  } else {
-    user = context.get('user'); // [!code highlight]
-  }
+  if(!context.has('user')) { // [!code focus]
+    user = await fetchUser(); // [!code focus]
+    context.set('user', user); // [!code focus]
+  } else { // [!code focus]
+    user = context.get('user'); // [!code focus]
+  } // [!code focus]
 
   if(!user) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });

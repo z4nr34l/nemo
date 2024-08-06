@@ -4,7 +4,6 @@ description: Naming conventions for middleware functions
 icon: SquareFunction
 ---
 
-import { Cards, Card } from 'fumadocs-ui/components/card';
 import { FolderIcon } from "lucide-react";
 
 Avoid using the default `middleware` name or prefix/suffix for your functions. Instead, use a more descriptive name that reflects the purpose of the function. This will make your code easier to understand and maintain.
@@ -12,21 +11,21 @@ Avoid using the default `middleware` name or prefix/suffix for your functions. I
 ## Proposal
 
 ```ts title="/app/(internal)/_middleware.ts" /internal/
-export const internal = async ({ response }: MiddlewareFunctionProps) => {
+export const internal = async ({ response }: MiddlewareFunctionProps) => { // [!code focus]
   // function body
   return response
 }
 ```
 
 ```ts title="/app/(team)/t/_middleware.ts" /team/
-export const team = async ({ response }: MiddlewareFunctionProps) => {
+export const team = async ({ response }: MiddlewareFunctionProps) => { // [!code focus]
   // function body
   return response
 }
 ```
 
 ```ts title="/app/_middleware.ts" /analytics/
-export const analytics = async ({ response }: MiddlewareFunctionProps) => {
+export const analytics = async ({ response }: MiddlewareFunctionProps) => { // [!code focus]
   // function body
   return response
 }
@@ -35,5 +34,5 @@ export const analytics = async ({ response }: MiddlewareFunctionProps) => {
 ### Related topics
 
 <Cards>
-  <Card title="Project structure" icon={<FolderIcon/>} description="How to organize middleware functions" href="/docs/good-practices/project-structure"/>
+  <Card title="Project structure" icon={<FolderIcon/>} description="How to organize middleware functions" href="/docs/conventions/project-structure"/>
 </Cards>
