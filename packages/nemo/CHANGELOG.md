@@ -1,5 +1,11 @@
 # NEMO
 
+## 1.2.2
+
+### Patch Changes
+
+- 403c89d: Fixed global middlewares type to requiere at least one (before or after), not both
+
 ## 1.2.1
 
 ### Patch Changes
