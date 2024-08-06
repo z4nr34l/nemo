@@ -11,9 +11,9 @@
   ],
   "homepage": "https://nemo.rescale.build",
   "bugs": {
-    "url": "https://github.com/z4nr34l/next-easy-middlewares/issues"
+    "url": "https://github.com/z4nr34l/nemo/issues"
   },
-  "repository": "https://github.com/z4nr34l/next-easy-middlewares",
+  "repository": "https://github.com/z4nr34l/nemo",
   "license": "MIT",
   "author": "Z4NR34L <mateusz@rescale.build>",
   "type": "module",
