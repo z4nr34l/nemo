@@ -65,9 +65,9 @@ const codeBefore = `import { NextRequest } from 'next/server';
 export const middleware = (req: NextRequest) => {
   let user = undefined;
   let team = undefined;
+  const token = req.headers.get('token');
 
   if(req.nextUrl.pathname.startsWith('/auth')) {
-    const token = req.cookies.get('token');
     user = await getUserByToken(token);
 
     if(!user) {
