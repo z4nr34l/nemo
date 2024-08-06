@@ -1,6 +1,9 @@
 import { type NextFetchEvent, NextRequest, NextResponse } from 'next/server';
 import { pathToRegexp } from 'path-to-regexp';
 
+type AtLeastOne<T, U = { [K in keyof T]: Pick<T, K> }> = Partial<T> &
+  U[keyof U];
+
 export type NextMiddleware = (
   request: NextRequest,
   event: NextFetchEvent,
@@ -24,9 +27,8 @@ export type MiddlewareConfig = Record<
 
 export function createMiddleware(
   pathMiddlewareMap: MiddlewareConfig,
-  globalMiddleware?: Record<
-    'before' | 'after',
-    MiddlewareFunction | MiddlewareFunction[]
+  globalMiddleware?: AtLeastOne<
+    Record<'before' | 'after', MiddlewareFunction | MiddlewareFunction[]>
   >,
 ): NextMiddleware {
   const context = new Map<string, unknown>();
