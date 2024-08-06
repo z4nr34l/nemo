@@ -75,17 +75,20 @@
   }
 }
 
-.shiki {
-  counter-reset: step;
-  counter-increment: step 0;
-  @apply p-0;
-  &.has-focused:not(:hover) {
+.fd-codeblock:not(:hover) {
+  .shiki.has-focused {
     .line:not(.focused) {
       span {
         @apply blur-[2px];
       }
     }
   }
+}
+
+.shiki {
+  counter-reset: step;
+  counter-increment: step 0;
+  @apply px-0;
   .line {
     @apply border-l-2 border-transparent w-full min-w-full box-border pr-4 pl-4 transition-all duration-300;
     span {
