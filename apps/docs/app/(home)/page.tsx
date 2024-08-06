@@ -95,7 +95,7 @@ export default function HomePage(): ReactElement {
                 missing!
               </p>
             </div>
-            <Link href="https://github.com/z4nr34l/" target="_blank">
+            <Link href="https://github.com/z4nr34l/nemo" target="_blank">
               <Button
                 variant="secondary"
                 size="lg"
