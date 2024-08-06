@@ -7,7 +7,6 @@ export function createMetadata(override: Metadata): Metadata {
       title: override.title ?? undefined,
       description: override.description ?? undefined,
       url: 'https://nemo.rscl.it',
-      images: '/banner.png',
       siteName: 'NEMO',
       ...override.openGraph,
     },
@@ -16,7 +15,6 @@ export function createMetadata(override: Metadata): Metadata {
       creator: '@z4nr34l',
       title: override.title ?? undefined,
       description: override.description ?? undefined,
-      images: '/banner.png',
       ...override.twitter,
     },
   };
