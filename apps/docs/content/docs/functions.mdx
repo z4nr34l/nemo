@@ -30,14 +30,14 @@ async ({ request, response, context, event }: MiddlewareFunctionProps) => {
 </Callout>
 
 <Callout type="warn">
-  Response object should be compatible with [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) or [NextResponse](https://nextjs.org/docs/app/api-reference/functions/next-response) interface
+  Response object should be compatible with [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) or [NextResponse](https://nextjs.org/docs/app/functions/next-response) interface
 </Callout>
 
 ## Explanation
 
 ### Prop:&nbsp;&nbsp;`request`
 
-Type: [NextRequest](https://nextjs.org/docs/app/api-reference/functions/next-request)
+Type: [NextRequest](https://nextjs.org/docs/app/functions/next-request)
 
 That's a user middleware's request passed to function, which can be later **updated** by functions in chain.
 
@@ -45,7 +45,7 @@ For example in case of authorization processes or custom headers/cookies managem
 
 ### Prop:&nbsp;&nbsp;`response`
 
-Type: [NextResponse](https://nextjs.org/docs/app/api-reference/functions/next-response)
+Type: [NextResponse](https://nextjs.org/docs/app/functions/next-response)
 
 This property contains `NextResponse.next()` (only for first executed function in chain), which can be **updated** by other functions in chain.
 
@@ -55,7 +55,7 @@ Type: [Map\<string, unknown\>](https://developer.mozilla.org/en-US/docs/Web/Java
 
 This property contains context shared across whole execution chain for every function.
 
-<Card href="/docs/api-reference/shared-context" title="Shared context" description="Learn more about Shared Context in middleware" icon={<WaypointsIcon/>}/>
+<Card href="/docs/shared-context" title="Shared context" description="Learn more about Shared Context in middleware" icon={<WaypointsIcon/>}/>
 
 <Callout>
   If you want to know more about Map interface usage please refer to these [docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map).

@@ -9,9 +9,9 @@
     "start": "next start"
   },
   "dependencies": {
+    "@rescale/nemo": "workspace:*",
     "next": "15.0.0-rc.0",
     "next-auth": "5.0.0-beta.19",
-    "next-easy-middlewares": "workspace:*",
     "react": "19.0.0-rc.0",
     "react-dom": "19.0.0-rc.0"
   },

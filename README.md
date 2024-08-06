@@ -1,19 +1,19 @@
-# next-easy-middlewares
+# NEMO
 
-`next-easy-middlewares` is a simple utility for creating path-based middleware in Next.js applications. Simplify multi-middleware management and reduce general boilerplate in few easy steps with that package.
+`NEMO` is a simple utility for creating path-based middleware in Next.js applications. Simplify multi-middleware management and reduce general boilerplate in few easy steps with that package.
 
 ## Installation
 
 ```bash
-npm install next-easy-middlewares
+npm install @rescale/nemo
 ```
 
 ```bash
-pnpm add next-easy-middlewares
+pnpm add @rescale/nemo
 ```
 
 ```bash
-bun add next-easy-middlewares
+bun add @rescale/nemo
 ```
 
 ## Usage
@@ -23,7 +23,7 @@ bun add next-easy-middlewares
 Code in `middleware.ts` file:
 
 ```ts
-import { createMiddleware } from 'next-easy-middlewares';
+import { createMiddleware } from '@rescale/nemo';
 import { type NextRequest, NextResponse } from 'next/server';
 
 const middlewares = {

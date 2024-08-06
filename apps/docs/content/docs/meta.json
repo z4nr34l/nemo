@@ -2,10 +2,11 @@
   "title": "Docs",
   "root": true,
   "pages": [
+    "---Guide---",
     "index",
-    "...",
-    "---API Reference---",
-    "...api-reference",
+    "configuration",
+    "functions",
+    "context",
     "---Conventions---",
     "...conventions"
   ]

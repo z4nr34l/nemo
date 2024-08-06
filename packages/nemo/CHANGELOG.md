@@ -1,4 +1,4 @@
-# next-easy-middlewares
+# NEMO
 
 ## 1.2.0
 

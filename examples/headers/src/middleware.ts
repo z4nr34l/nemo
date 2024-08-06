@@ -3,7 +3,7 @@ import {
   createMiddleware,
   type MiddlewareConfig,
   type MiddlewareFunctionProps,
-} from 'next-easy-middlewares';
+} from '@rescale/nemo';
 
 const middlewares = {
   '/': [

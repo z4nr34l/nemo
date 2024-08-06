@@ -1,5 +1,5 @@
 {
-  "name": "next-easy-middlewares",
+  "name": "@rescale/nemo",
   "version": "1.2.0",
   "keywords": [
     "Next.js",
@@ -9,13 +9,13 @@
     "Route",
     "Path"
   ],
-  "homepage": "https://next-easy-middlewares.vercel.app",
+  "homepage": "https://nemo.rescale.build",
   "bugs": {
     "url": "https://github.com/z4nr34l/next-easy-middlewares/issues"
   },
   "repository": "https://github.com/z4nr34l/next-easy-middlewares",
   "license": "MIT",
-  "author": "Z4NR34L <software@zanreal.net>",
+  "author": "Z4NR34L <mateusz@rescale.build>",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

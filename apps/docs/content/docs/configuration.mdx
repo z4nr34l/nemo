@@ -34,7 +34,7 @@ export const middleware = createMiddleware(middlewares, globalMiddlewares);
 
 ## Path middlewares construction (`middlewares`)
 
-**Type**: [`Record<string, MiddlewareFunction | MiddlewareFunction[]>`](/docs/api-reference/functions)
+**Type**: [`Record<string, MiddlewareFunction | MiddlewareFunction[]>`](/docs/functions)
 
 This property contains a map of middleware functions that will be executed for specific routes. The key is the route path, and the value is the middleware function.
 
@@ -83,7 +83,7 @@ In this library is used [path-to-regexp](https://github.com/pillarjs/path-to-reg
 
 ### Middleware function
 
-**Type**: [`MiddlewareFunction | MiddlewareFunction[]`](/docs/api-reference/functions)
+**Type**: [`MiddlewareFunction | MiddlewareFunction[]`](/docs/functions)
 
 This is a function that will be executed for the specific route. It can be a single function or an array of functions that will be executed in order.
 
@@ -118,19 +118,19 @@ This is a function that will be executed for the specific route. It can be a sin
 
 ## Global middlewares construction (`globalMiddlewares`)
 
-**Type**: [`Record<"before" | "after", MiddlewareFunction | MiddlewareFunction[]>`](/docs/api-reference/functions)
+**Type**: [`Record<"before" | "after", MiddlewareFunction | MiddlewareFunction[]>`](/docs/functions)
 
 This property contains global middleware functions that will be executed before and after any route middleware.
 
 ### Before
 
-**Type**: [`MiddlewareFunction | MiddlewareFunction[]`](/docs/api-reference/functions)
+**Type**: [`MiddlewareFunction | MiddlewareFunction[]`](/docs/functions)
 
 This is a global middleware function(s) that will be executed before any route middleware.
 
 ### After
 
-**Type**: [`MiddlewareFunction | MiddlewareFunction[]`](/docs/api-reference/functions)
+**Type**: [`MiddlewareFunction | MiddlewareFunction[]`](/docs/functions)
 
 This is a global middleware function(s) that will be executed after any route middleware.
 

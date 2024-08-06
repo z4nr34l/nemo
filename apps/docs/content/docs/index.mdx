@@ -1,6 +1,6 @@
 ---
 title: Getting started
-description: Get started with next-easy-middlewares
+description: Get started with NEMO
 icon: Book
 ---
 
@@ -17,22 +17,22 @@ import {Step, Steps} from 'fumadocs-ui/components/steps';
     <Tabs items={['Bun', 'PNPM', 'NPM', 'Yarn']}>
       <Tab value="Bun">
         ```bash title="Terminal"
-        bun add next-easy-middlewares
+        bun add @rescale/nemo
         ```
       </Tab>
       <Tab value="PNPM">
         ```bash title="Terminal"
-        pnpm add next-easy-middlewares
+        pnpm add @rescale/nemo
         ```
       </Tab>
       <Tab value="NPM">
         ```bash title="Terminal"
-        npm install next-easy-middlewares
+        npm install @rescale/nemo
         ```
       </Tab>
       <Tab value="Yarn">
         ```bash title="Terminal"
-        yarn add next-easy-middlewares
+        yarn add @rescale/nemo
         ```
       </Tab>
     </Tabs>
@@ -43,7 +43,7 @@ import {Step, Steps} from 'fumadocs-ui/components/steps';
     (or create it if you don't have one yet)
 
     ```typescript title="middleware.ts"
-    import { createMiddleware } from 'next-easy-middlewares';  // [!code ++]
+    import { createMiddleware } from '@rescale/nemo';  // [!code ++]
 
     // [...]
     ```
@@ -52,7 +52,7 @@ import {Step, Steps} from 'fumadocs-ui/components/steps';
     ### Use the createMiddleware function to create a middleware helper.
 
     ```typescript title="middleware.ts"
-    import { createMiddleware } from 'next-easy-middlewares';
+    import { createMiddleware } from '@rescale/nemo';
 
     export const middleware = createMiddleware(/* your functions will go here */); // [!code ++]
 
@@ -63,13 +63,13 @@ import {Step, Steps} from 'fumadocs-ui/components/steps';
     ### Define your middlewares config and update the createMiddleware function parameters.
 
     ```typescript title="middleware.ts"
-    import { createMiddleware } from 'next-easy-middlewares'; // [!code --]
-    import { createMiddleware, type MiddlewareFunctionProps } from 'next-easy-middlewares'; // [!code ++]
+    import { createMiddleware } from '@rescale/nemo'; // [!code --]
+    import { createMiddleware, type MiddlewareFunctionProps } from '@rescale/nemo'; // [!code ++]
 
     const middlewares = { // [!code ++]
       '/': [ // [!code ++]
         async ({request, response}: MiddlewareFunctionProps) => { // [!code ++]
-          console.log('Hello from next-easy-middlewares', request.nextUrl.pathname); // [!code ++]
+          console.log('There is NEMO', request.nextUrl.pathname); // [!code ++]
           return response; // [!code ++]
         }, // [!code ++]
       ], // [!code ++]
@@ -81,11 +81,11 @@ import {Step, Steps} from 'fumadocs-ui/components/steps';
     // [...]
     ```
 
-    After that step, you should see an `Hello from next-easy-middlewares` message in your console for every request made to your application.
+    After that step, you should see an `There is NEMO` message in your console for every request made to your application.
 
     <Cards>
-      <Card href="/docs/api-reference/configuration" title="Configuration" description="Learn more about middlewres configuration" icon={<WrenchIcon/>}/>
-      <Card href="/docs/api-reference/functions" title="Functions" description="Learn more about middlewre functions" icon={<SquareFunctionIcon/>}/>
+      <Card href="/docs/configuration" title="Configuration" description="Learn more about middlewres configuration" icon={<WrenchIcon/>}/>
+      <Card href="/docs/functions" title="Functions" description="Learn more about middlewre functions" icon={<SquareFunctionIcon/>}/>
     </Cards>
   </Step>
   <Step>
@@ -106,19 +106,19 @@ import {Step, Steps} from 'fumadocs-ui/components/steps';
     4. Static files (e.g. `/favicon.ico`, `/sitemap.xml`, `/robots.txt`, etc.)
 
     <Callout>
-      Reed more about [Next.js middleware configuration](https://nextjs.org/docs/app/api-reference/file-conventions/middleware#config-object-optional)
+      Reed more about [Next.js middleware configuration](https://nextjs.org/docs/app/file-conventions/middleware#config-object-optional)
     </Callout>
   </Step>
   <Step>
     ### Finally, let's put it all together.
 
     ```typescript title="middleware.ts"
-    import { createMiddleware, type MiddlewareFunctionProps } from 'next-easy-middlewares';
+    import { createMiddleware, type MiddlewareFunctionProps } from '@rescale/nemo';
 
     const middlewares = {
       '/': [
         async ({request, response}: MiddlewareFunctionProps) => {
-          console.log('Hello from next-easy-middlewares', request.nextUrl.pathname);
+          console.log('There is NEMO', request.nextUrl.pathname);
           return response;
         },
       ],
