@@ -22,7 +22,9 @@
     "dev": "turbo run dev --parallel",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "lint": "turbo run lint",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "release": "turbo build --filter='@rescale/nemo' && changeset publish",
+    "version-packages": "changeset version"
   },
   "prettier": "@vercel/style-guide/prettier",
   "devDependencies": {
