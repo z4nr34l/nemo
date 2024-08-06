@@ -1,4 +1,4 @@
-import { createMiddleware, type MiddlewareConfig } from 'next-easy-middlewares';
+import { createMiddleware, type MiddlewareConfig } from '@rescale/nemo';
 import { NextResponse } from 'next/server';
 
 const middlewares = {

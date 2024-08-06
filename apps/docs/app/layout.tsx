@@ -19,8 +19,8 @@ export const viewport: Viewport = {
 
 export const metadata = createMetadata({
   title: {
-    template: '%s | next-easy-middlewares',
-    default: 'next-easy-middlewares',
+    template: '%s | NEMO',
+    default: 'NEMO - Next.js Easy Middleware',
   },
   description:
     'The Next.js library for building clean and performant middlewares.',

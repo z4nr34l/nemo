@@ -2,7 +2,7 @@ import {
   createMiddleware,
   type MiddlewareConfig,
   type MiddlewareFunctionProps,
-} from 'next-easy-middlewares';
+} from '@rescale/nemo';
 import { NextResponse } from 'next/server';
 
 const middlewares = {

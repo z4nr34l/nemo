@@ -1,5 +1,5 @@
 {
-  "name": "next-easy-middlewares-root",
+  "name": "root",
   "keywords": [
     "Next.js",
     "Middleware",
@@ -22,9 +22,7 @@
     "dev": "turbo run dev --parallel",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "lint": "turbo run lint",
-    "prepare": "husky install",
-    "release": "turbo build --filter=next-easy-middlewares && changeset publish",
-    "version-packages": "changeset version"
+    "prepare": "husky install"
   },
   "prettier": "@vercel/style-guide/prettier",
   "devDependencies": {

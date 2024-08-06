@@ -6,9 +6,9 @@ export function createMetadata(override: Metadata): Metadata {
     openGraph: {
       title: override.title ?? undefined,
       description: override.description ?? undefined,
-      url: 'https://next-easy-middlewares.vercel.app',
+      url: 'https://nemo.rscl.it',
       images: '/banner.png',
-      siteName: 'next-easy-middleware',
+      siteName: 'NEMO',
       ...override.openGraph,
     },
     twitter: {
