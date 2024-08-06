@@ -5,7 +5,7 @@ export function Comparizon() {
     <>
       <div className="p-8 md:p-14">
         <h2 className="text-center font-bold text-2xl">
-          First, let's let the code get the word out...
+          First, let&apos;s let the code get the word out...
         </h2>
       </div>
 
