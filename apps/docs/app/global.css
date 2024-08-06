@@ -78,7 +78,7 @@
 .shiki {
   counter-reset: step;
   counter-increment: step 0;
-  @apply p-0;
+  @apply px-0;
   &.has-focused:not(:hover) {
     .line:not(.focused) {
       span {
