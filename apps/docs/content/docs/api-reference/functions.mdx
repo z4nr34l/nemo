@@ -4,6 +4,8 @@ description: Middleware functions standardization, explanation and usage
 icon: Play
 ---
 
+import { WaypointsIcon } from "lucide-react";
+
 This package introduces middleware functions standardization for more elastic approach to development and feature delivery.
 
 ## Function schema
@@ -54,6 +56,8 @@ This property contains `NextResponse.next()` (only for first executed function i
 Type: [Map\<string, unknown\>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
 
 This property contains context shared across whole execution chain for every function.
+
+<Card href="/docs/api-reference/shared-context" title="Shared context" description="Learn more about Shared Context in middleware" icon={<WaypointsIcon/>}/>
 
 <Callout>
   If you want to know more about Map interface usage please refer to these [docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map).
