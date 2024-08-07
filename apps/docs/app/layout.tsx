@@ -8,6 +8,7 @@ import { Viewport } from 'next';
 import { Analytics } from '@vercel/analytics/react';
 import Provider from '@/components/provider';
 import { baseUrl, createMetadata } from '@/lib/metadata';
+import Script from 'next/script';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -40,6 +41,13 @@ export default function Layout({ children }: { children: ReactNode }) {
       <body>
         <Provider>{children}</Provider>
         <Analytics />
+        {process.env.ANALYTICS_TOKEN && (
+          <Script
+            src="https://cdn.rscl.it/ra.js?ver=1.0.2"
+            data-token={process.env.ANALYTICS_TOKEN}
+            strategy="afterInteractive"
+          />
+        )}
       </body>
     </html>
   );
