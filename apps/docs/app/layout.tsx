@@ -41,10 +41,10 @@ export default function Layout({ children }: { children: ReactNode }) {
       <body>
         <Provider>{children}</Provider>
         <Analytics />
-        {process.env.ANALYTICS_TOKEN && (
+        {process.env.NEXT_PUBLIC_ANALYTICS_TOKEN && (
           <Script
             src="https://cdn.rscl.it/ra.js?ver=1.0.2"
-            data-token={process.env.ANALYTICS_TOKEN}
+            data-token={process.env.NEXT_PUBLIC_ANALYTICS_TOKEN}
             strategy="afterInteractive"
           />
         )}
