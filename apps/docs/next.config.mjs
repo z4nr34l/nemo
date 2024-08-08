@@ -74,6 +74,15 @@ const config = {
         }
       : {}),
   },
+  redirects: () => {
+    return [
+      {
+        source: '/sitemap.xml',
+        destination: '/sitemap',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default withMDX(config);
