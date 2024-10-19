@@ -121,7 +121,7 @@ async function executeMiddleware(
 }
 
 function matchesPath(pattern: string, path: string): boolean {
-  return pathToRegexp(pattern).test(path);
+  return pathToRegexp(pattern).regexp.test(path);
 }
 
 function isRedirect(response: NextResponse | Response): boolean {
