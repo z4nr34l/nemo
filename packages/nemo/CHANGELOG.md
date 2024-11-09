@@ -1,5 +1,11 @@
 # NEMO
 
+## 1.2.4
+
+### Patch Changes
+
+- d171568: Bump version of `@rescale/nemo` package to 1.2.3.
+
 ## 1.2.2
 
 ### Patch Changes
