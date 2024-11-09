@@ -33,7 +33,7 @@
   },
   "prettier": "@vercel/style-guide/prettier",
   "dependencies": {
-    "path-to-regexp": "^7.1.0"
+    "path-to-regexp": "^8.2.0"
   },
   "devDependencies": {
     "@swc/core": "^1.5.24",
