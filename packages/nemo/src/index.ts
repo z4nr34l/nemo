@@ -11,7 +11,6 @@ export type NextMiddleware = (
 
 export interface MiddlewareFunctionProps {
   request: NextRequest;
-  response: NextResponse;
   context: Map<string, unknown>;
   event: NextFetchEvent;
 }
@@ -68,110 +67,22 @@ export function createMiddleware(
       ...afterGlobalMiddleware.flat(),
     ];
 
-    let response: NextResponse = NextResponse.next();
-
     for (const middleware of allMiddlewareFunctions) {
-      response = await executeMiddleware(
+      const response = await middleware({
         request,
-        middleware,
-        response,
         event,
         context,
-      );
+      });
 
-      request = updateRequestWithResponse(request, response);
+      if (response instanceof NextResponse || response instanceof Response) {
+        return response;
+      }
     }
 
-    return response;
+    return NextResponse.next();
   };
-}
-
-async function executeMiddleware(
-  request: NextRequest,
-  middleware: MiddlewareFunction,
-  response: NextResponse,
-  event: NextFetchEvent,
-  context: Map<string, unknown>,
-): Promise<NextResponse> {
-  const result = upgradeResponseToNextResponse(
-    await middleware({
-      request,
-      response,
-      event,
-      context,
-    }),
-  );
-
-  if (response) {
-    response.headers.forEach((value, key) => {
-      result.headers.set(key, value);
-    });
-  }
-
-  result.cookies.getAll().forEach((cookie) => {
-    request.cookies.set(cookie);
-  });
-
-  if (isRedirect(result)) {
-    request.headers.set('x-redirect-url', result.headers.get('location') ?? '');
-    return result;
-  }
-
-  return result;
 }
 
 function matchesPath(pattern: string, path: string): boolean {
   return pathToRegexp(pattern).regexp.test(path);
-}
-
-function isRedirect(response: NextResponse | Response): boolean {
-  return Boolean(
-    response && [301, 302, 303, 307, 308].includes(response.status),
-  );
-}
-
-function updateRequestWithResponse(
-  request: NextRequest,
-  response: NextResponse,
-): NextRequest {
-  const updatedHeaders = new Headers(request.headers);
-
-  response.headers.forEach((value, key) => {
-    updatedHeaders.set(key, value);
-  });
-
-  const updatedUrl = new URL(request.url);
-
-  const updatedRequest = new NextRequest(updatedUrl, {
-    headers: updatedHeaders,
-    method: request.method,
-    body: request.body,
-    referrer: request.referrer,
-  });
-
-  response.cookies.getAll().forEach((cookie) => {
-    updatedRequest.cookies.set(cookie.name, cookie.value);
-  });
-
-  return updatedRequest;
-}
-
-function upgradeResponseToNextResponse(
-  response: Response | NextResponse,
-): NextResponse {
-  if (response instanceof NextResponse) {
-    return response;
-  }
-
-  const nextResponse = new NextResponse(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers: response.headers,
-  });
-
-  response.headers.forEach((value, key) => {
-    nextResponse.headers.set(key, value);
-  });
-
-  return nextResponse;
 }
