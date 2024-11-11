@@ -4,39 +4,25 @@ import { pathToRegexp } from 'path-to-regexp';
 type AtLeastOne<T, U = { [K in keyof T]: Pick<T, K> }> = Partial<T> &
   U[keyof U];
 
+type MiddlewareReturn = Response | NextResponse | void;
+
 export type NextMiddleware = (
   request: NextRequest,
   event: NextFetchEvent,
-) => Response | NextResponse | Promise<Response | NextResponse>;
+) => MiddlewareReturn | Promise<MiddlewareReturn>;
 
-export interface MiddlewareContext extends Map<string, unknown> {
-  cookies?: Map<string, ResponseCookie>;
-  headers?: Headers;
-}
-
-export interface ResponseCookie {
-  name: string;
-  value: string;
-  options?: {
-    path?: string;
-    domain?: string;
-    maxAge?: number;
-    expires?: Date;
-    httpOnly?: boolean;
-    secure?: boolean;
-    sameSite?: 'strict' | 'lax' | 'none';
-  };
-}
+export interface MiddlewareContext extends Map<string, unknown> {}
 
 export interface MiddlewareFunctionProps {
   request: NextRequest;
   context: MiddlewareContext;
   event: NextFetchEvent;
+  forward: (response: MiddlewareReturn) => void;
 }
 
 export type NewMiddleware = (
   props: MiddlewareFunctionProps,
-) => NextResponse | Response | Promise<NextResponse | Response>;
+) => MiddlewareReturn | Promise<MiddlewareReturn>;
 
 export type MiddlewareFunction = NextMiddleware | NewMiddleware;
 
@@ -51,48 +37,26 @@ function isLegacyMiddleware(
   return middleware.length === 2;
 }
 
-function applyContextToResponse(
-  response: NextResponse | Response,
-  context: MiddlewareContext,
-): NextResponse {
-  let nextResponse =
-    response instanceof NextResponse
-      ? response
-      : NextResponse.next({
-          request: {
-            headers: context.headers,
-          },
-        });
+async function forward(
+  middleware: MiddlewareFunction,
+  props: MiddlewareFunctionProps,
+): Promise<void> {
+  let response: MiddlewareReturn | Promise<MiddlewareReturn>;
 
-  context.cookies?.forEach((cookie) => {
-    nextResponse.cookies.set(cookie.name, cookie.value, cookie.options);
-  });
-
-  if (context.headers) {
-    nextResponse = NextResponse.next({
-      request: {
-        headers: context.headers,
-      },
-    });
-
-    // Reapply cookies after creating new response
-    context.cookies?.forEach((cookie) => {
-      nextResponse.cookies.set(cookie.name, cookie.value, cookie.options);
-    });
+  if (isLegacyMiddleware(middleware)) {
+    response = await middleware(props.request, props.event);
+  } else {
+    response = await middleware(props);
   }
 
-  return nextResponse;
+  props.forward(response);
 }
 
 async function executeMiddleware(
   middleware: MiddlewareFunction,
   props: MiddlewareFunctionProps,
-): Promise<NextResponse | Response> {
-  const response = isLegacyMiddleware(middleware)
-    ? await middleware(props.request, props.event)
-    : await middleware(props);
-
-  return applyContextToResponse(response, props.context);
+): Promise<void> {
+  await forward(middleware, props);
 }
 
 export function createMiddleware(
@@ -107,10 +71,7 @@ export function createMiddleware(
   ): Promise<NextResponse | Response> => {
     const path = request.nextUrl.pathname || '/';
 
-    // Initialize context with request headers
     const context: MiddlewareContext = new Map<string, unknown>();
-    context.cookies = new Map<string, ResponseCookie>();
-    context.headers = new Headers(request.headers);
 
     let beforeGlobalMiddleware: MiddlewareFunction[] = [];
     let afterGlobalMiddleware: MiddlewareFunction[] = [];
@@ -141,21 +102,32 @@ export function createMiddleware(
       ...afterGlobalMiddleware.flat(),
     ];
 
+    let finalResponse: MiddlewareReturn = NextResponse.next({
+      request,
+    });
+
     for (const middleware of allMiddlewareFunctions) {
-      const middlewareProps = {
+      await executeMiddleware(middleware, {
         request,
         event,
         context,
-      };
+        forward: (response: MiddlewareReturn) => {
+          if (response && response instanceof Response) {
+            response.headers.forEach((value, key) => {
+              request.headers.set(key, value);
+            });
 
-      const response = await executeMiddleware(middleware, middlewareProps);
-
-      if (response instanceof NextResponse || response instanceof Response) {
-        return applyContextToResponse(response, context);
-      }
+            if (response instanceof NextResponse) {
+              response.cookies.getAll().forEach((cookie) => {
+                request.cookies.set(cookie.name, cookie.value);
+              });
+            }
+          }
+        },
+      });
     }
 
-    return applyContextToResponse(NextResponse.next(), context);
+    return finalResponse;
   };
 }
 
