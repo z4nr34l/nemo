@@ -1,9 +1,6 @@
 import { type NextFetchEvent, NextRequest, NextResponse } from 'next/server';
 import { pathToRegexp } from 'path-to-regexp';
 
-type AtLeastOne<T, U = { [K in keyof T]: Pick<T, K> }> = Partial<T> &
-  U[keyof U];
-
 type MiddlewareReturn = Response | NextResponse | void;
 
 export type NextMiddleware = (
@@ -56,14 +53,9 @@ async function forward(
   middleware: MiddlewareFunction,
   props: MiddlewareFunctionProps,
 ): Promise<void> {
-  let response: MiddlewareReturn | Promise<MiddlewareReturn>;
-
-  if (isLegacyMiddleware(middleware)) {
-    response = await middleware(props.request, props.event);
-  } else {
-    response = await middleware(props);
-  }
-
+  const response = isLegacyMiddleware(middleware)
+    ? await middleware(props.request, props.event)
+    : await middleware(props);
   props.forward(response);
 }
 
@@ -78,19 +70,10 @@ async function executeMiddleware(
   middleware: MiddlewareFunction,
   props: MiddlewareFunctionProps,
 ): Promise<MiddlewareReturn> {
-  let response: MiddlewareReturn | Promise<MiddlewareReturn>;
-
-  if (isLegacyMiddleware(middleware)) {
-    response = await middleware(props.request, props.event);
-  } else {
-    response = await middleware(props);
-  }
-
-  if (response && response instanceof Response) {
-    return response;
-  }
-
-  return undefined;
+  const response = isLegacyMiddleware(middleware)
+    ? await middleware(props.request, props.event)
+    : await middleware(props);
+  return response instanceof Response ? response : undefined;
 }
 
 /**
@@ -102,7 +85,7 @@ async function executeMiddleware(
  */
 export function createMiddleware(
   pathMiddlewareMap: MiddlewareConfig,
-  globalMiddleware?: AtLeastOne<
+  globalMiddleware?: Partial<
     Record<'before' | 'after', MiddlewareFunction | MiddlewareFunction[]>
   >,
 ): NextMiddleware {
@@ -111,36 +94,26 @@ export function createMiddleware(
     event: NextFetchEvent,
   ): Promise<NextResponse | Response> => {
     const path = request.nextUrl.pathname || '/';
-
     const context: MiddlewareContext = new Map<string, unknown>();
 
-    let beforeGlobalMiddleware: MiddlewareFunction[] = [];
-    let afterGlobalMiddleware: MiddlewareFunction[] = [];
+    const beforeGlobalMiddleware = globalMiddleware?.before
+      ? Array.isArray(globalMiddleware.before)
+        ? globalMiddleware.before
+        : [globalMiddleware.before]
+      : [];
 
-    if (globalMiddleware?.before) {
-      if (Array.isArray(globalMiddleware.before)) {
-        beforeGlobalMiddleware = globalMiddleware.before.filter(Boolean).flat();
-      } else {
-        beforeGlobalMiddleware = [globalMiddleware.before]
-          .filter(Boolean)
-          .flat();
-      }
-    }
-
-    if (globalMiddleware?.after) {
-      if (Array.isArray(globalMiddleware.after)) {
-        afterGlobalMiddleware = globalMiddleware.after.filter(Boolean).flat();
-      } else {
-        afterGlobalMiddleware = [globalMiddleware.after].filter(Boolean).flat();
-      }
-    }
+    const afterGlobalMiddleware = globalMiddleware?.after
+      ? Array.isArray(globalMiddleware.after)
+        ? globalMiddleware.after
+        : [globalMiddleware.after]
+      : [];
 
     const allMiddlewareFunctions = [
-      ...beforeGlobalMiddleware.flat(),
+      ...beforeGlobalMiddleware,
       ...Object.entries(pathMiddlewareMap)
         .filter(([key]) => matchesPath(key, path))
         .flatMap(([, middlewareFunctions]) => middlewareFunctions),
-      ...afterGlobalMiddleware.flat(),
+      ...afterGlobalMiddleware,
     ];
 
     for (const middleware of allMiddlewareFunctions) {
@@ -149,29 +122,24 @@ export function createMiddleware(
         event,
         context,
         forward: (response: MiddlewareReturn) => {
-          if (response && response instanceof Response) {
-            response.headers.forEach((value, key) => {
-              request.headers.set(key, value);
-            });
-
+          if (response instanceof Response) {
+            response.headers.forEach((value, key) =>
+              request.headers.set(key, value),
+            );
             if (response instanceof NextResponse) {
-              response.cookies.getAll().forEach((cookie) => {
-                request.cookies.set(cookie.name, cookie.value);
-              });
+              response.cookies
+                .getAll()
+                .forEach((cookie) =>
+                  request.cookies.set(cookie.name, cookie.value),
+                );
             }
           }
         },
       });
-
-      if (response && response instanceof Response) {
-        return response;
-      }
+      if (response instanceof Response) return response;
     }
 
-    return NextResponse.next({
-      request,
-      headers: request.headers,
-    });
+    return NextResponse.next({ request, headers: request.headers });
   };
 }
 
