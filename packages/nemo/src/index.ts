@@ -55,8 +55,20 @@ async function forward(
 async function executeMiddleware(
   middleware: MiddlewareFunction,
   props: MiddlewareFunctionProps,
-): Promise<void> {
-  await forward(middleware, props);
+): Promise<MiddlewareReturn> {
+  let response: MiddlewareReturn | Promise<MiddlewareReturn>;
+
+  if (isLegacyMiddleware(middleware)) {
+    response = await middleware(props.request, props.event);
+  } else {
+    response = await middleware(props);
+  }
+
+  if (response && response instanceof Response) {
+    return response;
+  }
+
+  return undefined;
 }
 
 export function createMiddleware(
@@ -103,7 +115,7 @@ export function createMiddleware(
     ];
 
     for (const middleware of allMiddlewareFunctions) {
-      await executeMiddleware(middleware, {
+      const response = await executeMiddleware(middleware, {
         request,
         event,
         context,
@@ -121,6 +133,10 @@ export function createMiddleware(
           }
         },
       });
+
+      if (response && response instanceof Response) {
+        return response;
+      }
     }
 
     return NextResponse.next({
