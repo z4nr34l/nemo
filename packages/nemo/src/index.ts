@@ -1,14 +1,18 @@
-import { type NextFetchEvent, NextRequest, NextResponse } from 'next/server';
+import {
+  type NextFetchEvent,
+  type NextRequest,
+  NextResponse,
+} from 'next/server';
 import { pathToRegexp } from 'path-to-regexp';
 
-type MiddlewareReturn = Response | NextResponse | void;
+type MiddlewareReturn = Response | NextResponse | undefined;
 
 export type NextMiddleware = (
   request: NextRequest,
   event: NextFetchEvent,
 ) => MiddlewareReturn | Promise<MiddlewareReturn>;
 
-export interface MiddlewareContext extends Map<string, unknown> {}
+export type MiddlewareContext = Map<string, unknown>;
 
 /**
  * Properties passed to middleware functions.
@@ -32,10 +36,9 @@ export type MiddlewareConfig = Record<
 >;
 
 /**
- * Checks if the middleware is a legacy middleware.
- *
- * @param {MiddlewareFunction} middleware - The middleware function to check.
- * @returns {boolean} - True if the middleware is a legacy middleware, false otherwise.
+ * Checks if the given middleware function is a legacy middleware.
+ * @param middleware - The middleware function to check.
+ * @returns True if the middleware is a legacy middleware, false otherwise.
  */
 function isLegacyMiddleware(
   middleware: MiddlewareFunction,
@@ -44,12 +47,11 @@ function isLegacyMiddleware(
 }
 
 /**
- * Forwards the request to the next middleware in the chain.
- *
- * @param {MiddlewareFunction} middleware - The middleware function to execute.
- * @param {MiddlewareFunctionProps} props - The properties to pass to the middleware function.
+ * Forwards the response to the next middleware function.
+ * @param middleware - The middleware function to forward to.
+ * @param props - The properties to pass to the middleware function.
  */
-async function forward(
+export async function forward(
   middleware: MiddlewareFunction,
   props: MiddlewareFunctionProps,
 ): Promise<void> {
@@ -60,11 +62,9 @@ async function forward(
 }
 
 /**
- * Executes the middleware function and returns the response if it is a Response or NextResponse.
- *
- * @param {MiddlewareFunction} middleware - The middleware function to execute.
- * @param {MiddlewareFunctionProps} props - The properties to pass to the middleware function.
- * @returns {Promise<MiddlewareReturn>} - The response from the middleware function.
+ * Executes the given middleware function.
+ * @param middleware - The middleware function to execute.
+ * @param props - The properties to pass to the middleware function.
  */
 async function executeMiddleware(
   middleware: MiddlewareFunction,
@@ -77,11 +77,9 @@ async function executeMiddleware(
 }
 
 /**
- * Creates a middleware function that executes a series of middleware functions based on the request path.
- *
- * @param {MiddlewareConfig} pathMiddlewareMap - The configuration object mapping paths to middleware functions.
- * @param {Partial<Record<'before' | 'after', MiddlewareFunction | MiddlewareFunction[]>} globalMiddleware - The global middleware functions to execute
- * @returns {NextMiddleware} - The created middleware function.
+ * Creates a middleware function that executes the given middleware functions.
+ * @param pathMiddlewareMap - The map of paths to middleware functions.
+ * @param globalMiddleware - The global middleware functions to execute
  */
 export function createMiddleware(
   pathMiddlewareMap: MiddlewareConfig,
@@ -96,17 +94,19 @@ export function createMiddleware(
     const path = request.nextUrl.pathname || '/';
     const context: MiddlewareContext = new Map<string, unknown>();
 
-    const beforeGlobalMiddleware = globalMiddleware?.before
-      ? Array.isArray(globalMiddleware.before)
+    let beforeGlobalMiddleware: MiddlewareFunction[] = [];
+    if (globalMiddleware?.before) {
+      beforeGlobalMiddleware = Array.isArray(globalMiddleware.before)
         ? globalMiddleware.before
-        : [globalMiddleware.before]
-      : [];
+        : [globalMiddleware.before];
+    }
 
-    const afterGlobalMiddleware = globalMiddleware?.after
-      ? Array.isArray(globalMiddleware.after)
+    let afterGlobalMiddleware: MiddlewareFunction[] = [];
+    if (globalMiddleware?.after) {
+      afterGlobalMiddleware = Array.isArray(globalMiddleware.after)
         ? globalMiddleware.after
-        : [globalMiddleware.after]
-      : [];
+        : [globalMiddleware.after];
+    }
 
     const allMiddlewareFunctions = [
       ...beforeGlobalMiddleware,
@@ -117,15 +117,15 @@ export function createMiddleware(
     ];
 
     for (const middleware of allMiddlewareFunctions) {
-      const response = await executeMiddleware(middleware, {
+      const middlewareResponse = await executeMiddleware(middleware, {
         request,
         event,
         context,
         forward: (response: MiddlewareReturn) => {
           if (response instanceof Response) {
-            response.headers.forEach((value, key) =>
-              request.headers.set(key, value),
-            );
+            response.headers.forEach((value, key) => {
+              request.headers.set(key, value);
+            });
             if (response instanceof NextResponse) {
               response.cookies
                 .getAll()
@@ -136,7 +136,7 @@ export function createMiddleware(
           }
         },
       });
-      if (response instanceof Response) return response;
+      if (middlewareResponse instanceof Response) return middlewareResponse;
     }
 
     return NextResponse.next({ request, headers: request.headers });
@@ -144,11 +144,9 @@ export function createMiddleware(
 }
 
 /**
- * Checks if the given path matches the specified pattern.
- *
- * @param {string} pattern - The pattern to match against.
- * @param {string} path - The path to check.
- * @returns {boolean} - True if the path matches the pattern, false otherwise.
+ * Checks if the given path matches the given pattern.
+ * @param pattern - The pattern to match.
+ * @param path - The path to check.
  */
 function matchesPath(pattern: string, path: string): boolean {
   return pathToRegexp(pattern).regexp.test(path);
