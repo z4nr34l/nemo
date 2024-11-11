@@ -60,7 +60,7 @@ function applyContextToResponse(
       ? response
       : NextResponse.next({
           request: {
-            headers: new Headers(response.headers),
+            headers: context.headers,
           },
         });
 
@@ -69,17 +69,13 @@ function applyContextToResponse(
   });
 
   if (context.headers) {
-    const newHeaders = new Headers(nextResponse.headers);
-    context.headers.forEach((value, key) => {
-      newHeaders.set(key, value);
-    });
-
     nextResponse = NextResponse.next({
       request: {
-        headers: newHeaders,
+        headers: context.headers,
       },
     });
 
+    // Reapply cookies after creating new response
     context.cookies?.forEach((cookie) => {
       nextResponse.cookies.set(cookie.name, cookie.value, cookie.options);
     });
@@ -105,15 +101,16 @@ export function createMiddleware(
     Record<'before' | 'after', MiddlewareFunction | MiddlewareFunction[]>
   >,
 ): NextMiddleware {
-  const context: MiddlewareContext = new Map<string, unknown>();
-  context.cookies = new Map<string, ResponseCookie>();
-  context.headers = new Headers();
-
   return async (
     request: NextRequest,
     event: NextFetchEvent,
   ): Promise<NextResponse | Response> => {
     const path = request.nextUrl.pathname || '/';
+
+    // Initialize context with request headers
+    const context: MiddlewareContext = new Map<string, unknown>();
+    context.cookies = new Map<string, ResponseCookie>();
+    context.headers = new Headers(request.headers);
 
     let beforeGlobalMiddleware: MiddlewareFunction[] = [];
     let afterGlobalMiddleware: MiddlewareFunction[] = [];
