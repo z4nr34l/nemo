@@ -13,6 +13,9 @@ export type NextMiddleware = (
 
 export interface MiddlewareContext extends Map<string, unknown> {}
 
+/**
+ * Properties passed to middleware functions.
+ */
 export interface MiddlewareFunctionProps {
   request: NextRequest;
   context: MiddlewareContext;
@@ -31,12 +34,24 @@ export type MiddlewareConfig = Record<
   MiddlewareFunction | MiddlewareFunction[]
 >;
 
+/**
+ * Checks if the middleware is a legacy middleware.
+ *
+ * @param {MiddlewareFunction} middleware - The middleware function to check.
+ * @returns {boolean} - True if the middleware is a legacy middleware, false otherwise.
+ */
 function isLegacyMiddleware(
   middleware: MiddlewareFunction,
 ): middleware is NextMiddleware {
   return middleware.length === 2;
 }
 
+/**
+ * Forwards the request to the next middleware in the chain.
+ *
+ * @param {MiddlewareFunction} middleware - The middleware function to execute.
+ * @param {MiddlewareFunctionProps} props - The properties to pass to the middleware function.
+ */
 async function forward(
   middleware: MiddlewareFunction,
   props: MiddlewareFunctionProps,
@@ -52,6 +67,13 @@ async function forward(
   props.forward(response);
 }
 
+/**
+ * Executes the middleware function and returns the response if it is a Response or NextResponse.
+ *
+ * @param {MiddlewareFunction} middleware - The middleware function to execute.
+ * @param {MiddlewareFunctionProps} props - The properties to pass to the middleware function.
+ * @returns {Promise<MiddlewareReturn>} - The response from the middleware function.
+ */
 async function executeMiddleware(
   middleware: MiddlewareFunction,
   props: MiddlewareFunctionProps,
@@ -71,6 +93,13 @@ async function executeMiddleware(
   return undefined;
 }
 
+/**
+ * Creates a middleware function that executes a series of middleware functions based on the request path.
+ *
+ * @param {MiddlewareConfig} pathMiddlewareMap - The configuration object mapping paths to middleware functions.
+ * @param {AtLeastOne<Record<'before' | 'after', MiddlewareFunction | MiddlewareFunction[]>>} [globalMiddleware] - Optional global middleware to execute before and after the path-specific middleware.
+ * @returns {NextMiddleware} - The created middleware function.
+ */
 export function createMiddleware(
   pathMiddlewareMap: MiddlewareConfig,
   globalMiddleware?: AtLeastOne<
@@ -146,6 +175,13 @@ export function createMiddleware(
   };
 }
 
+/**
+ * Checks if the given path matches the specified pattern.
+ *
+ * @param {string} pattern - The pattern to match against.
+ * @param {string} path - The path to check.
+ * @returns {boolean} - True if the path matches the pattern, false otherwise.
+ */
 function matchesPath(pattern: string, path: string): boolean {
   return pathToRegexp(pattern).regexp.test(path);
 }
