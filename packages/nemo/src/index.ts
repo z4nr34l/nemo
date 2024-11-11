@@ -125,6 +125,7 @@ export function createMiddleware(
 
     return NextResponse.next({
       request,
+      headers: request.headers,
     });
   };
 }
