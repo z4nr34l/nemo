@@ -32,7 +32,7 @@
     "@commitlint/cli": "^18.4.3",
     "@commitlint/config-conventional": "^18.4.3",
     "@commitlint/config-pnpm-scopes": "^18.4.3",
-    "@vercel/style-guide": "^5.1.0",
+    "@vercel/style-guide": "^6.0.0",
     "husky": "^8.0.3",
     "prettier": "^3.1.1",
     "prettier-plugin-tailwindcss": "^0.5.9",
