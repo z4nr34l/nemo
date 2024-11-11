@@ -44,9 +44,9 @@ async function executeMiddleware(
   props: MiddlewareFunctionProps,
 ): Promise<NextResponse | Response> {
   if (isLegacyMiddleware(middleware)) {
-    return await middleware(props.request, props.event);
+    return middleware(props.request, props.event);
   } else {
-    return await middleware(props);
+    return middleware(props);
   }
 }
 
