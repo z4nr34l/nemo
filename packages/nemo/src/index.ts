@@ -102,10 +102,6 @@ export function createMiddleware(
       ...afterGlobalMiddleware.flat(),
     ];
 
-    let finalResponse: MiddlewareReturn = NextResponse.next({
-      request,
-    });
-
     for (const middleware of allMiddlewareFunctions) {
       await executeMiddleware(middleware, {
         request,
@@ -127,7 +123,9 @@ export function createMiddleware(
       });
     }
 
-    return finalResponse;
+    return NextResponse.next({
+      request,
+    });
   };
 }
 
