@@ -15,14 +15,40 @@ export interface MiddlewareFunctionProps {
   event: NextFetchEvent;
 }
 
-export type MiddlewareFunction = (
+// Separate types for each middleware style
+export type NewMiddleware = (
   props: MiddlewareFunctionProps,
 ) => NextResponse | Response | Promise<NextResponse | Response>;
+
+export type LegacyMiddleware = (
+  request: NextRequest,
+  event: NextFetchEvent,
+) => NextResponse | Response | Promise<NextResponse | Response>;
+
+export type MiddlewareFunction = NewMiddleware | LegacyMiddleware;
 
 export type MiddlewareConfig = Record<
   string,
   MiddlewareFunction | MiddlewareFunction[]
 >;
+
+// Type guard to check if it's a legacy middleware
+function isLegacyMiddleware(
+  middleware: MiddlewareFunction,
+): middleware is LegacyMiddleware {
+  return middleware.length === 2;
+}
+
+async function executeMiddleware(
+  middleware: MiddlewareFunction,
+  props: MiddlewareFunctionProps,
+): Promise<NextResponse | Response> {
+  if (isLegacyMiddleware(middleware)) {
+    return await middleware(props.request, props.event);
+  } else {
+    return await middleware(props);
+  }
+}
 
 export function createMiddleware(
   pathMiddlewareMap: MiddlewareConfig,
@@ -68,11 +94,13 @@ export function createMiddleware(
     ];
 
     for (const middleware of allMiddlewareFunctions) {
-      const response = await middleware({
+      const middlewareProps = {
         request,
         event,
         context,
-      });
+      };
+
+      const response = await executeMiddleware(middleware, middlewareProps);
 
       if (response instanceof NextResponse || response instanceof Response) {
         return response;
