@@ -80,7 +80,7 @@ async function executeMiddleware(
  * Creates a middleware function that executes a series of middleware functions based on the request path.
  *
  * @param {MiddlewareConfig} pathMiddlewareMap - The configuration object mapping paths to middleware functions.
- * @param {AtLeastOne<Record<'before' | 'after', MiddlewareFunction | MiddlewareFunction[]>>} [globalMiddleware] - Optional global middleware to execute before and after the path-specific middleware.
+ * @param {Partial<Record<'before' | 'after', MiddlewareFunction | MiddlewareFunction[]>} globalMiddleware - The global middleware functions to execute
  * @returns {NextMiddleware} - The created middleware function.
  */
 export function createMiddleware(
