@@ -19,6 +19,9 @@ module.exports = {
       },
     },
   },
+  rules: {
+    '@typescript-eslint/no-invalid-void-type': 'off',
+  },
   overrides: [
     {
       files: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
