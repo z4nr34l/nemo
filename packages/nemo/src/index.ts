@@ -5,7 +5,7 @@ import {
 } from 'next/server';
 import { pathToRegexp } from 'path-to-regexp';
 
-type MiddlewareReturn = Response | NextResponse | undefined;
+type MiddlewareReturn = Response | NextResponse | undefined | void;
 
 export type NextMiddleware = (
   request: NextRequest,

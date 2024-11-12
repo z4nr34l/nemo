@@ -29,7 +29,8 @@
     "build": "tsup --clean --splitting",
     "clean": "rm -rf node_modules && rm -rf .turbo && rm -rf dist",
     "dev": "tsup --watch",
-    "lint": "eslint \"**/*.ts*\""
+    "lint": "eslint \"**/*.ts*\"",
+    "test": "jest --coverage"
   },
   "prettier": "@vercel/style-guide/prettier",
   "dependencies": {
