@@ -2,6 +2,8 @@
 
 `NEMO` is a simple utility for creating path-based middleware in Next.js applications. Simplify multi-middleware management and reduce general boilerplate in few easy steps with that package.
 
+[![codecov](https://codecov.io/gh/z4nr34l/nemo/graph/badge.svg?token=10CXWSP5BA)](https://codecov.io/gh/z4nr34l/nemo)
+
 ## Installation
 
 ```bash
