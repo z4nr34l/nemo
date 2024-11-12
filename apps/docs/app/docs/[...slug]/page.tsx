@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { type ReactNode } from 'react';
 import { docs } from '@/app/source';
 import { PageView } from '@/components/ui/page-view';
 
@@ -12,11 +11,13 @@ interface Param {
 }
 
 interface PageProps {
-  params: Param;
+  params: Promise<Param>;
 }
 
-export default function Page({ params }: Readonly<PageProps>): ReactNode {
-  return <PageView slug={params.slug} />;
+export default async function Page({
+  params,
+}: Readonly<PageProps>): Promise<React.ReactNode> {
+  return <PageView slug={(await params).slug} />;
 }
 
 export function generateStaticParams(): Param[] {
@@ -28,8 +29,12 @@ export function generateStaticParams(): Param[] {
     }));
 }
 
-export function generateMetadata({ params }: { params: Param }): Metadata {
-  const page = docs.getPage(params.slug);
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<Param>;
+}): Promise<Metadata> {
+  const page = docs.getPage((await params).slug);
 
   if (!page) notFound();
 
