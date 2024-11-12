@@ -6,23 +6,26 @@ import {
 import { NextResponse } from 'next/server';
 
 const middlewares = {
-  '/': async ({ request, forward }: MiddlewareFunctionProps) => {
-    // Loop prevention
-    if (request.nextUrl.pathname.startsWith('/demo')) {
-      return NextResponse.next();
-    }
+  '/': [
+    async ({ request, forward }: MiddlewareFunctionProps) => {
+      // Loop prevention
+      if (request.nextUrl.pathname.startsWith('/demo')) {
+        return NextResponse.next();
+      }
 
-    request.nextUrl.pathname = 'demo/' + request.nextUrl.pathname;
+      request.nextUrl.pathname = 'demo/' + request.nextUrl.pathname;
 
-    const response = NextResponse.redirect(request.nextUrl);
+      const response = NextResponse.redirect(request.nextUrl);
 
-    // Set a cookie
-    response.cookies.set('nemo', 'demo');
+      // Set a cookie
+      response.cookies.set('nemo', 'demo');
 
-    console.log(response.cookies.get('nemo'));
-
-    forward(response);
-  },
+      forward(response);
+    },
+    async ({ request }: MiddlewareFunctionProps) => {
+      console.log(request.cookies.get('nemo'));
+    },
+  ],
 } satisfies MiddlewareConfig;
 
 // Create middlewares helper
