@@ -141,4 +141,99 @@ describe('createMiddleware', () => {
     );
     expect(await response2?.text()).toBe('Page 2 response');
   });
+
+  it('executes global before middleware', async () => {
+    const middlewareConfig: MiddlewareConfig = {
+      '/page1': [
+        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
+        async ({ forward }: MiddlewareFunctionProps) => {
+          const response = NextResponse.next();
+          forward(response);
+        },
+      ],
+    };
+
+    const globalMiddleware = {
+      // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
+      before: async ({ forward }: MiddlewareFunctionProps) => {
+        const response = NextResponse.next();
+        response.headers.set('x-before-header', 'before-value');
+        forward(response);
+      },
+    };
+
+    const middleware = createMiddleware(middlewareConfig, globalMiddleware);
+    const response = await middleware(mockRequest, mockEvent);
+
+    expect(response?.headers.get('x-before-header')).toBe('before-value');
+  });
+
+  it('executes global after middleware', async () => {
+    const middlewareConfig: MiddlewareConfig = {
+      '/page1': [
+        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
+        async ({ forward }: MiddlewareFunctionProps) => {
+          const response = NextResponse.next();
+          forward(response);
+        },
+      ],
+    };
+
+    const globalMiddleware = {
+      // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
+      after: async ({ forward }: MiddlewareFunctionProps) => {
+        const response = NextResponse.next();
+        response.headers.set('x-after-header', 'after-value');
+        forward(response);
+      },
+    };
+
+    const middleware = createMiddleware(middlewareConfig, globalMiddleware);
+    const response = await middleware(mockRequest, mockEvent);
+
+    expect(response?.headers.get('x-after-header')).toBe('after-value');
+  });
+
+  it('returns NextResponse if no middleware matches the path', async () => {
+    const middlewareConfig: MiddlewareConfig = {
+      '/page2': [
+        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
+        async ({ forward }: MiddlewareFunctionProps) => {
+          const response = NextResponse.next();
+          forward(response);
+        },
+      ],
+    };
+
+    const middleware = createMiddleware(middlewareConfig);
+    const response = await middleware(mockRequest, mockEvent);
+
+    expect(response).toBeInstanceOf(NextResponse);
+    expect(response?.body).toBeNull();
+  });
+
+  it('handles multiple middleware functions for a single path', async () => {
+    const middlewareConfig: MiddlewareConfig = {
+      '/page1': [
+        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
+        async ({ forward }: MiddlewareFunctionProps) => {
+          const response = NextResponse.next();
+          response.headers.set('x-middleware-1', 'value1');
+          forward(response);
+        },
+        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
+        async ({ forward }: MiddlewareFunctionProps) => {
+          const response = NextResponse.next();
+          response.headers.set('x-middleware-2', 'value2');
+          forward(response);
+        },
+      ],
+    };
+
+    const middleware = createMiddleware(middlewareConfig);
+    const response = await middleware(mockRequest, mockEvent);
+
+    expect(response?.headers.get('x-middleware-1')).toBe('value1');
+    expect(response?.headers.get('x-middleware-2')).toBe('value2');
+  });
 });
