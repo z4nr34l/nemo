@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="All Tests in nemo &gt; jest.config.ts" type="JavaScriptTestRunnerJest" nameIsGenerated="true">
+    <config-file value="$PROJECT_DIR$/packages/nemo/jest.config.ts" />
+    <node-interpreter value="project" />
+    <jest-package value="$PROJECT_DIR$/packages/nemo/node_modules/jest" />
+    <working-dir value="$PROJECT_DIR$/packages/nemo" />
+    <envs />
+    <scope-kind value="ALL" />
+    <method v="2" />
+  </configuration>
+</component>
