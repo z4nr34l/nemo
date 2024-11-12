@@ -25,8 +25,9 @@ describe('forward', () => {
     await forward(legacyMiddleware, props);
 
     expect(props.forward).toHaveBeenCalledWith(expect.any(NextResponse));
-    const response = (props.forward as jest.Mock).mock
-      .calls[0][0] as NextResponse;
+    const response =
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- intentional
+      (props.forward as jest.Mock).mock.calls[0][0] as NextResponse;
     expect(await response.text()).toBe('Legacy response');
   });
 
@@ -49,8 +50,9 @@ describe('forward', () => {
     await forward(newMiddleware, props);
 
     expect(props.forward).toHaveBeenCalledWith(expect.any(NextResponse));
-    const response = (props.forward as jest.Mock).mock
-      .calls[0][0] as NextResponse;
+    const response =
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- intentional
+      (props.forward as jest.Mock).mock.calls[0][0] as NextResponse;
     expect(await response.text()).toBe('New response');
   });
 
