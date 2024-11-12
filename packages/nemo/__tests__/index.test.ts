@@ -7,8 +7,13 @@ import {
 } from '../src';
 
 describe('createMiddleware', () => {
-  const mockRequest = new NextRequest('http://localhost/page1');
-  const mockEvent = {} as NextFetchEvent;
+  let mockRequest = new NextRequest('http://localhost/page1');
+  let mockEvent = {} as NextFetchEvent;
+
+  beforeEach(() => {
+    mockRequest = new NextRequest('http://localhost/page1');
+    mockEvent = {} as NextFetchEvent;
+  });
 
   it('returns the response from the first middleware that returns a response', async () => {
     const middlewareConfig: MiddlewareConfig = {
@@ -235,5 +240,92 @@ describe('createMiddleware', () => {
 
     expect(response?.headers.get('x-middleware-1')).toBe('value1');
     expect(response?.headers.get('x-middleware-2')).toBe('value2');
+  });
+
+  it('executes only global before middleware if no path matches', async () => {
+    const middlewareConfig: MiddlewareConfig = {
+      '/page2': [
+        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
+        async ({ forward }: MiddlewareFunctionProps) => {
+          const response = NextResponse.next();
+          forward(response);
+        },
+      ],
+    };
+
+    const globalMiddleware = {
+      // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
+      before: async ({ forward }: MiddlewareFunctionProps) => {
+        const response = NextResponse.next();
+        response.headers.set('x-before-header', 'before-value');
+        forward(response);
+      },
+    };
+
+    const middleware = createMiddleware(middlewareConfig, globalMiddleware);
+    const response = await middleware(mockRequest, mockEvent);
+
+    expect(response?.headers.get('x-before-header')).toBe('before-value');
+    expect(response?.headers.get('x-after-header')).toBeNull();
+  });
+
+  it('executes only global after middleware if no path matches', async () => {
+    const middlewareConfig: MiddlewareConfig = {
+      '/page2': [
+        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
+        async ({ forward }: MiddlewareFunctionProps) => {
+          const response = NextResponse.next();
+          forward(response);
+        },
+      ],
+    };
+
+    const globalMiddleware = {
+      // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
+      after: async ({ forward }: MiddlewareFunctionProps) => {
+        const response = NextResponse.next();
+        response.headers.set('x-after-header', 'after-value');
+        forward(response);
+      },
+    };
+
+    const middleware = createMiddleware(middlewareConfig, globalMiddleware);
+    const response = await middleware(mockRequest, mockEvent);
+
+    expect(response?.headers.get('x-after-header')).toBe('after-value');
+    expect(response?.headers.get('x-before-header')).toBeNull();
+  });
+
+  it('executes both global before and after middleware if no path matches', async () => {
+    const middlewareConfig: MiddlewareConfig = {
+      '/page2': [
+        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
+        async ({ forward }: MiddlewareFunctionProps) => {
+          const response = NextResponse.next();
+          forward(response);
+        },
+      ],
+    };
+
+    const globalMiddleware = {
+      // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
+      before: async ({ forward }: MiddlewareFunctionProps) => {
+        const response = NextResponse.next();
+        response.headers.set('x-before-header', 'before-value');
+        forward(response);
+      },
+      // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
+      after: async ({ forward }: MiddlewareFunctionProps) => {
+        const response = NextResponse.next();
+        response.headers.set('x-after-header', 'after-value');
+        forward(response);
+      },
+    };
+
+    const middleware = createMiddleware(middlewareConfig, globalMiddleware);
+    const response = await middleware(mockRequest, mockEvent);
+
+    expect(response?.headers.get('x-before-header')).toBe('before-value');
+    expect(response?.headers.get('x-after-header')).toBe('after-value');
   });
 });

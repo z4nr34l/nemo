@@ -6,9 +6,15 @@ import {
 } from '../src';
 
 describe('forward', () => {
-  const mockRequest = new NextRequest('http://localhost/page1');
-  const mockEvent = {} as NextFetchEvent;
-  const mockContext = new Map<string, unknown>();
+  let mockRequest = new NextRequest('http://localhost/page1');
+  let mockEvent = {} as NextFetchEvent;
+  let mockContext = new Map<string, unknown>();
+
+  beforeEach(() => {
+    mockRequest = new NextRequest('http://localhost/page1');
+    mockEvent = {} as NextFetchEvent;
+    mockContext = new Map<string, unknown>();
+  });
 
   it('forwards the response from a legacy middleware', async () => {
     const legacyMiddleware: MiddlewareFunction = (_request, _event) => {
