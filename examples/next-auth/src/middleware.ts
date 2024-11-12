@@ -14,8 +14,8 @@ const middlewares = {
     },
   ],
   '/page2': [
-    async ({ request, response }: MiddlewareFunctionProps) => {
-      if (await auth(request as never, response as never)) {
+    async ({ request }: MiddlewareFunctionProps) => {
+      if (await auth(request as never)) {
         return NextResponse.next();
       }
 

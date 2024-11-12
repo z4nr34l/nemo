@@ -7,7 +7,7 @@ import {
 
 const middlewares = {
   '/': [
-    async () => {
+    async ({ forward }: MiddlewareFunctionProps) => {
       console.log('middleware');
 
       const response = NextResponse.next();
@@ -15,9 +15,9 @@ const middlewares = {
       response.headers.set('x-test-header', 'test-value');
       response.headers.set('x-another-header', 'another-value');
 
-      return response;
+      forward(response);
     },
-    async ({ request }: MiddlewareFunctionProps) => {
+    async ({ request, forward }: MiddlewareFunctionProps) => {
       const response = NextResponse.next();
 
       // Copy headers from the request to the response
@@ -42,7 +42,7 @@ const middlewares = {
         response.headers.set('x-another-header-error', 'missing or incorrect');
       }
 
-      return response;
+      forward(response);
     },
   ],
 } satisfies MiddlewareConfig;

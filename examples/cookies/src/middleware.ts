@@ -6,7 +6,7 @@ import {
 import { NextResponse } from 'next/server';
 
 const middlewares = {
-  '/': async ({ request }: MiddlewareFunctionProps) => {
+  '/': async ({ request, forward }: MiddlewareFunctionProps) => {
     // Loop prevention
     if (request.nextUrl.pathname.startsWith('/demo')) {
       return NextResponse.next();
@@ -21,7 +21,7 @@ const middlewares = {
 
     console.log(response.cookies.get('nemo'));
 
-    return response;
+    forward(response);
   },
 } satisfies MiddlewareConfig;
 
