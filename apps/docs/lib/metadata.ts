@@ -1,12 +1,20 @@
 import type { Metadata } from 'next/types';
 
+import { createMetadataImage } from 'fumadocs-core/server';
+import { source } from '@/app/source';
+
+export const metadataImage = createMetadataImage({
+  imageRoute: '/docs-og',
+  source,
+});
+
 export function createMetadata(override: Metadata): Metadata {
   return {
     ...override,
     openGraph: {
       title: override.title ?? undefined,
       description: override.description ?? undefined,
-      url: 'https://nemo.rscl.it',
+      url: 'https://nemo.rescale.build',
       siteName: 'NEMO',
       ...override.openGraph,
     },

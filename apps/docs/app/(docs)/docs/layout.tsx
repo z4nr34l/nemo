@@ -1,7 +1,8 @@
 import { type ReactNode } from 'react';
-import { DocsLayout } from 'fumadocs-ui/layout';
-import { docs } from '@/app/source';
+import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { BookIcon, HomeIcon } from 'lucide-react';
+import { source } from '@/app/source';
+import { Overlay } from '@/components/overlay';
 
 export default function RootDocsLayout({ children }: { children: ReactNode }) {
   return (
@@ -22,8 +23,9 @@ export default function RootDocsLayout({ children }: { children: ReactNode }) {
           active: 'nested-url',
         },
       ]}
-      tree={docs.pageTree as never}
+      tree={source.pageTree}
     >
+      <Overlay />
       {children}
     </DocsLayout>
   );

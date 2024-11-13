@@ -4,7 +4,10 @@ description: Middleware functions standardization, explanation and usage
 icon: Play
 ---
 
-import { WaypointsIcon } from "lucide-react";
+
+
+
+import {WaypointsIcon} from "lucide-react";
 
 This package introduces middleware functions standardization for more elastic approach to development and feature delivery.
 
@@ -13,9 +16,8 @@ This package introduces middleware functions standardization for more elastic ap
 This example shows all props that are provided for your usage.
 
 ```ts title="_middleware.ts"
-async ({ request, response, context, event }: MiddlewareFunctionProps) => {
+async ({ request, response, context, event, forward }: MiddlewareFunctionProps) => {
   return response
-}
 ```
 
 ```json doc-gen:typescript
@@ -26,11 +28,11 @@ async ({ request, response, context, event }: MiddlewareFunctionProps) => {
 ```
 
 <Callout>
-  Every function should return an response object (pass from props or return custom).
+  Every function should return a response object (pass from props or return custom).
 </Callout>
 
 <Callout type="warn">
-  Response object should be compatible with [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) or [NextResponse](https://nextjs.org/docs/app/functions/next-response) interface
+  Response object should be compatible with [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) or [NextResponse](https://nextjs.org/docs/app/functions/next-response) interface.
 </Callout>
 
 ## Explanation
