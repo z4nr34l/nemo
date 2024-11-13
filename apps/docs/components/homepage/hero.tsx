@@ -71,7 +71,7 @@ function Content() {
 
 function Guides() {
   return (
-    <div className="hidden md:grid absolute inset-0 grid-cols-12 grid-rows-6 gap-px bg-muted">
+    <div className="hidden md:grid absolute inset-0 grid-cols-12 grid-rows-6 gap-px bg-border">
       {Array(72)
         .fill('')
         .map((_, id) => (
@@ -102,126 +102,126 @@ function Globe() {
         <path
           d="M 400 800 A -400 400 0 0 0 400 0"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M 400 800 A -266.667 400 0 0 0 400 0"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M 400 800 A -133.333 400 0 0 0 400 0"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M 400 800 A 0 400 0 0 0 400 0"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M 400 0 A 133.333 400 0 0 0 400 800"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M 400 0 A 266.667 400 0 0 0 400 800"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M 400 0 A 400 400 0 0 0 400 800"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M178.892,66.667 h442.217"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M101.858,133.333 h596.285"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M53.59,200 h692.82"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M22.876,266.667 h754.247"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M5.595,333.333 h788.811"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M0,400 h800"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M5.595,466.667 h788.811"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M22.876,533.333 h754.247"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M53.59,600 h692.82"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M101.858,666.667 h596.285"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M178.892,733.333 h442.217"
           fill="none"
-          stroke="hsl(var(--muted))"
+          stroke="hsl(var(--border))"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
@@ -609,8 +609,8 @@ function Globe() {
           y1="0"
           y2="400"
         >
-          <stop offset="0%" stopColor="hsl(var(--muted))"></stop>
-          <stop offset="100%" stopColor="hsl(var(--muted))"></stop>
+          <stop offset="0%" stopColor="hsl(var(--border))"></stop>
+          <stop offset="100%" stopColor="hsl(var(--border))"></stop>
         </linearGradient>
       </defs>
     </svg>
