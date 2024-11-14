@@ -4,10 +4,7 @@ description: Middleware functions standardization, explanation and usage
 icon: Play
 ---
 
-
-
-
-import {WaypointsIcon} from "lucide-react";
+import {WaypointsIcon, ArrowRightIcon} from "lucide-react";
 
 This package introduces middleware functions standardization for more elastic approach to development and feature delivery.
 
@@ -18,12 +15,6 @@ This example shows all props that are provided for your usage.
 ```ts title="_middleware.ts"
 async ({ request, response, context, event, forward }: MiddlewareFunctionProps) => {
   return response
-```
-
-```json doc-gen:typescript
-{
-  "file": "./types/index.d.ts",
-  "name": "MiddlewareFunctionProps"
 }
 ```
 
@@ -74,3 +65,11 @@ This property contains event object for serverless functions execution.
 
   You can read more there: [Next.js 15 waitUntil](https://rc.nextjs.org/docs/app/building-your-application/routing/middleware#waituntil-and-nextfetchevent)
 </Callout>
+
+### Prop:&nbsp;&nbsp;`forward`
+
+Type: `(response: MiddlewareReturn) => void`
+
+The `forward` function allows you to forward the response from one middleware function to another. This can be useful for chaining middleware functions together and creating more complex middleware logic.
+
+<Card href="/docs/forward-functions" title="Forward functions" description="Learn more about Forward functions in middleware" icon={<ArrowRightIcon/>}/>
