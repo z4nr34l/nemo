@@ -1,25 +1,14 @@
-import type { InferPageType } from 'fumadocs-core/source';
 import { loader } from 'fumadocs-core/source';
-import { createMDXSource, defaultSchemas } from 'fumadocs-mdx';
+import { createMDXSource } from 'fumadocs-mdx';
 import { icons } from 'lucide-react';
-import { z } from 'zod';
-import { map } from './../.map';
 import { create } from '@/components/icon';
+import { docs, meta } from '@/.source';
 
-export const docs = loader({
+export const source = loader({
   baseUrl: '/docs',
-  rootDir: 'docs',
+  source: createMDXSource(docs, meta),
   icon(icon) {
     if (icon && icon in icons)
       return create({ icon: icons[icon as keyof typeof icons] });
   },
-  source: createMDXSource(map, {
-    // @ts-expect-error -- intentional
-    frontmatter: defaultSchemas.frontmatter.extend({
-      toc: z.boolean().default(true),
-      index: z.boolean().default(false),
-    }) as never,
-  }),
 });
-
-export type Doc = InferPageType<typeof docs>;

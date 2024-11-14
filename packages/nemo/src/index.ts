@@ -1,177 +1,153 @@
-import { type NextFetchEvent, NextRequest, NextResponse } from 'next/server';
+import {
+  type NextFetchEvent,
+  type NextRequest,
+  NextResponse,
+} from 'next/server';
 import { pathToRegexp } from 'path-to-regexp';
 
-type AtLeastOne<T, U = { [K in keyof T]: Pick<T, K> }> = Partial<T> &
-  U[keyof U];
+type MiddlewareReturn = Response | NextResponse | undefined | void;
 
 export type NextMiddleware = (
   request: NextRequest,
   event: NextFetchEvent,
-) => Response | NextResponse | Promise<Response | NextResponse>;
+) => MiddlewareReturn | Promise<MiddlewareReturn>;
 
+export type MiddlewareContext = Map<string, unknown>;
+
+/**
+ * Properties passed to middleware functions.
+ */
 export interface MiddlewareFunctionProps {
   request: NextRequest;
-  response: NextResponse;
-  context: Map<string, unknown>;
+  context: MiddlewareContext;
   event: NextFetchEvent;
+  forward: (response: MiddlewareReturn) => void;
 }
 
-export type MiddlewareFunction = (
+export type NewMiddleware = (
   props: MiddlewareFunctionProps,
-) => NextResponse | Response | Promise<NextResponse | Response>;
+) => MiddlewareReturn | Promise<MiddlewareReturn>;
+
+export type MiddlewareFunction = NextMiddleware | NewMiddleware;
 
 export type MiddlewareConfig = Record<
   string,
   MiddlewareFunction | MiddlewareFunction[]
 >;
 
+/**
+ * Checks if the given middleware function is a legacy middleware.
+ * @param middleware - The middleware function to check.
+ * @returns True if the middleware is a legacy middleware, false otherwise.
+ */
+function isLegacyMiddleware(
+  middleware: MiddlewareFunction,
+): middleware is NextMiddleware {
+  return middleware.length === 2;
+}
+
+/**
+ * Forwards the response to the next middleware function.
+ * @param middleware - The middleware function to forward to.
+ * @param props - The properties to pass to the middleware function.
+ */
+export async function forward(
+  middleware: MiddlewareFunction,
+  props: MiddlewareFunctionProps,
+): Promise<void> {
+  const response = isLegacyMiddleware(middleware)
+    ? await middleware(props.request, props.event)
+    : await middleware(props);
+  props.forward(response);
+}
+
+/**
+ * Executes the given middleware function.
+ * @param middleware - The middleware function to execute.
+ * @param props - The properties to pass to the middleware function.
+ */
+async function executeMiddleware(
+  middleware: MiddlewareFunction,
+  props: MiddlewareFunctionProps,
+): Promise<MiddlewareReturn> {
+  const response = isLegacyMiddleware(middleware)
+    ? await middleware(props.request, props.event)
+    : await middleware(props);
+  return response instanceof Response ? response : undefined;
+}
+
+/**
+ * Creates a middleware function that executes the given middleware functions.
+ * @param pathMiddlewareMap - The map of paths to middleware functions.
+ * @param globalMiddleware - The global middleware functions to execute
+ */
 export function createMiddleware(
   pathMiddlewareMap: MiddlewareConfig,
-  globalMiddleware?: AtLeastOne<
+  globalMiddleware?: Partial<
     Record<'before' | 'after', MiddlewareFunction | MiddlewareFunction[]>
   >,
 ): NextMiddleware {
-  const context = new Map<string, unknown>();
-
   return async (
     request: NextRequest,
     event: NextFetchEvent,
   ): Promise<NextResponse | Response> => {
     const path = request.nextUrl.pathname || '/';
+    const context: MiddlewareContext = new Map<string, unknown>();
 
     let beforeGlobalMiddleware: MiddlewareFunction[] = [];
-    let afterGlobalMiddleware: MiddlewareFunction[] = [];
-
     if (globalMiddleware?.before) {
-      if (Array.isArray(globalMiddleware.before)) {
-        beforeGlobalMiddleware = globalMiddleware.before.filter(Boolean).flat();
-      } else {
-        beforeGlobalMiddleware = [globalMiddleware.before]
-          .filter(Boolean)
-          .flat();
-      }
+      beforeGlobalMiddleware = Array.isArray(globalMiddleware.before)
+        ? globalMiddleware.before
+        : [globalMiddleware.before];
     }
 
+    let afterGlobalMiddleware: MiddlewareFunction[] = [];
     if (globalMiddleware?.after) {
-      if (Array.isArray(globalMiddleware.after)) {
-        afterGlobalMiddleware = globalMiddleware.after.filter(Boolean).flat();
-      } else {
-        afterGlobalMiddleware = [globalMiddleware.after].filter(Boolean).flat();
-      }
+      afterGlobalMiddleware = Array.isArray(globalMiddleware.after)
+        ? globalMiddleware.after
+        : [globalMiddleware.after];
     }
 
     const allMiddlewareFunctions = [
-      ...beforeGlobalMiddleware.flat(),
+      ...beforeGlobalMiddleware,
       ...Object.entries(pathMiddlewareMap)
         .filter(([key]) => matchesPath(key, path))
         .flatMap(([, middlewareFunctions]) => middlewareFunctions),
-      ...afterGlobalMiddleware.flat(),
+      ...afterGlobalMiddleware,
     ];
 
-    let response: NextResponse = NextResponse.next();
-
     for (const middleware of allMiddlewareFunctions) {
-      response = await executeMiddleware(
+      const middlewareResponse = await executeMiddleware(middleware, {
         request,
-        middleware,
-        response,
         event,
         context,
-      );
-
-      request = updateRequestWithResponse(request, response);
+        forward: (response: MiddlewareReturn) => {
+          if (response instanceof Response) {
+            response.headers.forEach((value, key) => {
+              request.headers.set(key, value);
+            });
+            if (response instanceof NextResponse) {
+              response.cookies
+                .getAll()
+                .forEach((cookie) =>
+                  request.cookies.set(cookie.name, cookie.value),
+                );
+            }
+          }
+        },
+      });
+      if (middlewareResponse instanceof Response) return middlewareResponse;
     }
 
-    return response;
+    return NextResponse.next({ request, headers: request.headers });
   };
 }
 
-async function executeMiddleware(
-  request: NextRequest,
-  middleware: MiddlewareFunction,
-  response: NextResponse,
-  event: NextFetchEvent,
-  context: Map<string, unknown>,
-): Promise<NextResponse> {
-  const result = upgradeResponseToNextResponse(
-    await middleware({
-      request,
-      response,
-      event,
-      context,
-    }),
-  );
-
-  if (response) {
-    response.headers.forEach((value, key) => {
-      result.headers.set(key, value);
-    });
-  }
-
-  result.cookies.getAll().forEach((cookie) => {
-    request.cookies.set(cookie);
-  });
-
-  if (isRedirect(result)) {
-    request.headers.set('x-redirect-url', result.headers.get('location') ?? '');
-    return result;
-  }
-
-  return result;
-}
-
+/**
+ * Checks if the given path matches the given pattern.
+ * @param pattern - The pattern to match.
+ * @param path - The path to check.
+ */
 function matchesPath(pattern: string, path: string): boolean {
   return pathToRegexp(pattern).regexp.test(path);
-}
-
-function isRedirect(response: NextResponse | Response): boolean {
-  return Boolean(
-    response && [301, 302, 303, 307, 308].includes(response.status),
-  );
-}
-
-function updateRequestWithResponse(
-  request: NextRequest,
-  response: NextResponse,
-): NextRequest {
-  const updatedHeaders = new Headers(request.headers);
-
-  response.headers.forEach((value, key) => {
-    updatedHeaders.set(key, value);
-  });
-
-  const updatedUrl = new URL(request.url);
-
-  const updatedRequest = new NextRequest(updatedUrl, {
-    headers: updatedHeaders,
-    method: request.method,
-    body: request.body,
-    referrer: request.referrer,
-  });
-
-  response.cookies.getAll().forEach((cookie) => {
-    updatedRequest.cookies.set(cookie.name, cookie.value);
-  });
-
-  return updatedRequest;
-}
-
-function upgradeResponseToNextResponse(
-  response: Response | NextResponse,
-): NextResponse {
-  if (response instanceof NextResponse) {
-    return response;
-  }
-
-  const nextResponse = new NextResponse(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers: response.headers,
-  });
-
-  response.headers.forEach((value, key) => {
-    nextResponse.headers.set(key, value);
-  });
-
-  return nextResponse;
 }

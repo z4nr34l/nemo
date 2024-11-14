@@ -1,11 +1,7 @@
-import { createSearchAPI } from 'fumadocs-core/search/server';
-import { docs } from '@/app/source';
+import { source } from '@/app/source';
+import { createFromSource } from 'fumadocs-core/search/server';
 
-export const { GET } = createSearchAPI('advanced', {
-  indexes: docs.getPages().map((doc) => ({
-    title: doc.data.title,
-    structuredData: doc.data.exports.structuredData,
-    id: doc.url,
-    url: doc.url,
-  })),
-});
+// it should be cached forever
+export const revalidate = false;
+
+export const { staticGET: GET } = createFromSource(source);

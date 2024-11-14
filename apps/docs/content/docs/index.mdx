@@ -1,11 +1,11 @@
 ---
 title: Getting started
-description: Get started with NEMO
+description: Supercharge your Next.js middleware with NEMO
 icon: Book
 ---
 
+
 import {SquareFunctionIcon, WrenchIcon} from "lucide-react";
-import {Tab, Tabs} from 'fumadocs-ui/components/tabs';
 import {Step, Steps} from 'fumadocs-ui/components/steps';
 
 ## Installation
@@ -14,28 +14,9 @@ import {Step, Steps} from 'fumadocs-ui/components/steps';
   <Step>
     ### Paste installation command into your terminal to install package.
 
-    <Tabs items={['Bun', 'PNPM', 'NPM', 'Yarn']}>
-      <Tab value="Bun">
-        ```bash title="Terminal"
-        bun add @rescale/nemo
-        ```
-      </Tab>
-      <Tab value="PNPM">
-        ```bash title="Terminal"
-        pnpm add @rescale/nemo
-        ```
-      </Tab>
-      <Tab value="NPM">
-        ```bash title="Terminal"
-        npm install @rescale/nemo
-        ```
-      </Tab>
-      <Tab value="Yarn">
-        ```bash title="Terminal"
-        yarn add @rescale/nemo
-        ```
-      </Tab>
-    </Tabs>
+    ```package-install
+    @rescale/nemo
+    ```
   </Step>
   <Step>
     ### Import the package inside middleware.ts file.

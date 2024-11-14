@@ -1,0 +1,75 @@
+---
+title: Forward
+description: Documentation for forward functions in NEMO
+icon: ArrowRight
+---
+
+import { ArrowRightIcon } from "lucide-react";
+
+Forward functions in NEMO allow you to forward the response from one middleware function to another. This can be useful for chaining middleware functions together and creating more complex middleware logic.
+
+## Forward Function Schema
+
+This example shows how to use the forward function in a middleware.
+
+```ts title="middleware.ts"
+import { forward, type MiddlewareFunctionProps } from '@rescale/nemo';
+
+const firstMiddleware = async ({ request, response, forward }: MiddlewareFunctionProps) => {
+  console.log('First middleware');
+  forward(response);
+};
+
+const secondMiddleware = async ({ request, response }: MiddlewareFunctionProps) => {
+  console.log('Second middleware');
+  return response;
+};
+
+const middlewares = {
+  '/api': [firstMiddleware, secondMiddleware],
+};
+
+export const middleware = createMiddleware(middlewares);
+```
+
+## Explanation
+
+### Prop: `forward`
+
+Type: `(response: MiddlewareReturn) => void`
+
+The `forward` function allows you to forward the response from one middleware function to another. This can be useful for chaining middleware functions together and creating more complex middleware logic.
+
+### Example Usage
+
+In this example, the `firstMiddleware` logs a message and forwards the response to the `secondMiddleware`, which logs another message and returns the response.
+
+```ts title="middleware.ts"
+import { forward, type MiddlewareFunctionProps } from '@rescale/nemo';
+
+const firstMiddleware = async ({ request, response, forward }: MiddlewareFunctionProps) => {
+  console.log('First middleware');
+  forward(response);
+};
+
+const secondMiddleware = async ({ request, response }: MiddlewareFunctionProps) => {
+  console.log('Second middleware');
+  return response;
+};
+
+const middlewares = {
+  '/api': [firstMiddleware, secondMiddleware],
+};
+
+export const middleware = createMiddleware(middlewares);
+```
+
+<Callout>
+  The `forward` function should be called with the response object that you want to forward to the next middleware function.
+</Callout>
+
+### Related Topics
+
+<Cards>
+  <Card title="Functions" icon={<ArrowRightIcon/>} description="Learn more about middleware functions" href="/docs/functions"/>
+</Cards>

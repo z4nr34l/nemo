@@ -8,12 +8,12 @@ import { Comparizon } from '@/components/homepage/comparizon';
 export default function HomePage(): ReactElement {
   return (
     <main className="px-4 xl:px-0 py-[150px]">
-      <div className="relative max-w-5xl mx-auto border bg-background divide-y divide-muted">
+      <div className="relative max-w-5xl mx-auto border bg-background divide-y divide-border">
         <Hero />
 
         <Comparizon />
 
-        <div className="grid lg:grid-cols-3 bg-muted gap-px">
+        <div className="grid lg:grid-cols-3 bg-border gap-px">
           <div className="p-8 lg:px-10 lg:py-14 bg-background flex flex-col items-start justify-start gap-6">
             <h2 className="text-4xl font-bold text-muted-foreground">
               <span className="text-foreground">Simplify</span> your middlewares{' '}
@@ -84,7 +84,7 @@ export default function HomePage(): ReactElement {
           </div>
         </div>
 
-        <div className="grid bg-muted gap-x-px">
+        <div className="grid bg-border gap-x-px">
           <div className="p-8 lg:px-12 lg:py-12 bg-background flex flex-col md:flex-row items-start md:items-center justify-start gap-6">
             <div className="flex flex-col flex-1 gap-2">
               <h3 className="font-bold text-3xl">
