@@ -1,5 +1,11 @@
 # NEMO
 
+## 1.3.0
+
+### Minor Changes
+
+- 8518674: Fixed many issues, added tests, improving docs
+
 ## 1.2.4
 
 ### Patch Changes
