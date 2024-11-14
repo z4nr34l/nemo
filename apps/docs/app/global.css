@@ -13,4 +13,54 @@
       'rlig' 1,
       'calt' 1;
   }
+
+  .fd-codeblock:not(:hover) {
+    .shiki.has-focused {
+      .line:not(.focused) {
+        span {
+          @apply blur-[2px];
+        }
+      }
+    }
+  }
+
+  .shiki {
+    counter-reset: step;
+    counter-increment: step 0;
+    pre {
+      @apply px-0;
+    }
+    .line {
+      @apply border-l-2 border-transparent w-full min-w-full box-border transition-all duration-300 relative;
+      span {
+        @apply transition-all duration-300;
+      }
+      &::before {
+        counter-increment: step;
+        @apply inline-block w-8 px-2 border-transparent text-right text-neutral-600 content-[counter(step)];
+      }
+      &.highlighted,
+      &.diff {
+        @apply m-0 !px-0;
+        &::before {
+          @apply relative left-auto;
+        }
+      }
+      &.highlighted {
+        @apply border-neutral-500 bg-neutral-800;
+      }
+      &.diff {
+        &.add {
+          @apply border-violet-500 bg-violet-500/10 before:text-violet-500;
+        }
+        &.remove {
+          @apply border-red-500 bg-red-500/15 opacity-70 *:!text-neutral-400 before:text-orange-500;
+          &::before {
+            content: '-';
+            counter-increment: none;
+          }
+        }
+      }
+    }
+  }
 }

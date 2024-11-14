@@ -48,7 +48,7 @@ importers:
         version: 0.7.6
       '@vercel/analytics':
         specifier: ^1.2.2
-        version: 1.3.1(next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
+        version: 1.3.1(next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.0
@@ -57,31 +57,31 @@ importers:
         version: 2.1.1
       fumadocs-core:
         specifier: ^14.4.0
-        version: 14.4.0(@types/react@18.3.3)(next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
+        version: 14.4.0(@types/react@18.3.3)(next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
       fumadocs-docgen:
         specifier: ^1.3.2
         version: 1.3.2(typescript@5.3.3)
       fumadocs-mdx:
         specifier: ^11.1.1
-        version: 11.1.1(acorn@8.12.1)(fumadocs-core@14.4.0(@types/react@18.3.3)(next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))
+        version: 11.1.1(acorn@8.12.1)(fumadocs-core@14.4.0(@types/react@18.3.3)(next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))
       fumadocs-twoslash:
         specifier: ^2.0.1
-        version: 2.0.1(@types/react-dom@18.3.0)(@types/react@18.3.3)(fumadocs-ui@14.4.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)(tailwindcss@3.4.1(ts-node@10.9.2(@swc/core@1.7.3(@swc/helpers@0.5.13))(@types/node@22.8.1)(typescript@5.3.3))))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)(shiki@1.22.2)(typescript@5.3.3)
+        version: 2.0.1(@types/react-dom@18.3.0)(@types/react@18.3.3)(fumadocs-ui@14.4.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)(tailwindcss@3.4.1(ts-node@10.9.2(@swc/core@1.7.3(@swc/helpers@0.5.13))(@types/node@22.8.1)(typescript@5.3.3))))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)(shiki@1.22.2)(typescript@5.3.3)
       fumadocs-typescript:
         specifier: ^3.0.2
         version: 3.0.2(typescript@5.3.3)
       fumadocs-ui:
         specifier: ^14.4.0
-        version: 14.4.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)(tailwindcss@3.4.1(ts-node@10.9.2(@swc/core@1.7.3(@swc/helpers@0.5.13))(@types/node@22.8.1)(typescript@5.3.3)))
+        version: 14.4.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)(tailwindcss@3.4.1(ts-node@10.9.2(@swc/core@1.7.3(@swc/helpers@0.5.13))(@types/node@22.8.1)(typescript@5.3.3)))
       geist:
         specifier: ^1.2.2
-        version: 1.3.1(next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))
+        version: 1.3.1(next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))
       lucide-react:
         specifier: ^0.414.0
         version: 0.414.0(react@19.0.0-rc-f6cce072-20240723)
       next:
         specifier: 15.0.3
-        version: 15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
+        version: 15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
       react:
         specifier: 19.0.0-rc-f6cce072-20240723
         version: 19.0.0-rc-f6cce072-20240723
@@ -101,6 +101,9 @@ importers:
         specifier: ^3.23.8
         version: 3.23.8
     devDependencies:
+      '@shikijs/transformers':
+        specifier: ^1.22.2
+        version: 1.22.2
       '@types/mdx':
         specifier: ^2.0.13
         version: 2.0.13
@@ -2177,10 +2180,10 @@ packages:
         integrity: sha512-bg/l7l5QzUjgsh8kjwDFommzAshnUsuVMV5NM56QVCm+7ZckYdd9P/ExR8xG/Oup0OajVxNLaHJ1tb8mXk+nzQ==,
       }
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
-      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
-      react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+      '@types/react': npm:types-react@19.0.0-rc.1
+      '@types/react-dom': npm:types-react-dom@19.0.0-rc.1
+      react: 19.0.0-rc-2d16326d-20240930
+      react-dom: 19.0.0-rc-2d16326d-20240930
     peerDependenciesMeta:
       '@types/react':
         optional: true
@@ -2377,10 +2380,10 @@ packages:
         integrity: sha512-u2HRUyWW+lOiA2g0Le0tMmT55FGOEWHwPFt1EPfbLly7uXQExFo5duNKqG2DzmFXIdqOeNd+TpE8baHWJCyP9w==,
       }
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
-      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
-      react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+      '@types/react': npm:types-react@19.0.0-rc.1
+      '@types/react-dom': npm:types-react-dom@19.0.0-rc.1
+      react: 19.0.0-rc-2d16326d-20240930
+      react-dom: 19.0.0-rc-2d16326d-20240930
     peerDependenciesMeta:
       '@types/react':
         optional: true
@@ -2517,8 +2520,8 @@ packages:
         integrity: sha512-CasTfvsy+frcFkbXtSJ2Zu9JHpN8TYKxkgJGWbjiZhFivxaeW7rMeZt7QELGVLaYVfFMsKHjb7Ak0nMEe+2Vfw==,
       }
     peerDependencies:
-      '@types/react': '*'
-      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+      '@types/react': npm:types-react@19.0.0-rc.1
+      react: 19.0.0-rc-2d16326d-20240930
     peerDependenciesMeta:
       '@types/react':
         optional: true
@@ -2773,6 +2776,12 @@ packages:
     resolution:
       {
         integrity: sha512-A0RHgiYR5uiHvddwHehBN9j8PhOvfT6/GebSTWrapur6M+fD/4i3mlfUv7aFK4b+4GQ1R42L8fC5N98whZjNcg==,
+      }
+
+  '@shikijs/transformers@1.22.2':
+    resolution:
+      {
+        integrity: sha512-8f78OiBa6pZDoZ53lYTmuvpFPlWtevn23bzG+azpPVvZg7ITax57o/K3TC91eYL3OMJOO0onPbgnQyZjRos8XQ==,
       }
 
   '@shikijs/twoslash@1.22.2':
@@ -11307,6 +11316,10 @@ snapshots:
       unified: 11.0.5
       unist-util-visit: 5.0.0
 
+  '@shikijs/transformers@1.22.2':
+    dependencies:
+      shiki: 1.22.2
+
   '@shikijs/twoslash@1.22.2(typescript@5.3.3)':
     dependencies:
       '@shikijs/core': 1.22.2
@@ -11770,11 +11783,11 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@vercel/analytics@1.3.1(next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)':
+  '@vercel/analytics@1.3.1(next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)':
     dependencies:
       server-only: 0.0.1
     optionalDependencies:
-      next: 15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
+      next: 15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
       react: 19.0.0-rc-f6cce072-20240723
 
   '@vercel/style-guide@6.0.0(@next/eslint-plugin-next@14.2.5)(eslint@8.57.0)(jest@29.7.0(@types/node@20.14.1)(ts-node@10.9.2(@swc/core@1.7.3(@swc/helpers@0.5.13))(@types/node@20.14.1)(typescript@5.5.4)))(prettier@3.3.3)(typescript@5.5.4)':
@@ -13430,7 +13443,7 @@ snapshots:
   fsevents@2.3.3:
     optional: true
 
-  fumadocs-core@14.4.0(@types/react@18.3.3)(next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723):
+  fumadocs-core@14.4.0(@types/react@18.3.3)(next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723):
     dependencies:
       '@formatjs/intl-localematcher': 0.5.7
       '@orama/orama': 3.0.1
@@ -13447,7 +13460,7 @@ snapshots:
       shiki: 1.22.2
       unist-util-visit: 5.0.0
     optionalDependencies:
-      next: 15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
+      next: 15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
       react: 19.0.0-rc-f6cce072-20240723
       react-dom: 19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723)
     transitivePeerDependencies:
@@ -13467,7 +13480,7 @@ snapshots:
       - supports-color
       - typescript
 
-  fumadocs-mdx@11.1.1(acorn@8.12.1)(fumadocs-core@14.4.0(@types/react@18.3.3)(next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)):
+  fumadocs-mdx@11.1.1(acorn@8.12.1)(fumadocs-core@14.4.0(@types/react@18.3.3)(next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)):
     dependencies:
       '@mdx-js/mdx': 3.1.0(acorn@8.12.1)
       chokidar: 4.0.1
@@ -13475,20 +13488,20 @@ snapshots:
       esbuild: 0.24.0
       estree-util-value-to-estree: 3.1.2
       fast-glob: 3.3.2
-      fumadocs-core: 14.4.0(@types/react@18.3.3)(next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
+      fumadocs-core: 14.4.0(@types/react@18.3.3)(next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
       gray-matter: 4.0.3
       micromatch: 4.0.8
-      next: 15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
+      next: 15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
       zod: 3.23.8
     transitivePeerDependencies:
       - acorn
       - supports-color
 
-  fumadocs-twoslash@2.0.1(@types/react-dom@18.3.0)(@types/react@18.3.3)(fumadocs-ui@14.4.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)(tailwindcss@3.4.1(ts-node@10.9.2(@swc/core@1.7.3(@swc/helpers@0.5.13))(@types/node@22.8.1)(typescript@5.3.3))))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)(shiki@1.22.2)(typescript@5.3.3):
+  fumadocs-twoslash@2.0.1(@types/react-dom@18.3.0)(@types/react@18.3.3)(fumadocs-ui@14.4.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)(tailwindcss@3.4.1(ts-node@10.9.2(@swc/core@1.7.3(@swc/helpers@0.5.13))(@types/node@22.8.1)(typescript@5.3.3))))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)(shiki@1.22.2)(typescript@5.3.3):
     dependencies:
       '@radix-ui/react-popover': 1.1.2(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
       '@shikijs/twoslash': 1.22.2(typescript@5.3.3)
-      fumadocs-ui: 14.4.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)(tailwindcss@3.4.1(ts-node@10.9.2(@swc/core@1.7.3(@swc/helpers@0.5.13))(@types/node@22.8.1)(typescript@5.3.3)))
+      fumadocs-ui: 14.4.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)(tailwindcss@3.4.1(ts-node@10.9.2(@swc/core@1.7.3(@swc/helpers@0.5.13))(@types/node@22.8.1)(typescript@5.3.3)))
       mdast-util-from-markdown: 2.0.2
       mdast-util-gfm: 3.0.0
       mdast-util-to-hast: 13.2.0
@@ -13516,7 +13529,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  fumadocs-ui@14.4.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)(tailwindcss@3.4.1(ts-node@10.9.2(@swc/core@1.7.3(@swc/helpers@0.5.13))(@types/node@22.8.1)(typescript@5.3.3))):
+  fumadocs-ui@14.4.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)(tailwindcss@3.4.1(ts-node@10.9.2(@swc/core@1.7.3(@swc/helpers@0.5.13))(@types/node@22.8.1)(typescript@5.3.3))):
     dependencies:
       '@radix-ui/react-accordion': 1.2.1(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
       '@radix-ui/react-collapsible': 1.1.1(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
@@ -13529,9 +13542,9 @@ snapshots:
       '@radix-ui/react-tabs': 1.1.1(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
       '@tailwindcss/typography': 0.5.15(tailwindcss@3.4.1(ts-node@10.9.2(@swc/core@1.7.3(@swc/helpers@0.5.13))(@types/node@22.8.1)(typescript@5.3.3)))
       class-variance-authority: 0.7.0
-      fumadocs-core: 14.4.0(@types/react@18.3.3)(next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
+      fumadocs-core: 14.4.0(@types/react@18.3.3)(next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723))(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
       lucide-react: 0.456.0(react@19.0.0-rc-f6cce072-20240723)
-      next: 15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
+      next: 15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
       next-themes: 0.4.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
       react: 19.0.0-rc-f6cce072-20240723
       react-dom: 19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723)
@@ -13557,9 +13570,9 @@ snapshots:
 
   functions-have-names@1.2.3: {}
 
-  geist@1.3.1(next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)):
+  geist@1.3.1(next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)):
     dependencies:
-      next: 15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
+      next: 15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723)
 
   gensync@1.0.0-beta.2: {}
 
@@ -15188,7 +15201,7 @@ snapshots:
       - '@babel/core'
       - babel-plugin-macros
 
-  next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0):
+  next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723):
     dependencies:
       '@next/env': 15.0.3
       '@swc/counter': 0.1.3
@@ -15196,9 +15209,9 @@ snapshots:
       busboy: 1.6.0
       caniuse-lite: 1.0.30001641
       postcss: 8.4.31
-      react: 19.0.0-rc.0
-      react-dom: 19.0.0-rc.0(react@19.0.0-rc.0)
-      styled-jsx: 5.1.6(@babel/core@7.24.3)(react@19.0.0-rc.0)
+      react: 19.0.0-rc-f6cce072-20240723
+      react-dom: 19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723)
+      styled-jsx: 5.1.6(@babel/core@7.24.3)(react@19.0.0-rc-f6cce072-20240723)
     optionalDependencies:
       '@next/swc-darwin-arm64': 15.0.3
       '@next/swc-darwin-x64': 15.0.3
@@ -15213,7 +15226,7 @@ snapshots:
       - '@babel/core'
       - babel-plugin-macros
 
-  next@15.0.3(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723):
+  next@15.0.3(@babel/core@7.24.3)(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0):
     dependencies:
       '@next/env': 15.0.3
       '@swc/counter': 0.1.3
@@ -15221,9 +15234,9 @@ snapshots:
       busboy: 1.6.0
       caniuse-lite: 1.0.30001641
       postcss: 8.4.31
-      react: 19.0.0-rc-f6cce072-20240723
-      react-dom: 19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723)
-      styled-jsx: 5.1.6(react@19.0.0-rc-f6cce072-20240723)
+      react: 19.0.0-rc.0
+      react-dom: 19.0.0-rc.0(react@19.0.0-rc.0)
+      styled-jsx: 5.1.6(@babel/core@7.24.3)(react@19.0.0-rc.0)
     optionalDependencies:
       '@next/swc-darwin-arm64': 15.0.3
       '@next/swc-darwin-x64': 15.0.3
@@ -16151,17 +16164,19 @@ snapshots:
     optionalDependencies:
       '@babel/core': 7.24.3
 
+  styled-jsx@5.1.6(@babel/core@7.24.3)(react@19.0.0-rc-f6cce072-20240723):
+    dependencies:
+      client-only: 0.0.1
+      react: 19.0.0-rc-f6cce072-20240723
+    optionalDependencies:
+      '@babel/core': 7.24.3
+
   styled-jsx@5.1.6(@babel/core@7.24.3)(react@19.0.0-rc.0):
     dependencies:
       client-only: 0.0.1
       react: 19.0.0-rc.0
     optionalDependencies:
       '@babel/core': 7.24.3
-
-  styled-jsx@5.1.6(react@19.0.0-rc-f6cce072-20240723):
-    dependencies:
-      client-only: 0.0.1
-      react: 19.0.0-rc-f6cce072-20240723
 
   sucrase@3.35.0:
     dependencies:
