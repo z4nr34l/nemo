@@ -4,7 +4,7 @@ description: Middleware functions standardization, explanation and usage
 icon: Play
 ---
 
-import {WaypointsIcon} from "lucide-react";
+import {WaypointsIcon, ArrowRightIcon} from "lucide-react";
 
 This package introduces middleware functions standardization for more elastic approach to development and feature delivery.
 
@@ -71,3 +71,5 @@ This property contains event object for serverless functions execution.
 Type: `(response: MiddlewareReturn) => void`
 
 The `forward` function allows you to forward the response from one middleware function to another. This can be useful for chaining middleware functions together and creating more complex middleware logic.
+
+<Card href="/docs/forward-functions" title="Forward functions" description="Learn more about Forward functions in middleware" icon={<ArrowRightIcon/>}/>
