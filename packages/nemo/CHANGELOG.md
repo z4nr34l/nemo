@@ -1,5 +1,11 @@
 # NEMO
 
+## 1.3.1
+
+### Patch Changes
+
+- 9b19520: Fixed headers forwarding due to server actions issues
+
 ## 1.3.0
 
 ### Minor Changes
