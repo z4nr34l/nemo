@@ -93,6 +93,7 @@ export function createMiddleware(
   ): Promise<NextResponse | Response> => {
     const path = request.nextUrl.pathname || '/';
     const context: MiddlewareContext = new Map<string, unknown>();
+    const finalHeaders = new Headers(request.headers);
 
     let beforeGlobalMiddleware: MiddlewareFunction[] = [];
     if (globalMiddleware?.before) {
@@ -124,7 +125,7 @@ export function createMiddleware(
         forward: (response: MiddlewareReturn) => {
           if (response instanceof Response) {
             response.headers.forEach((value, key) => {
-              request.headers.set(key, value);
+              finalHeaders.set(key, value);
             });
             if (response instanceof NextResponse) {
               response.cookies
@@ -139,7 +140,11 @@ export function createMiddleware(
       if (middlewareResponse instanceof Response) return middlewareResponse;
     }
 
-    return NextResponse.next({ request, headers: request.headers });
+    return NextResponse.next({
+      request: {
+        headers: finalHeaders,
+      },
+    });
   };
 }
 
