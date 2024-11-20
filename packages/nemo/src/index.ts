@@ -139,7 +139,7 @@ export function createMiddleware(
       if (middlewareResponse instanceof Response) return middlewareResponse;
     }
 
-    return NextResponse.next({ request, headers: request.headers });
+    return NextResponse.next({ headers: new Headers(request.headers) });
   };
 }
 
