@@ -14,6 +14,10 @@ export type NextMiddleware = (
 
 export type MiddlewareContext = Map<string, unknown>;
 
+interface NEMOConfig {
+  excludedHeaders: string[];
+}
+
 /**
  * Properties passed to middleware functions.
  */
@@ -34,6 +38,22 @@ export type MiddlewareConfig = Record<
   string,
   MiddlewareFunction | MiddlewareFunction[]
 >;
+
+const defaultExcludedHeaders = ['content-type'];
+
+/**
+ * Filters out excluded headers from the response.
+ * @param response - The response to filter headers from.
+ * @param excludedHeaders - The list of headers to exclude.
+ */
+function filterHeaders(
+  response: NextResponse,
+  excludedHeaders: string[],
+): void {
+  excludedHeaders.forEach((header) => {
+    response.headers.delete(header);
+  });
+}
 
 /**
  * Checks if the given middleware function is a legacy middleware.
@@ -80,12 +100,14 @@ async function executeMiddleware(
  * Creates a middleware function that executes the given middleware functions.
  * @param pathMiddlewareMap - The map of paths to middleware functions.
  * @param globalMiddleware - The global middleware functions to execute
+ * @param config - The configuration for the NEMO.
  */
 export function createMiddleware(
   pathMiddlewareMap: MiddlewareConfig,
   globalMiddleware?: Partial<
     Record<'before' | 'after', MiddlewareFunction | MiddlewareFunction[]>
   >,
+  config?: NEMOConfig,
 ): NextMiddleware {
   return async (
     request: NextRequest,
@@ -136,7 +158,13 @@ export function createMiddleware(
           }
         },
       });
-      if (middlewareResponse instanceof Response) return middlewareResponse;
+      if (middlewareResponse instanceof Response) {
+        filterHeaders(
+          middlewareResponse as NextResponse,
+          config?.excludedHeaders ?? defaultExcludedHeaders,
+        );
+        return middlewareResponse;
+      }
     }
 
     return NextResponse.next({ request, headers: request.headers });
