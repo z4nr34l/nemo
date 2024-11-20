@@ -34,7 +34,10 @@ const middlewares = {
     },
     async ({ request }: MiddlewareFunctionProps) => {
       console.log('Middleware for /page2', request.nextUrl.pathname);
-      console.log('Authenticated header value:', request.headers.get('x-authenticated'));
+      console.log(
+        'Authenticated header value:',
+        request.headers.get('x-authenticated'),
+      );
       return NextResponse.redirect('http://localhost:3002/page1');
     },
   ],

@@ -167,7 +167,11 @@ export function createMiddleware(
       }
     }
 
-    return NextResponse.next({ request, headers: request.headers });
+    return NextResponse.next({
+      request: {
+        headers: new Headers(request.headers),
+      },
+    });
   };
 }
 
