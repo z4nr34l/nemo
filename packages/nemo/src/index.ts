@@ -116,8 +116,6 @@ export function createMiddleware(
       ...afterGlobalMiddleware,
     ];
 
-    const originalHeaders = new Headers(request.headers);
-
     for (const middleware of allMiddlewareFunctions) {
       const middlewareResponse = await executeMiddleware(middleware, {
         request,
@@ -126,9 +124,7 @@ export function createMiddleware(
         forward: (response: MiddlewareReturn) => {
           if (response instanceof Response) {
             response.headers.forEach((value, key) => {
-              if (originalHeaders.get(key) !== value) {
-                request.headers.set(key, value);
-              }
+              request.headers.set(key, value);
             });
             if (response instanceof NextResponse) {
               response.cookies
