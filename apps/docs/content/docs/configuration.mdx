@@ -46,32 +46,18 @@ Let's break down the construction:
 
 In this library is used [path-to-regexp](https://github.com/pillarjs/path-to-regexp) package to match the middleware routes path in a same way as Next.js does in config's matcher prop.
 
-<Tabs items={["Simple", "Route segment", "Multiple paths", "Custom"]}>
+<Tabs items={["Simple", "Route segments"]}>
   <Tab value="Simple">
     ```ts title="middleware.ts"
     const middlewares = {
-      '/api': // middleware functions for /api route // [!code focus]
+      '/api{/*path}': // middleware functions for /api* route // [!code focus]
     };
     ```
   </Tab>
-  <Tab value="Route segment">
+  <Tab value="Route segments">
     ```ts title="middleware.ts"
     const middlewares = {
-      '/team{/:slug}?': // middleware functions for /team/<slug> route // [!code focus]
-    };
-    ```
-  </Tab>
-  <Tab value="Multiple paths">
-    ```ts title="middleware.ts"
-    const middlewares = {
-      '/(home|settings)': // middleware functions for /home or /settings route // [!code focus]
-    };
-    ```
-  </Tab>
-  <Tab value="Custom">
-    ```ts title="middleware.ts"
-    const middlewares = {
-      '/post{/:id(\\d+)}?': // middleware functions for /post/<id> route // [!code focus]
+      '/team/:slug{/*path}': // middleware functions for /team/<slug>* route // [!code focus]
     };
     ```
   </Tab>

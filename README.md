@@ -88,14 +88,16 @@ Function that allows passing response from legacy middleware functions to the ne
 import { createMiddleware } from '@rescale/nemo';
 
 export default createMiddleware({
-  '/api/:path': async ({ request }) => {
+  '/api{/*path}': async ({ request }) => {
     // Handle API routes
   },
-  '/protected/:path': async ({ request, context }) => {
+  '/protected{/*path}': async ({ request, context }) => {
     // Handle protected routes
   }
 });
 ```
+
+You can test your's matchers [using this tool](https://www.rescale.build/tools/path-to-regexp).
 
 ### Using Global Middleware
 
@@ -103,7 +105,7 @@ export default createMiddleware({
 import { createMiddleware } from '@rescale/nemo';
 
 export default createMiddleware({
-  '/api/:path': apiMiddleware,
+  '/api{/*path}': apiMiddleware,
 },
 {
   before: [loggerMiddleware, authMiddleware],
@@ -117,7 +119,7 @@ export default createMiddleware({
 import { createMiddleware } from '@rescale/nemo';
 
 export default createMiddleware({
-  '/:path': [
+  '{/*path}': [
     async ({ context }) => {
       context.set('user', { id: 1 });
     },

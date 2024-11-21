@@ -49,9 +49,8 @@ import {Step, Steps} from 'fumadocs-ui/components/steps';
 
     const middlewares = { // [!code ++]
       '/': [ // [!code ++]
-        async ({request, response}: MiddlewareFunctionProps) => { // [!code ++]
+        async ({request}: MiddlewareFunctionProps) => { // [!code ++]
           console.log('There is NEMO', request.nextUrl.pathname); // [!code ++]
-          return response; // [!code ++]
         }, // [!code ++]
       ], // [!code ++]
     }; // [!code ++]
@@ -98,9 +97,8 @@ import {Step, Steps} from 'fumadocs-ui/components/steps';
 
     const middlewares = {
       '/': [
-        async ({request, response}: MiddlewareFunctionProps) => {
+        async ({request}: MiddlewareFunctionProps) => {
           console.log('There is NEMO', request.nextUrl.pathname);
-          return response;
         },
       ],
     };
