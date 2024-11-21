@@ -68,9 +68,9 @@ const middlewares = {
 
 const middlewares = {
   // This will match routes starting with /blog/*
-  '/blog/:path*': blogMiddleware,
+  '/blog/*path': blogMiddleware,
   // This will match routes starting with /docs/*
-  '/docs/:path*': docsMiddleware,
+  '/docs/*path': docsMiddleware,
 };
 ```
 
@@ -81,21 +81,9 @@ const middlewares = {
 
 const middlewares = {
   // This will match /blog/[slug] routes only
-  '/blog/[slug]': blogMiddleware,
+  '/blog/:slug': blogMiddleware,
   // This will match /blog/[slug]/view routes only
-  '/blog/[slug]/view': blogViewMiddleware,
-};
-```
-
-### RegEx
-
-```ts
-// ...
-
-const middlewares = {
-  // This will match any url in /posts that's next segment is number-typed
-  // Example: /posts/123, but not /posts/asd
-  'regex:^/posts/\\d+$': regexMiddleware,
+  '/blog/:slug/view': blogViewMiddleware,
 };
 ```
 
