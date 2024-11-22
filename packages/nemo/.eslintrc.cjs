@@ -21,6 +21,7 @@ module.exports = {
   },
   rules: {
     '@typescript-eslint/no-invalid-void-type': 'off',
+    '@typescript-eslint/require-await': 'off',
   },
   overrides: [
     {

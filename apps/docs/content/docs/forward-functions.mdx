@@ -20,9 +20,8 @@ const firstMiddleware = async ({ request, response, forward }: MiddlewareFunctio
   forward(response);
 };
 
-const secondMiddleware = async ({ request, response }: MiddlewareFunctionProps) => {
+const secondMiddleware = async ({ request }: MiddlewareFunctionProps) => {
   console.log('Second middleware');
-  return response;
 };
 
 const middlewares = {
@@ -52,9 +51,8 @@ const firstMiddleware = async ({ request, response, forward }: MiddlewareFunctio
   forward(response);
 };
 
-const secondMiddleware = async ({ request, response }: MiddlewareFunctionProps) => {
+const secondMiddleware = async ({ request }: MiddlewareFunctionProps) => {
   console.log('Second middleware');
-  return response;
 };
 
 const middlewares = {

@@ -32,9 +32,6 @@ async ({ request, response, context, event }: MiddlewareFunctionProps) => {
 
   if(!user) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  } else {
-    response.headers.set('x-user-id', user.id);
-    return response
   }
 }
 ```

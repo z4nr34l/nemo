@@ -13,18 +13,10 @@ This package introduces middleware functions standardization for more elastic ap
 This example shows all props that are provided for your usage.
 
 ```ts title="_middleware.ts"
-async ({ request, response, context, event, forward }: MiddlewareFunctionProps) => {
-  return response
+async ({ request, context, event, forward, params }: MiddlewareFunctionProps) => {
+  // function body
 }
 ```
-
-<Callout>
-  Every function should return a response object (pass from props or return custom).
-</Callout>
-
-<Callout type="warn">
-  Response object should be compatible with [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) or [NextResponse](https://nextjs.org/docs/app/functions/next-response) interface.
-</Callout>
 
 ## Explanation
 
@@ -36,19 +28,13 @@ That's a user middleware's request passed to function, which can be later **upda
 
 For example in case of authorization processes or custom headers/cookies management this prop can differ from its entry form.
 
-### Prop:&nbsp;&nbsp;`response`
-
-Type: [NextResponse](https://nextjs.org/docs/app/functions/next-response)
-
-This property contains `NextResponse.next()` (only for first executed function in chain), which can be **updated** by other functions in chain.
-
 ### Prop:&nbsp;&nbsp;`context`
 
 Type: [Map\<string, unknown\>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
 
 This property contains context shared across whole execution chain for every function.
 
-<Card href="/docs/shared-context" title="Shared context" description="Learn more about Shared Context in middleware" icon={<WaypointsIcon/>}/>
+<Card href="/docs/context" title="Shared context" description="Learn more about Shared Context in middleware" icon={<WaypointsIcon/>}/>
 
 <Callout>
   If you want to know more about Map interface usage please refer to these [docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map).
@@ -73,3 +59,18 @@ Type: `(response: MiddlewareReturn) => void`
 The `forward` function allows you to forward the response from one middleware function to another. This can be useful for chaining middleware functions together and creating more complex middleware logic.
 
 <Card href="/docs/forward-functions" title="Forward functions" description="Learn more about Forward functions in middleware" icon={<ArrowRightIcon/>}/>
+
+### Prop:&nbsp;&nbsp;`params`
+
+Type: `() => Partial<Record<string, string | string[]>>`
+
+This property contains route parameters parsed from the URL path. Just like it's working in Next.js pages/routes/layouts but without awaiting.
+
+```ts title="_middleware.ts"
+// Example URL: /team/123
+// Matcher: '/team/:slug'
+
+async ({ params }: MiddlewareFunctionProps) => {
+  console.log(params().slug); // Output: 123
+}
+```

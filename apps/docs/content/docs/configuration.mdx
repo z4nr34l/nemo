@@ -4,7 +4,7 @@ description: Package configuration and explanation
 icon: Wrench
 ---
 
-import { SquareFunctionIcon } from "lucide-react";
+import { SquareFunctionIcon, PlayIcon } from "lucide-react";
 
 The `createMiddleware` function is the main entry point for the Next Easy Middlewares package. It allows you to create a middleware helper that can be used to define middleware functions for your Next.js application.
 
@@ -14,9 +14,8 @@ This is our basic construction which we will use to create a middleware helper.
 
 ```ts title="middleware.ts"
 const middlewares = {
-  '/api': async ({ response }: MiddlewareFunctionProps) => {
+  '/api': async ({ request }: MiddlewareFunctionProps) => {
     // middleware functions for /api route
-    return response
   },
 };
 
@@ -46,7 +45,7 @@ Let's break down the construction:
 
 In this library is used [path-to-regexp](https://github.com/pillarjs/path-to-regexp) package to match the middleware routes path in a same way as Next.js does in config's matcher prop.
 
-<Tabs items={["Simple", "Route segment", "Multiple paths", "Custom"]}>
+<Tabs items={["Simple", "Route segments"]}>
   <Tab value="Simple">
     ```ts title="middleware.ts"
     const middlewares = {
@@ -54,24 +53,10 @@ In this library is used [path-to-regexp](https://github.com/pillarjs/path-to-reg
     };
     ```
   </Tab>
-  <Tab value="Route segment">
+  <Tab value="Route segments">
     ```ts title="middleware.ts"
     const middlewares = {
-      '/team{/:slug}?': // middleware functions for /team/<slug> route // [!code focus]
-    };
-    ```
-  </Tab>
-  <Tab value="Multiple paths">
-    ```ts title="middleware.ts"
-    const middlewares = {
-      '/(home|settings)': // middleware functions for /home or /settings route // [!code focus]
-    };
-    ```
-  </Tab>
-  <Tab value="Custom">
-    ```ts title="middleware.ts"
-    const middlewares = {
-      '/post{/:id(\\d+)}?': // middleware functions for /post/<id> route // [!code focus]
+      '/team/:slug{/*path}': // middleware functions for /team/<slug>* route // [!code focus]
     };
     ```
   </Tab>
@@ -91,9 +76,8 @@ This is a function that will be executed for the specific route. It can be a sin
   <Tab value="Single function">
     ```ts title="middleware.ts"
     const middlewares = {
-      '/api': async ({ response }: MiddlewareFunctionProps) => {
+      '/api': async ({ request }: MiddlewareFunctionProps) => {
         // middleware functions for /api route
-        return response
       },
     };
     ```
@@ -102,19 +86,19 @@ This is a function that will be executed for the specific route. It can be a sin
     ```ts title="middleware.ts"
     const middlewares = {
       '/api': [
-        async ({ response }: MiddlewareFunctionProps) => {
+        async ({ request, context }: MiddlewareFunctionProps) => {
           // middleware functions for /api route
-          return response
         },
-        async ({ response }: MiddlewareFunctionProps) => {
+        async ({ request, context }: MiddlewareFunctionProps) => {
           // middleware functions for /api route
-          return response
         }
       ]
     };
     ```
   </Tab>
 </Tabs>
+
+<Card href="/docs/functions" title="Functions" description="Learn more about NEMO Functions" icon={<PlayIcon/>}/>
 
 ## Global middlewares construction (`globalMiddlewares`)
 
@@ -138,9 +122,9 @@ This is a global middleware function(s) that will be executed after any route mi
   <Tab value="Single function">
     ```ts title="middleware.ts"
     const globalMiddlewares = {
-      before: async ({ response }: MiddlewareFunctionProps) => {
+      // you can also define `after:` here
+      before: async ({ request }: MiddlewareFunctionProps) => {
         // middleware functions for /api route
-        return response
       },
     };
     ```
@@ -148,14 +132,13 @@ This is a global middleware function(s) that will be executed after any route mi
   <Tab value="Chained functions">
     ```ts title="middleware.ts"
     const globalMiddlewares = {
+    // you can also define `after:` here
       before: [
-        async ({ response }: MiddlewareFunctionProps) => {
+        async ({ request, context }: MiddlewareFunctionProps) => {
           // middleware functions for /api route
-          return response
         },
-        async ({ response }: MiddlewareFunctionProps) => {
+        async ({ request, context }: MiddlewareFunctionProps) => {
           // middleware functions for /api route
-          return response
         }
       ]
     };

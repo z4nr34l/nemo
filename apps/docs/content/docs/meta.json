@@ -5,10 +5,13 @@
     "---Guide---",
     "index",
     "configuration",
+    "matcher",
     "functions",
     "context",
     "forward-functions",
     "---Conventions---",
-    "...conventions"
+    "...conventions",
+    "---API Reference---",
+    "...api-reference"
   ]
 }

@@ -3,7 +3,7 @@ import {
   type NextRequest,
   NextResponse,
 } from 'next/server';
-import { pathToRegexp } from 'path-to-regexp';
+import { match, pathToRegexp } from 'path-to-regexp';
 
 type MiddlewareReturn = Response | NextResponse | undefined | void;
 
@@ -21,6 +21,7 @@ export interface MiddlewareFunctionProps {
   request: NextRequest;
   context: MiddlewareContext;
   event: NextFetchEvent;
+  params: () => Partial<Record<string, string | string[]>>;
   forward: (response: MiddlewareReturn) => void;
 }
 
@@ -113,15 +114,35 @@ export function createMiddleware(
       ...beforeGlobalMiddleware,
       ...Object.entries(pathMiddlewareMap)
         .filter(([key]) => matchesPath(key, path))
-        .flatMap(([, middlewareFunctions]) => middlewareFunctions),
+        .flatMap(([key, middlewareFunctions]) => {
+          return Array.isArray(middlewareFunctions)
+            ? middlewareFunctions.map((middleware) => ({
+                middleware,
+                pattern: key,
+              }))
+            : [{ middleware: middlewareFunctions, pattern: key }];
+        }),
       ...afterGlobalMiddleware,
     ];
 
-    for (const middleware of allMiddlewareFunctions) {
+    for (const middlewareItem of allMiddlewareFunctions) {
+      const middleware =
+        'pattern' in middlewareItem
+          ? middlewareItem.middleware
+          : middlewareItem;
+
+      const pattern =
+        'pattern' in middlewareItem ? middlewareItem.pattern : path;
+
       const middlewareResponse = await executeMiddleware(middleware, {
         request,
         event,
         context,
+        params: () => {
+          const matchFn = match(pattern);
+          const matchResult = matchFn(path);
+          return matchResult ? matchResult.params : {};
+        },
         forward: (response: MiddlewareReturn) => {
           if (response instanceof Response) {
             response.headers.forEach((value, key) => {
