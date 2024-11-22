@@ -318,4 +318,36 @@ describe('createMiddleware', () => {
     expect(mockRequest.cookies.get('test-cookie')?.name).toBe('test-cookie');
     expect(mockRequest.cookies.get('test-cookie')?.value).toBe('test-value');
   });
+
+  it('executes middleware functions based on pattern', async () => {
+    const mockMiddleware1 = jest.fn(
+      async ({ forward }: MiddlewareFunctionProps) => {
+        const response = NextResponse.next();
+        forward(response);
+      },
+    );
+
+    const mockMiddleware2 = jest.fn(
+      async ({ forward }: MiddlewareFunctionProps) => {
+        const response = new NextResponse('Pattern matched');
+        forward(response);
+      },
+    );
+
+    const middlewareConfig: MiddlewareConfig = {
+      '/page1': [mockMiddleware1],
+      '/page2': [mockMiddleware2],
+    };
+
+    const middleware = createMiddleware(middlewareConfig);
+
+    // Test for pattern '/page1'
+    await middleware(new NextRequest('http://localhost/page1'), mockEvent);
+    expect(mockMiddleware1).toHaveBeenCalled();
+    expect(mockMiddleware2).not.toHaveBeenCalled();
+
+    // Test for pattern '/page2'
+    await middleware(new NextRequest('http://localhost/page2'), mockEvent);
+    expect(mockMiddleware2).toHaveBeenCalled();
+  });
 });
