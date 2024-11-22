@@ -350,4 +350,35 @@ describe('createMiddleware', () => {
     await middleware(new NextRequest('http://localhost/page2'), mockEvent);
     expect(mockMiddleware2).toHaveBeenCalled();
   });
+
+  it('handles both array and single middleware functions correctly', async () => {
+    const mockMiddleware1 = jest.fn(
+      async ({ forward }: MiddlewareFunctionProps) => {
+        const response = NextResponse.next();
+        forward(response);
+      },
+    );
+
+    const mockMiddleware2 = jest.fn(
+      async ({ forward }: MiddlewareFunctionProps) => {
+        const response = new NextResponse('Single middleware');
+        forward(response);
+      },
+    );
+
+    const middlewareConfig: MiddlewareConfig = {
+      '/page1': [mockMiddleware1],
+      '/page2': mockMiddleware2,
+    };
+
+    const middleware = createMiddleware(middlewareConfig);
+
+    // Test for array of middleware functions
+    await middleware(new NextRequest('http://localhost/page1'), mockEvent);
+    expect(mockMiddleware1).toHaveBeenCalled();
+
+    // Test for single middleware function
+    await middleware(new NextRequest('http://localhost/page2'), mockEvent);
+    expect(mockMiddleware2).toHaveBeenCalled();
+  });
 });
