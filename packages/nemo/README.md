@@ -1,6 +1,8 @@
-# NEMO
+# @rescale/nemo
 
-`NEMO` is a simple utility for creating path-based middleware in Next.js applications. Simplify multi-middleware management and reduce general boilerplate in few easy steps with that package.
+A middleware composition library for Next.js applications that allows you to organize and chain middleware functions based on URL patterns.
+
+[![codecov](https://codecov.io/gh/z4nr34l/nemo/graph/badge.svg?token=10CXWSP5BA)](https://codecov.io/gh/z4nr34l/nemo)
 
 ## Installation
 
@@ -16,171 +18,181 @@ pnpm add @rescale/nemo
 bun add @rescale/nemo
 ```
 
-## Usage
+## Key Features
 
-### Basic definition
+- Path-based middleware routing
+- Global middleware support (before/after)
+- Context sharing between middleware
+- Support for both legacy and modern middleware patterns
+- Request/Response header and cookie forwarding
 
-Code in `middleware.ts` file:
+## API Reference
 
-```ts
+### Types
+
+#### `MiddlewareFunction`
+
+Can be either a legacy Next.js middleware (`NextMiddleware`) or the new middleware format (`NewMiddleware`).
+
+#### `MiddlewareConfig`
+
+```typescript
+Record<string, MiddlewareFunction | MiddlewareFunction[]>
+```
+
+#### `MiddlewareFunctionProps`
+
+```typescript
+interface MiddlewareFunctionProps {
+  request: NextRequest;
+  context: MiddlewareContext;
+  event: NextFetchEvent;
+  forward: (response: MiddlewareReturn) => void;
+}
+```
+
+### Main Functions
+
+#### `createMiddleware`
+
+```typescript
+function createMiddleware(
+  pathMiddlewareMap: MiddlewareConfig,
+  globalMiddleware?: {
+    before?: MiddlewareFunction | MiddlewareFunction[];
+    after?: MiddlewareFunction | MiddlewareFunction[];
+  }
+): NextMiddleware
+```
+
+Creates a composed middleware function that:
+
+- Executes global "before" middleware first
+- Matches URL patterns and executes corresponding middleware
+- Executes global "after" middleware last
+- Forwards headers and cookies between middleware functions
+
+#### `forward`
+
+```typescript
+function forward(response: MiddlewareReturn): void
+```
+
+Function that allows passing response from legacy middleware functions to the next middleware in the chain. This enables compatibility between legacy Next.js middleware and the new middleware format.
+
+## Matchers
+
+To make it easier to understand, you can check the below examples:
+
+### Simple route
+
+Matches `/dashboard` route and returns no params.
+
+```plaintext title="Simple route"
+/dashboard
+```
+
+### Prams
+
+General structure of the params is `:paramName` where `paramName` is the name of the param that will be returned in the middleware function.
+
+#### Single
+
+Matches `/dashboard/anything` route and returns `team` param with `anything value`.
+
+```plaintext title="Single"
+/dashboard/:team
+```
+
+You can also define segments in the middle of URL with is matching `/team/anything/dashboard` and returns `team` param with `anything` value.
+
+```plaintext title="Single with suffix"
+/dashboard/:team/delete
+```
+
+#### Optional
+
+Matches `/dashboard` and `/dashboard/anything` routes and returns `team` param with `anything` value if there is value provided in url.
+
+```plaintext title="Optional"
+/dashboard{/:team}
+```
+
+```plaintext title="Optional wildcard"
+/dashboard{/*team}
+```
+
+#### Wildcard
+
+Matches `/dashboard` and `/dashboard/anything/test` routes and returns `team` param with `[anything, test]` value if there is value provided in url.
+
+```plaintext title="Wildcard"
+/dashboard/*team
+```
+
+## Debugging tool
+
+To debug your matchers and params parsing you can use the following tool:
+
+[Rescale path-to-regexp debugger](https://www.rescale.build/tools/path-to-regexp)
+
+## Usage Examples
+
+### Basic Path-Based Middleware
+
+```typescript
 import { createMiddleware } from '@rescale/nemo';
-import { type NextRequest, NextResponse } from 'next/server';
 
-const middlewares = {
-  // define your middlewares here...
-};
-
-// Create middlewares helper
-export const middleware = createMiddleware(middlewares);
-
-export const config = {
-  /*
-   * Match all paths except for:
-   * 1. /api/ routes
-   * 2. /_next/ (Next.js internals)
-   * 3. /_static (inside /public)
-   * 4. /_vercel (Vercel internals)
-   * 5. Static files (e.g. /favicon.ico, /sitemap.xml, /robots.txt, etc.)
-   */
-  matcher: ['/((?!api/|_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
-};
-```
-
-## Matcher types
-
-### Simple
-
-```ts
-// ...
-
-const middlewares = {
-  // This will match /blog route only
-  '/blog': blogMiddleware,
-  // This will match /docs route only
-  '/docs': docsMiddleware,
-};
-```
-
-### Path
-
-```ts
-// ...
-
-const middlewares = {
-  // This will match routes starting with /blog/*
-  '/blog/:path*': blogMiddleware,
-  // This will match routes starting with /docs/*
-  '/docs/:path*': docsMiddleware,
-};
-```
-
-### Dynamic segments
-
-```ts
-// ...
-
-const middlewares = {
-  // This will match /blog/[slug] routes only
-  '/blog/[slug]': blogMiddleware,
-  // This will match /blog/[slug]/view routes only
-  '/blog/[slug]/view': blogViewMiddleware,
-};
-```
-
-### RegEx
-
-```ts
-// ...
-
-const middlewares = {
-  // This will match any url in /posts that's next segment is number-typed
-  // Example: /posts/123, but not /posts/asd
-  'regex:^/posts/\\d+$': regexMiddleware,
-};
-```
-
-## Middlewares defining
-
-### Inline
-
-```ts
-// ...
-
-const middlewares = {
-  // This will match /blog route only
-  '/blog': async (request: NextRequest) => {
-    console.log('Middleware for /blog', request.nextUrl.pathname);
-    return NextResponse.next();
+export default createMiddleware({
+  '/api{/*path}': async ({ request }) => {
+    // Handle API routes
   },
-};
+  '/protected{/*path}': async ({ request, context }) => {
+    // Handle protected routes
+  }
+});
 ```
 
-### Reference
+You can test your's matchers [using this tool](https://www.rescale.build/tools/path-to-regexp).
 
-```ts
-// ...
+### Using Global Middleware
 
-const blogMiddleware = async (request: NextRequest) => {
-  console.log('Middleware for /blog', request.nextUrl.pathname);
-  return NextResponse.next();
-};
+```typescript
+import { createMiddleware } from '@rescale/nemo';
 
-const middlewares = {
-  // This will match /blog route only
-  '/blog': blogMiddleware,
-};
+export default createMiddleware({
+  '/api{/*path}': apiMiddleware,
+},
+{
+  before: [loggerMiddleware, authMiddleware],
+  after: cleanupMiddleware,
+});
 ```
 
-### Import
+### Context Sharing
 
-Recommended good practice!
+```typescript
+import { createMiddleware } from '@rescale/nemo';
 
-```ts
-import { blogMiddleware } from '@/app/(blog)/_middleware';
-
-// ...
-
-const middlewares = {
-  // This will match /blog route only
-  '/blog': blogMiddleware,
-};
+export default createMiddleware({
+  '/*path': [
+    async ({ context }) => {
+      context.set('user', { id: 1 });
+    },
+    async ({ context }) => {
+      const user = context.get('user');
+      // Use the user data
+    }
+  ]
+});
 ```
 
-## Middleware chaining
+## Notes
 
-This packages can intercept `NextResponse.next()` returned from middleware function to chain middlewares for same matcher.
-
-```ts
-// ...
-
-const middlewares = {
-  // This will match /blog route only and execute both middlewares for it
-  '/blog': [blogMiddleware, blogSecondMiddleware],
-};
-```
-
-## Global middlewares
-
-You can define global middleware that would be executed in every middleware execution in your application.
-I've implemented runtime policy, so you can decide if it will be executed before/after (or both) than rest of defined middlewares.
-
-```ts
-// ...
-
-const globalMiddlewares = {
-  before: authMiddleware,
-  after: analyticsMiddleware,
-};
-
-const middlewares = {
-  // define your middlewares here...
-};
-
-// Create middlewares helper
-export const middleware = createMiddleware(middlewares, globalMiddlewares);
-
-// ...
-```
+- Middleware functions are executed in order until a Response is returned
+- The `context` Map is shared between all middleware functions in the chain
+- Headers and cookies are automatically forwarded between middleware functions
+- Supports both Next.js legacy middleware pattern and the new props-based pattern
 
 ## Motivation
 
