@@ -105,9 +105,12 @@ const codeAfter = `import { createMiddleware, type MiddlewareFunctionProps } fro
 import { auth } from '@/app/(auth)/auth/_middleware';
 import { team } from '@/app/(team)/team/_middleware';
 
+const globalMiddlewares = {
+  before: auth,
+};
+
 const middlewares = {
-  '/auth{/:path}?': auth,
-  '/team{/:slug}?': [ auth, team ],
+  '/team/:slug': team,
 };
 
 export const middleware = createMiddleware(middlewares);
