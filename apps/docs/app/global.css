@@ -14,12 +14,10 @@
       'calt' 1;
   }
 
-  .fd-codeblock:not(:hover) {
-    .shiki.has-focused {
-      .line:not(.focused) {
-        span {
-          @apply blur-[2px];
-        }
+  .fd-codeblock:not(:hover).shiki.has-focused {
+    .line:not(.focused) {
+      span {
+        @apply blur-[2px];
       }
     }
   }
