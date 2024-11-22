@@ -1,5 +1,11 @@
 # NEMO
 
+## 1.3.3
+
+### Patch Changes
+
+- 0d32698: Updated npmjs readme
+
 ## 1.3.2
 
 ### Patch Changes
