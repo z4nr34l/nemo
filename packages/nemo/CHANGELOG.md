@@ -1,5 +1,11 @@
 # NEMO
 
+## 1.3.2
+
+### Patch Changes
+
+- 1d739d6: Added params to middleware functions, improved docs
+
 ## 1.3.1
 
 ### Patch Changes
