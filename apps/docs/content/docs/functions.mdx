@@ -13,18 +13,10 @@ This package introduces middleware functions standardization for more elastic ap
 This example shows all props that are provided for your usage.
 
 ```ts title="_middleware.ts"
-async ({ request, response, context, event, forward }: MiddlewareFunctionProps) => {
-  return response
+async ({ request, context, event, forward }: MiddlewareFunctionProps) => {
+  // function body
 }
 ```
-
-<Callout>
-  Every function should return a response object (pass from props or return custom).
-</Callout>
-
-<Callout type="warn">
-  Response object should be compatible with [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) or [NextResponse](https://nextjs.org/docs/app/functions/next-response) interface.
-</Callout>
 
 ## Explanation
 
@@ -35,12 +27,6 @@ Type: [NextRequest](https://nextjs.org/docs/app/functions/next-request)
 That's a user middleware's request passed to function, which can be later **updated** by functions in chain.
 
 For example in case of authorization processes or custom headers/cookies management this prop can differ from its entry form.
-
-### Prop:&nbsp;&nbsp;`response`
-
-Type: [NextResponse](https://nextjs.org/docs/app/functions/next-response)
-
-This property contains `NextResponse.next()` (only for first executed function in chain), which can be **updated** by other functions in chain.
 
 ### Prop:&nbsp;&nbsp;`context`
 

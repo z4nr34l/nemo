@@ -11,23 +11,20 @@ Avoid using the default `middleware` name or prefix/suffix for your functions. I
 ## Proposal
 
 ```ts title="/app/(internal)/_middleware.ts" /internal/
-export const internal = async ({ response }: MiddlewareFunctionProps) => { // [!code focus]
+export const internal = async ({ request }: MiddlewareFunctionProps) => { // [!code focus]
   // function body
-  return response
 }
 ```
 
 ```ts title="/app/(team)/t/_middleware.ts" /team/
-export const team = async ({ response }: MiddlewareFunctionProps) => { // [!code focus]
+export const team = async ({ request }: MiddlewareFunctionProps) => { // [!code focus]
   // function body
-  return response
 }
 ```
 
 ```ts title="/app/_middleware.ts" /analytics/
-export const analytics = async ({ response }: MiddlewareFunctionProps) => { // [!code focus]
+export const analytics = async ({ request }: MiddlewareFunctionProps) => { // [!code focus]
   // function body
-  return response
 }
 ```
 
