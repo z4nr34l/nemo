@@ -80,6 +80,62 @@ function forward(response: MiddlewareReturn): void
 
 Function that allows passing response from legacy middleware functions to the next middleware in the chain. This enables compatibility between legacy Next.js middleware and the new middleware format.
 
+## Matchers
+
+To make it easier to understand, you can check the below examples:
+
+### Simple route
+
+Matches `/dashboard` route and returns no params.
+
+```plaintext title="Simple route"
+/dashboard
+```
+
+### Prams
+
+General structure of the params is `:paramName` where `paramName` is the name of the param that will be returned in the middleware function.
+
+#### Single
+
+Matches `/dashboard/anything` route and returns `team` param with `anything value`.
+
+```plaintext title="Single"
+/dashboard/:team
+```
+
+You can also define segments in the middle of URL with is matching `/team/anything/dashboard` and returns `team` param with `anything` value.
+
+```plaintext title="Single with suffix"
+/dashboard/:team/delete
+```
+
+#### Optional
+
+Matches `/dashboard` and `/dashboard/anything` routes and returns `team` param with `anything` value if there is value provided in url.
+
+```plaintext title="Optional"
+/dashboard{/:team}
+```
+
+```plaintext title="Optional wildcard"
+/dashboard{/*team}
+```
+
+#### Wildcard
+
+Matches `/dashboard` and `/dashboard/anything/test` routes and returns `team` param with `[anything, test]` value if there is value provided in url.
+
+```plaintext title="Wildcard"
+/dashboard/*team
+```
+
+## Debugging tool
+
+To debug your matchers and params parsing you can use the following tool:
+
+[Rescale path-to-regexp debugger](https://www.rescale.build/tools/path-to-regexp)
+
 ## Usage Examples
 
 ### Basic Path-Based Middleware
@@ -119,7 +175,7 @@ export default createMiddleware({
 import { createMiddleware } from '@rescale/nemo';
 
 export default createMiddleware({
-  '{/*path}': [
+  '/*path': [
     async ({ context }) => {
       context.set('user', { id: 1 });
     },
