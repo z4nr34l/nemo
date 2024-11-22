@@ -2,7 +2,6 @@ import { type NextFetchEvent, NextRequest, NextResponse } from 'next/server';
 import {
   createMiddleware,
   type MiddlewareConfig,
-  type MiddlewareFunction,
   type MiddlewareFunctionProps,
 } from '../src';
 
@@ -18,12 +17,10 @@ describe('createMiddleware', () => {
   it('returns the response from the first middleware that returns a response', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
-        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
         },
-        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
         async () => {
           return new NextResponse('Final response');
         },
@@ -40,7 +37,6 @@ describe('createMiddleware', () => {
   it('returns NextResponse.next() if no middleware returns a response', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
-        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -58,11 +54,8 @@ describe('createMiddleware', () => {
   it('executes middleware without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
-        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
-          response.headers.set('x-custom-header', 'header-value');
-          response.cookies.set('custom-cookie', 'cookie-value');
           forward(response);
         },
       ],
@@ -75,7 +68,6 @@ describe('createMiddleware', () => {
   it('handles global before and after middleware without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
-        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -84,21 +76,15 @@ describe('createMiddleware', () => {
     };
 
     const globalMiddleware = {
-      // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
       before: async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
-        response.headers.set('x-before-header', 'before-value');
         forward(response);
       },
-      // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
       after: async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
-        response.headers.set('x-after-header', 'after-value');
         forward(response);
       },
-    } satisfies Partial<
-      Record<'before' | 'after', MiddlewareFunction | MiddlewareFunction[]>
-    >;
+    };
 
     const middleware = createMiddleware(middlewareConfig, globalMiddleware);
     await expect(middleware(mockRequest, mockEvent)).resolves.not.toThrow();
@@ -107,14 +93,12 @@ describe('createMiddleware', () => {
   it('matches paths correctly without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
-        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
         },
       ],
       '/page2': [
-        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
         async () => {
           return new NextResponse('Page 2 response');
         },
@@ -135,7 +119,6 @@ describe('createMiddleware', () => {
   it('executes global before middleware without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
-        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -144,10 +127,8 @@ describe('createMiddleware', () => {
     };
 
     const globalMiddleware = {
-      // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
       before: async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
-        response.headers.set('x-before-header', 'before-value');
         forward(response);
       },
     };
@@ -159,7 +140,6 @@ describe('createMiddleware', () => {
   it('executes global after middleware without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
-        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -168,10 +148,8 @@ describe('createMiddleware', () => {
     };
 
     const globalMiddleware = {
-      // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
       after: async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
-        response.headers.set('x-after-header', 'after-value');
         forward(response);
       },
     };
@@ -183,7 +161,6 @@ describe('createMiddleware', () => {
   it('returns NextResponse if no middleware matches the path', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page2': [
-        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -201,16 +178,12 @@ describe('createMiddleware', () => {
   it('handles multiple middleware functions for a single path without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
-        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
-          response.headers.set('x-middleware-1', 'value1');
           forward(response);
         },
-        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
-          response.headers.set('x-middleware-2', 'value2');
           forward(response);
         },
       ],
@@ -223,7 +196,6 @@ describe('createMiddleware', () => {
   it('executes only global before middleware if no path matches without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page2': [
-        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -232,10 +204,8 @@ describe('createMiddleware', () => {
     };
 
     const globalMiddleware = {
-      // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
       before: async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
-        response.headers.set('x-before-header', 'before-value');
         forward(response);
       },
     };
@@ -247,7 +217,6 @@ describe('createMiddleware', () => {
   it('executes only global after middleware if no path matches without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page2': [
-        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -256,10 +225,8 @@ describe('createMiddleware', () => {
     };
 
     const globalMiddleware = {
-      // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
       after: async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
-        response.headers.set('x-after-header', 'after-value');
         forward(response);
       },
     };
@@ -271,7 +238,6 @@ describe('createMiddleware', () => {
   it('executes both global before and after middleware if no path matches without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page2': [
-        // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -280,21 +246,35 @@ describe('createMiddleware', () => {
     };
 
     const globalMiddleware = {
-      // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
       before: async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
-        response.headers.set('x-before-header', 'before-value');
         forward(response);
       },
-      // eslint-disable-next-line @typescript-eslint/require-await -- don't need that here
       after: async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
-        response.headers.set('x-after-header', 'after-value');
         forward(response);
       },
     };
 
     const middleware = createMiddleware(middlewareConfig, globalMiddleware);
     await expect(middleware(mockRequest, mockEvent)).resolves.not.toThrow();
+  });
+
+  it('extracts URL params correctly', async () => {
+    const mockMiddleware = jest.fn(
+      async ({ params }: MiddlewareFunctionProps) => {
+        expect(params().id).toBe('123');
+      },
+    );
+
+    const middlewareConfig: MiddlewareConfig = {
+      '/page/:id': [mockMiddleware],
+    };
+
+    const middleware = createMiddleware(middlewareConfig);
+    const request = new NextRequest('http://localhost/page/123');
+    await middleware(request, mockEvent);
+
+    expect(mockMiddleware).toHaveBeenCalled();
   });
 });

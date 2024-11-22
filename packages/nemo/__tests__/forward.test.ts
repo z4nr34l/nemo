@@ -25,6 +25,7 @@ describe('forward', () => {
       request: mockRequest,
       event: mockEvent,
       context: mockContext,
+      params: jest.fn(),
       forward: jest.fn(),
     };
 
@@ -50,6 +51,7 @@ describe('forward', () => {
       request: mockRequest,
       event: mockEvent,
       context: mockContext,
+      params: jest.fn(),
       forward: jest.fn(),
     };
 
@@ -71,6 +73,7 @@ describe('forward', () => {
       request: mockRequest,
       event: mockEvent,
       context: mockContext,
+      params: jest.fn(),
       forward: jest.fn(),
     };
 
