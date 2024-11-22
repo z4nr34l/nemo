@@ -277,4 +277,45 @@ describe('createMiddleware', () => {
 
     expect(mockMiddleware).toHaveBeenCalled();
   });
+
+  it('does not precompute params for middleware that does not use them', async () => {
+    const mockMiddleware = jest.fn(
+      async ({ forward }: MiddlewareFunctionProps) => {
+        const response = NextResponse.next();
+        forward(response);
+      },
+    );
+
+    const middlewareConfig: MiddlewareConfig = {
+      '/page/:id': [mockMiddleware],
+    };
+
+    const middleware = createMiddleware(middlewareConfig);
+    const request = new NextRequest('http://localhost/page/123');
+    await middleware(request, mockEvent);
+
+    expect(mockMiddleware).toHaveBeenCalled();
+    expect(mockMiddleware.mock.calls[0][0].params).toBeInstanceOf(Function);
+  });
+
+  it('sets cookies from response to request', async () => {
+    const mockMiddleware = jest.fn(
+      async ({ forward }: MiddlewareFunctionProps) => {
+        const response = NextResponse.next();
+        response.cookies.set('test-cookie', 'test-value');
+        forward(response);
+      },
+    );
+
+    const middlewareConfig: MiddlewareConfig = {
+      '/page1': [mockMiddleware],
+    };
+
+    const middleware = createMiddleware(middlewareConfig);
+    await middleware(mockRequest, mockEvent);
+
+    expect(mockMiddleware).toHaveBeenCalled();
+    expect(mockRequest.cookies.get('test-cookie')?.name).toBe('test-cookie');
+    expect(mockRequest.cookies.get('test-cookie')?.value).toBe('test-value');
+  });
 });
