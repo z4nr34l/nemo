@@ -10,6 +10,9 @@ import { notFound } from 'next/navigation';
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { metadataImage } from '@/lib/metadata';
 import { Popup, PopupContent, PopupTrigger } from 'fumadocs-twoslash/ui';
+import { createTypeTable } from 'fumadocs-typescript/ui';
+
+const { AutoTypeTable } = createTypeTable();
 
 export default async function Page(props: {
   params: Promise<{ slug?: string[] }>;
@@ -38,6 +41,7 @@ export default async function Page(props: {
             Tab,
             Tabs,
             Popup,
+            AutoTypeTable,
             PopupContent,
             PopupTrigger,
           }}

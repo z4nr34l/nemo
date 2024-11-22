@@ -13,7 +13,7 @@ This package introduces middleware functions standardization for more elastic ap
 This example shows all props that are provided for your usage.
 
 ```ts title="_middleware.ts"
-async ({ request, context, event, forward }: MiddlewareFunctionProps) => {
+async ({ request, context, event, forward, params }: MiddlewareFunctionProps) => {
   // function body
 }
 ```
@@ -59,3 +59,18 @@ Type: `(response: MiddlewareReturn) => void`
 The `forward` function allows you to forward the response from one middleware function to another. This can be useful for chaining middleware functions together and creating more complex middleware logic.
 
 <Card href="/docs/forward-functions" title="Forward functions" description="Learn more about Forward functions in middleware" icon={<ArrowRightIcon/>}/>
+
+### Prop:&nbsp;&nbsp;`params`
+
+Type: `() => Partial<Record<string, string | string[]>>`
+
+This property contains route parameters parsed from the URL path. Just like it's working in Next.js pages/routes/layouts but without awaiting.
+
+```ts title="_middleware.ts"
+// Example URL: /team/123
+// Matcher: '/team/:slug'
+
+async ({ params }: MiddlewareFunctionProps) => {
+  console.log(params().slug); // Output: 123
+}
+```
