@@ -17,32 +17,33 @@ const middlewares = {
 
       forward(response);
     },
-    async ({ request, forward }: MiddlewareFunctionProps) => {
-      const response = NextResponse.next();
+    async ({ request, response }: MiddlewareFunctionProps) => {
+      const _response = NextResponse.next();
 
       // Copy headers from the request to the response
       request.headers.forEach((value, key) => {
-        response.headers.set(key, value);
+        _response.headers.set(key, value);
       });
 
       // Modify headers to test if they are carried forward
-      response.headers.set('x-demo-header', 'demo-value');
+      _response.headers.set('x-demo-header', 'demo-value');
 
       // Check if the previous headers are present
       if (
-        !request.headers.has('x-test-header') ||
-        request.headers.get('x-test-header') !== 'test-value'
+        !response?.headers.has('x-test-header') ||
+        response?.headers.get('x-test-header') !== 'test-value'
       ) {
-        response.headers.set('x-test-header-error', 'missing or incorrect');
+        _response.headers.set('x-test-header-error', 'missing or incorrect');
       }
       if (
-        !request.headers.has('x-another-header') ||
-        request.headers.get('x-another-header') !== 'another-value'
+        !response?.headers.has('x-another-header') ||
+        response?.headers.get('x-another-header') !== 'another-value'
       ) {
-        response.headers.set('x-another-header-error', 'missing or incorrect');
+        _response.headers.set('x-another-header-error', 'missing or incorrect');
       }
 
-      forward(response);
+      // Returning new response with custom headers to user
+      return _response;
     },
   ],
 } satisfies MiddlewareConfig;

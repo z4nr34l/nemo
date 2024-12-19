@@ -19,6 +19,7 @@ export type MiddlewareContext = Map<string, unknown>;
  */
 export interface MiddlewareFunctionProps {
   request: NextRequest;
+  response?: Response;
   context: MiddlewareContext;
   event: NextFetchEvent;
   params: () => Partial<Record<string, string | string[]>>;
@@ -59,6 +60,7 @@ export async function forward(
   const response = isLegacyMiddleware(middleware)
     ? await middleware(props.request, props.event)
     : await middleware(props);
+  props.response = response instanceof Response ? response : undefined;
   props.forward(response);
 }
 
@@ -95,6 +97,7 @@ export function createMiddleware(
     const path = request.nextUrl.pathname || '/';
     const context: MiddlewareContext = new Map<string, unknown>();
     const finalHeaders = new Headers(request.headers);
+    let _response;
 
     let beforeGlobalMiddleware: MiddlewareFunction[] = [];
     if (globalMiddleware?.before) {
@@ -136,6 +139,7 @@ export function createMiddleware(
 
       const middlewareResponse = await executeMiddleware(middleware, {
         request,
+        response: _response,
         event,
         context,
         params: () => {
@@ -156,6 +160,7 @@ export function createMiddleware(
                 );
             }
           }
+          _response = response instanceof Response ? response : undefined;
         },
       });
       if (middlewareResponse instanceof Response) return middlewareResponse;

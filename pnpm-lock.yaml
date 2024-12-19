@@ -97,6 +97,9 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.1(ts-node@10.9.2(@swc/core@1.7.3(@swc/helpers@0.5.13))(@types/node@22.8.1)(typescript@5.3.3)))
+      ts-morph:
+        specifier: ^24.0.0
+        version: 24.0.0
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -2182,8 +2185,8 @@ packages:
     peerDependencies:
       '@types/react': npm:types-react@19.0.0-rc.1
       '@types/react-dom': npm:types-react-dom@19.0.0-rc.1
-      react: 19.0.0-rc-2d16326d-20240930
-      react-dom: 19.0.0-rc-2d16326d-20240930
+      react: 19.0.0-rc.1
+      react-dom: 19.0.0-rc.1
     peerDependenciesMeta:
       '@types/react':
         optional: true
@@ -2380,10 +2383,10 @@ packages:
         integrity: sha512-u2HRUyWW+lOiA2g0Le0tMmT55FGOEWHwPFt1EPfbLly7uXQExFo5duNKqG2DzmFXIdqOeNd+TpE8baHWJCyP9w==,
       }
     peerDependencies:
-      '@types/react': npm:types-react@19.0.0-rc.1
-      '@types/react-dom': npm:types-react-dom@19.0.0-rc.1
-      react: 19.0.0-rc-2d16326d-20240930
-      react-dom: 19.0.0-rc-2d16326d-20240930
+      '@types/react': '*'
+      '@types/react-dom': '*'
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+      react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
         optional: true
@@ -7949,10 +7952,10 @@ packages:
         integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==,
       }
 
-  react-is@19.0.0-rc-512b09b2-20240718:
+  react-is@18.3.1:
     resolution:
       {
-        integrity: sha512-i2wXp0sCH8arv8A3pj81/Lril7DwrvBL6Nnyjj1sTcOLdx9E58IYtASIwHwD5Dki/jkVGxyrTv1y+DL+6m1DRA==,
+        integrity: sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==,
       }
 
   react-medium-image-zoom@5.2.11:
@@ -15542,7 +15545,7 @@ snapshots:
     dependencies:
       '@jest/schemas': 29.6.3
       ansi-styles: 5.2.0
-      react-is: 19.0.0-rc-512b09b2-20240718
+      react-is: 18.3.1
 
   pretty-format@3.8.0: {}
 
@@ -15591,7 +15594,7 @@ snapshots:
 
   react-is@16.13.1: {}
 
-  react-is@19.0.0-rc-512b09b2-20240718: {}
+  react-is@18.3.1: {}
 
   react-medium-image-zoom@5.2.11(react-dom@19.0.0-rc-f6cce072-20240723(react@19.0.0-rc-f6cce072-20240723))(react@19.0.0-rc-f6cce072-20240723):
     dependencies:
