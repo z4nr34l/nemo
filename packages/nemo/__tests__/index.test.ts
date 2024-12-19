@@ -1,17 +1,21 @@
 import { type NextFetchEvent, NextRequest, NextResponse } from 'next/server';
 import {
   createMiddleware,
+  forward,
   type MiddlewareConfig,
+  type MiddlewareFunction,
   type MiddlewareFunctionProps,
 } from '../src';
 
 describe('createMiddleware', () => {
   let mockRequest = new NextRequest('http://localhost/page1');
   let mockEvent = {} as NextFetchEvent;
+  let mockContext = new Map<string, unknown>();
 
   beforeEach(() => {
     mockRequest = new NextRequest('http://localhost/page1');
     mockEvent = {} as NextFetchEvent;
+    mockContext = new Map<string, unknown>();
   });
 
   it('returns the response from the first middleware that returns a response', async () => {
@@ -380,5 +384,88 @@ describe('createMiddleware', () => {
     // Test for single middleware function
     await middleware(new NextRequest('http://localhost/page2'), mockEvent);
     expect(mockMiddleware2).toHaveBeenCalled();
+  });
+
+  it('chains two middleware functions and checks headers', async () => {
+    const middlewareConfig: MiddlewareConfig = {
+      '/page1': [
+        async ({ forward }: MiddlewareFunctionProps) => {
+          const response = NextResponse.next();
+          response.headers.set('X-Test-Header', 'TestValue');
+          forward(response);
+        },
+        async ({ response }: MiddlewareFunctionProps) => {
+          const headerValue = response?.headers.get('X-Test-Header');
+          expect(headerValue).toBe('TestValue');
+          return new NextResponse('Headers are equal');
+        },
+      ],
+    };
+
+    const middleware = createMiddleware(middlewareConfig);
+    const response = await middleware(mockRequest, mockEvent);
+
+    expect(response).toBeInstanceOf(NextResponse);
+    expect(await response?.text()).toBe('Headers are equal');
+  });
+
+  it('sets the response prop correctly for legacy middleware', async () => {
+    const legacyMiddleware: MiddlewareFunction = (_request, _event) => {
+      return new NextResponse('Legacy response');
+    };
+
+    const props: MiddlewareFunctionProps = {
+      request: mockRequest,
+      event: mockEvent,
+      context: mockContext,
+      params: jest.fn(),
+      forward: jest.fn(),
+    };
+
+    await forward(legacyMiddleware, props);
+
+    expect(props.response).toBeInstanceOf(NextResponse);
+    expect(await props.response?.text()).toBe('Legacy response');
+  });
+
+  it('sets the response prop correctly for new middleware', async () => {
+    const newMiddleware: MiddlewareFunction = ({
+      request: _request,
+    }: {
+      request: NextRequest;
+    }) => {
+      return new NextResponse('New response');
+    };
+
+    const props: MiddlewareFunctionProps = {
+      request: mockRequest,
+      event: mockEvent,
+      context: mockContext,
+      params: jest.fn(),
+      forward: jest.fn(),
+    };
+
+    await forward(newMiddleware, props);
+
+    expect(props.response).toBeInstanceOf(NextResponse);
+    expect(await props.response?.text()).toBe('New response');
+  });
+
+  it('response prop is undefined if middleware returns undefined', async () => {
+    const undefinedMiddleware: MiddlewareFunction = () => {
+      return undefined;
+    };
+
+    const props: MiddlewareFunctionProps = {
+      request: mockRequest,
+      event: mockEvent,
+      context: mockContext,
+      params: jest.fn(),
+      forward: jest.fn(),
+    };
+
+    await forward(undefinedMiddleware, props);
+
+    expect(props.response).toBeUndefined();
   });
 });
