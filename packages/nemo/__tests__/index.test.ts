@@ -468,4 +468,82 @@ describe('createMiddleware', () => {
 
     expect(props.response).toBeUndefined();
   });
+
+  it('handles errors in middleware functions', async () => {
+    const middlewareConfig: MiddlewareConfig = {
+      '/page1': [
+        async () => {
+          throw new Error('Test error');
+        },
+      ],
+    };
+
+    const middleware = createMiddleware(middlewareConfig);
+    await expect(middleware(mockRequest, mockEvent)).rejects.toThrow();
+  });
+
+  it('passes context between middleware functions', async () => {
+    const middlewareConfig: MiddlewareConfig = {
+      '/page1': [
+        async ({ context }: MiddlewareFunctionProps) => {
+          context.set('testKey', 'testValue');
+        },
+        async ({ context }: MiddlewareFunctionProps) => {
+          expect(context.get('testKey')).toBe('testValue');
+          return NextResponse.next();
+        },
+      ],
+    };
+
+    const middleware = createMiddleware(middlewareConfig);
+    await middleware(mockRequest, mockEvent);
+  });
+
+  it('handles complex path parameters', async () => {
+    const mockMiddleware = jest.fn(
+      async ({ params }: MiddlewareFunctionProps) => {
+        const parameters = params();
+        expect(parameters.category).toBe('books');
+        expect(parameters.id).toBe('123');
+        expect(parameters.format).toBe('pdf');
+      },
+    );
+
+    const middlewareConfig: MiddlewareConfig = {
+      '/:category/:id.:format': [mockMiddleware],
+    };
+
+    const middleware = createMiddleware(middlewareConfig);
+    const request = new NextRequest('http://localhost/books/123.pdf');
+    await middleware(request, mockEvent);
+
+    expect(mockMiddleware).toHaveBeenCalled();
+  });
+
+  it('merges headers from multiple middleware functions', async () => {
+    const middlewareConfig: MiddlewareConfig = {
+      '/page1': [
+        async ({ forward }: MiddlewareFunctionProps) => {
+          const response = NextResponse.next();
+          response.headers.set('X-Header-1', 'Value1');
+          forward(response);
+        },
+        async ({ forward }: MiddlewareFunctionProps) => {
+          const response = NextResponse.next();
+          response.headers.set('X-Header-2', 'Value2');
+          forward(response);
+        },
+      ],
+    };
+
+    const middleware = createMiddleware(middlewareConfig);
+    const response = await middleware(mockRequest, mockEvent);
+
+    expect(response?.headers.get('x-middleware-request-x-header-1')).toBe(
+      'Value1',
+    );
+    expect(response?.headers.get('x-middleware-request-x-header-2')).toBe(
+      'Value2',
+    );
+  });
 });
