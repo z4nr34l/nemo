@@ -21,6 +21,7 @@ describe('createMiddleware', () => {
   it('returns the response from the first middleware that returns a response', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
+        // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -41,6 +42,7 @@ describe('createMiddleware', () => {
   it('returns NextResponse.next() if no middleware returns a response', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
+        // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -58,6 +60,7 @@ describe('createMiddleware', () => {
   it('executes middleware without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
+        // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -72,6 +75,7 @@ describe('createMiddleware', () => {
   it('handles global before and after middleware without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
+        // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -80,10 +84,12 @@ describe('createMiddleware', () => {
     };
 
     const globalMiddleware = {
+      // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
       before: async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
         forward(response);
       },
+      // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
       after: async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
         forward(response);
@@ -97,6 +103,7 @@ describe('createMiddleware', () => {
   it('matches paths correctly without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
+        // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -123,6 +130,7 @@ describe('createMiddleware', () => {
   it('executes global before middleware without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
+        // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -131,6 +139,7 @@ describe('createMiddleware', () => {
     };
 
     const globalMiddleware = {
+      // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
       before: async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
         forward(response);
@@ -144,6 +153,7 @@ describe('createMiddleware', () => {
   it('executes global after middleware without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
+        // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -152,6 +162,7 @@ describe('createMiddleware', () => {
     };
 
     const globalMiddleware = {
+      // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
       after: async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
         forward(response);
@@ -165,6 +176,7 @@ describe('createMiddleware', () => {
   it('returns NextResponse if no middleware matches the path', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page2': [
+        // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -182,10 +194,12 @@ describe('createMiddleware', () => {
   it('handles multiple middleware functions for a single path without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
+        // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
         },
+        // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -200,6 +214,7 @@ describe('createMiddleware', () => {
   it('executes only global before middleware if no path matches without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page2': [
+        // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -208,6 +223,7 @@ describe('createMiddleware', () => {
     };
 
     const globalMiddleware = {
+      // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
       before: async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
         forward(response);
@@ -221,6 +237,7 @@ describe('createMiddleware', () => {
   it('executes only global after middleware if no path matches without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page2': [
+        // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -229,6 +246,7 @@ describe('createMiddleware', () => {
     };
 
     const globalMiddleware = {
+      // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
       after: async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
         forward(response);
@@ -242,6 +260,7 @@ describe('createMiddleware', () => {
   it('executes both global before and after middleware if no path matches without errors', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page2': [
+        // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           forward(response);
@@ -250,10 +269,12 @@ describe('createMiddleware', () => {
     };
 
     const globalMiddleware = {
+      // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
       before: async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
         forward(response);
       },
+      // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
       after: async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
         forward(response);
@@ -284,6 +305,7 @@ describe('createMiddleware', () => {
 
   it('does not precompute params for middleware that does not use them', async () => {
     const mockMiddleware = jest.fn(
+      // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
       async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
         forward(response);
@@ -304,6 +326,7 @@ describe('createMiddleware', () => {
 
   it('sets cookies from response to request', async () => {
     const mockMiddleware = jest.fn(
+      // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
       async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
         response.cookies.set('test-cookie', 'test-value');
@@ -325,6 +348,7 @@ describe('createMiddleware', () => {
 
   it('executes middleware functions based on pattern', async () => {
     const mockMiddleware1 = jest.fn(
+      // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
       async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
         forward(response);
@@ -332,6 +356,7 @@ describe('createMiddleware', () => {
     );
 
     const mockMiddleware2 = jest.fn(
+      // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
       async ({ forward }: MiddlewareFunctionProps) => {
         const response = new NextResponse('Pattern matched');
         forward(response);
@@ -357,6 +382,7 @@ describe('createMiddleware', () => {
 
   it('handles both array and single middleware functions correctly', async () => {
     const mockMiddleware1 = jest.fn(
+      // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
       async ({ forward }: MiddlewareFunctionProps) => {
         const response = NextResponse.next();
         forward(response);
@@ -364,6 +390,7 @@ describe('createMiddleware', () => {
     );
 
     const mockMiddleware2 = jest.fn(
+      // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
       async ({ forward }: MiddlewareFunctionProps) => {
         const response = new NextResponse('Single middleware');
         forward(response);
@@ -389,6 +416,7 @@ describe('createMiddleware', () => {
   it('chains two middleware functions and checks headers', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
+        // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           response.headers.set('X-Test-Header', 'TestValue');
@@ -523,11 +551,13 @@ describe('createMiddleware', () => {
   it('merges headers from multiple middleware functions', async () => {
     const middlewareConfig: MiddlewareConfig = {
       '/page1': [
+        // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           response.headers.set('X-Header-1', 'Value1');
           forward(response);
         },
+        // eslint-disable-next-line @typescript-eslint/no-shadow -- intentional shadowing
         async ({ forward }: MiddlewareFunctionProps) => {
           const response = NextResponse.next();
           response.headers.set('X-Header-2', 'Value2');
