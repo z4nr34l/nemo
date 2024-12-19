@@ -18,12 +18,12 @@ const middlewares = {
 
       forward(response);
     },
-    async ({ request }: MiddlewareFunctionProps) => {
+    async ({ request, response }: MiddlewareFunctionProps) => {
       console.log('Chained middleware for /page1', request.nextUrl.pathname);
       console.log('Passed cookie value:', request.cookies.get('passed-cookie'));
       console.log(
         'Passed header value:',
-        request.headers.get('x-custom-header'),
+        response?.headers.get('x-custom-header'),
       );
     },
   ],
