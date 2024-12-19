@@ -1,5 +1,11 @@
 # NEMO
 
+## 1.4.0
+
+### Minor Changes
+
+- b4ce176: Added optional response prop that contains last forwarded function's response
+
 ## 1.3.3
 
 ### Patch Changes
