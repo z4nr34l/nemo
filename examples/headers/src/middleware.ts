@@ -21,7 +21,7 @@ const middlewares = {
       const _response = NextResponse.next();
 
       // Copy headers from the request to the response
-      request.headers.forEach((value, key) => {
+      response?.headers.forEach((value, key) => {
         _response.headers.set(key, value);
       });
 
