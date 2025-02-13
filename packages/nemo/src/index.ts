@@ -43,14 +43,16 @@ export class NEMO {
   private config: NemoConfig;
 
   constructor(
-    private middlewares: MiddlewareConfig,
-    private globalMiddleware?: GlobalMiddlewareConfig,
-    config: NemoConfig = {},
+    middlewares: MiddlewareConfig,
+    globalMiddleware?: GlobalMiddlewareConfig,
+    config?: NemoConfig,
   ) {
     this.config = {
       debug: false,
       ...config,
     };
+
+    console.log(globalMiddleware);
   }
 
   middleware = async (
@@ -64,7 +66,7 @@ export class NEMO {
 }
 
 /**
- * @deprecated Use `new NEMO()` instead. Example: `export const middleware = new NEMO(middlewares, globalMiddleware)`
+ * @deprecated Use `new NEMO()` instead. Example: `export const { middleware } = new NEMO(middlewares, globalMiddleware)`
  * Create middleware
  * @param middlewares - Middleware configuration
  * @param globalMiddleware - Global middleware configuration
