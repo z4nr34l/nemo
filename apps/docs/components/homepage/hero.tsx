@@ -1,6 +1,6 @@
-import { CopyButton } from '@/components/copy-button';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { CopyButton } from "@/components/copy-button";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function Hero() {
   return (
@@ -73,7 +73,7 @@ function Guides() {
   return (
     <div className="hidden md:grid absolute inset-0 grid-cols-12 grid-rows-6 gap-px bg-border">
       {Array(72)
-        .fill('')
+        .fill("")
         .map((_, id) => (
           <div key={id} className="bg-background" />
         ))}
@@ -87,7 +87,7 @@ function Globe() {
       aria-hidden="true"
       height="100%"
       style={{
-        transform: 'translateY(0px) scale(1.002)',
+        transform: "translateY(0px) scale(1.002)",
       }}
       viewBox="-1 0 802 400"
       width="100%"

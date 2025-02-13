@@ -5,6 +5,11 @@
       "cache": false,
       "persistent": true
     },
+    "examples": {
+      "cache": false,
+      "persistent": true
+    },
     "test": {}
-  }
+  },
+  "ui": "tui"
 }

@@ -5,6 +5,10 @@
     "build": {
       "env": [],
       "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
     }
   }
 }
