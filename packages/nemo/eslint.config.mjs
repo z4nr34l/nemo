@@ -2,7 +2,10 @@ import js from "@eslint/js";
 import eslintConfigPrettier from "eslint-config-prettier";
 import onlyWarn from "eslint-plugin-only-warn";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
+import pluginReact from "eslint-plugin-react";
+import pluginReactHooks from "eslint-plugin-react-hooks";
 import turboPlugin from "eslint-plugin-turbo";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 
 /**
@@ -10,7 +13,7 @@ import tseslint from "typescript-eslint";
  *
  * @type {import("eslint").Linter.Config}
  * */
-export default [
+export const config = [
   {
     plugins: {
       turbo: turboPlugin,
@@ -42,15 +45,6 @@ export default [
   },
   {
     plugins: {
-      "@next/next": pluginNext,
-    },
-    rules: {
-      ...pluginNext.configs.recommended.rules,
-      ...pluginNext.configs["core-web-vitals"].rules,
-    },
-  },
-  {
-    plugins: {
       "react-hooks": pluginReactHooks,
     },
     settings: { react: { version: "detect" } },
@@ -61,3 +55,5 @@ export default [
     },
   },
 ];
+
+export default config;

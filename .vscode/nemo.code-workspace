@@ -34,7 +34,7 @@
       ".turbo/": true,
       ".next/": true,
       "**/.retool_types/**": true,
-      "**/*tsconfig.json": false,
+      "**/*tsconfig.json": true,
       ".cache": true,
       "retool.config.json": true
     },

@@ -1,7 +1,7 @@
 import {
-  createMiddleware,
+  NEMO,
   type MiddlewareConfig,
-  type MiddlewareFunctionProps,
+  type MiddlewareFunctionProps
 } from "@rescale/nemo";
 import { NextResponse } from "next/server";
 
@@ -62,7 +62,7 @@ const middlewares = {
 } satisfies MiddlewareConfig;
 
 // Create middlewares helper
-export const middleware = createMiddleware(middlewares);
+export const middleware = new NEMO(middlewares);
 
 export const config = {
   matcher: ["/page2", "/page1/:path*"],
