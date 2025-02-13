@@ -29,6 +29,10 @@ export type GlobalMiddlewareConfig = Partial<
   Record<"before" | "after", MiddlewareChain>
 >;
 
+export interface NemoConfig {
+  debug?: boolean;
+}
+
 /**
  * NEMO Middleware
  * @param middlewares - Middleware configuration
@@ -36,17 +40,27 @@ export type GlobalMiddlewareConfig = Partial<
  * @returns NextMiddleware
  */
 export class NEMO {
+  private config: NemoConfig;
+
   constructor(
-    middlewares: MiddlewareConfig,
-    globalMiddleware?: GlobalMiddlewareConfig,
+    private middlewares: MiddlewareConfig,
+    private globalMiddleware?: GlobalMiddlewareConfig,
+    config: NemoConfig = {},
   ) {
-    return async (
-      request: NextRequest,
-      event: NextFetchEvent,
-    ): Promise<NextMiddlewareResult> => {
-      console.log("[NEMO]");
+    this.config = {
+      debug: false,
+      ...config,
     };
   }
+
+  middleware = async (
+    request: NextRequest,
+    event: NextFetchEvent,
+  ): Promise<NextMiddlewareResult> => {
+    if (this.config.debug) {
+      console.log("[NEMO] Processing request:", request.url);
+    }
+  };
 }
 
 /**
