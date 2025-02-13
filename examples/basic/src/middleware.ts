@@ -1,8 +1,4 @@
-import {
-  NEMO,
-  type MiddlewareConfig,
-  type MiddlewareFunctionProps
-} from "@rescale/nemo";
+import { NEMO } from "@rescale/nemo";
 import { NextResponse } from "next/server";
 
 const middlewares = {

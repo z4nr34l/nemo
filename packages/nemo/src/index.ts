@@ -17,28 +17,24 @@ export interface NemoEvent extends NextFetchEvent {
   forward: (response: MiddlewareReturn, event: NemoEvent) => void;
 }
 
-export interface MiddlewareFunctionProps {
-  request: NextRequest;
-  event: NemoEvent;
-}
+export type MiddlewareChain = NextMiddleware | NextMiddleware[];
 
-export type NewMiddleware = (
-  props: MiddlewareFunctionProps,
-) => MiddlewareReturn | Promise<MiddlewareReturn>;
+export type MiddlewareConfig = Record<string, MiddlewareChain>;
 
-export type MiddlewareFunction = NextMiddleware | NewMiddleware;
-
-export type MiddlewareConfig = Record<
-  string,
-  MiddlewareFunction | MiddlewareFunction[]
+export type GlobalMiddlewareConfig = Partial<
+  Record<"before" | "after", MiddlewareChain>
 >;
 
+/**
+ * NEMO Middleware
+ * @param middlewares - Middleware configuration
+ * @param globalMiddleware - Global middleware configuration
+ * @returns NextMiddleware
+ */
 export class NEMO {
   constructor(
     middlewares: MiddlewareConfig,
-    globalMiddleware?: Partial<
-      Record<"before" | "after", MiddlewareFunction | MiddlewareFunction[]>
-    >,
+    globalMiddleware?: GlobalMiddlewareConfig,
   ) {
     return async (request: NextRequest, event: NextFetchEvent) => {
       console.log("[NEMO]");
@@ -50,15 +46,20 @@ export class NEMO {
 
 /**
  * @deprecated Use `new NEMO()` instead. Example: `export const middleware = new NEMO(pathMiddlewareMap, globalMiddleware)`
+ * Create middleware
+ * @param middlewares - Middleware configuration
+ * @param globalMiddleware - Global middleware configuration
+ * @returns NextMiddleware
  */
 export function createMiddleware(
   middlewares: MiddlewareConfig,
   globalMiddleware?: Partial<
-    Record<"before" | "after", MiddlewareFunction | MiddlewareFunction[]>
+    Record<"before" | "after", NextMiddleware | NextMiddleware[]>
   >,
 ) {
   console.warn(
-    "[WARN] `createMiddleware` is deprecated. Use `new NEMO()` instead.",
+    "[NEMO] `createMiddleware` is deprecated. Use `new NEMO()` instead.",
   );
+
   return new NEMO(middlewares, globalMiddleware);
 }
