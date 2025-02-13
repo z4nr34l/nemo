@@ -51,8 +51,6 @@ export class NEMO {
       debug: false,
       ...config,
     };
-
-    console.log(globalMiddleware);
   }
 
   middleware = async (

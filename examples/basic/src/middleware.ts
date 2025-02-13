@@ -58,7 +58,9 @@ const middlewares = {
 } satisfies MiddlewareConfig;
 
 // Create middlewares helper
-export const { middleware } = new NEMO(middlewares);
+export const { middleware } = new NEMO(middlewares, undefined, {
+  debug: true
+});
 
 export const config = {
   matcher: ["/page2", "/page1/:path*"],
