@@ -60,7 +60,7 @@
     "[json]": {
       "editor.defaultFormatter": "vscode.json-language-features"
     },
-    "jest.enable": true,
+    "jest.enable": false,
     "typescript.preferences.preferTypeOnlyAutoImports": true,
   },
   "extensions": {

@@ -1,12 +1,3 @@
-import { defineConfig, defineDocs } from "fumadocs-mdx/config";
-import { remarkInstall } from "fumadocs-docgen";
-import {
-  rehypeCodeDefaultOptions,
-  RehypeCodeOptions,
-  remarkImage,
-  remarkStructure,
-} from "fumadocs-core/mdx-plugins";
-import { transformerTwoslash } from "fumadocs-twoslash";
 import {
   transformerMetaWordHighlight,
   transformerNotationDiff,
@@ -14,6 +5,15 @@ import {
   transformerNotationFocus,
   transformerNotationHighlight,
 } from "@shikijs/transformers";
+import {
+  rehypeCodeDefaultOptions,
+  RehypeCodeOptions,
+  remarkImage,
+  remarkStructure,
+} from "fumadocs-core/mdx-plugins";
+import { remarkInstall } from "fumadocs-docgen";
+import { defineConfig, defineDocs } from "fumadocs-mdx/config";
+import { transformerTwoslash } from "fumadocs-twoslash";
 
 export const { docs, meta } = defineDocs();
 

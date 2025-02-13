@@ -5,6 +5,11 @@
     "build": {
       "outputs": ["dist/**"]
     },
+    "dev": {
+      "cache": false,
+      "outputs": ["dist/**"],
+      "persistent": true
+    },
     "test": {
       "outputs": ["coverage/**"]
     }
