@@ -9,16 +9,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - run: corepack enable
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'pnpm'
+      - name: Prepare
+        uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: pnpm install
+        run: bun install
 
       - name: Build
-        run: pnpm build --filter @rescale/nemo
+        run: bun run build --filter @rescale/nemo
 
-      - run: pnpx pkg-pr-new publish "./packages/nemo"
+      - run: bunx pkg-pr-new publish "./packages/nemo"

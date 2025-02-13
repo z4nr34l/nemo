@@ -1,0 +1,85 @@
+{
+  "folders": [
+    {
+      "name": "NEMO",
+      "path": "../packages/nemo",
+    },
+    {
+      "name": "examples",
+      "path": "../examples",
+    },
+    {
+      "name": "docs",
+      "path": "../apps/docs",
+    },
+    {
+      "name": "ROOT",
+      "path": "../",
+    },
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.git": true,
+      "**/.svn": true,
+      "**/.hg": true,
+      "**/CVS": true,
+      "**/.DS_Store": true,
+      "**/Thumbs.db": true,
+      "node_modules/": true,
+      "apps/": true,
+      "services/": true,
+      "infrastructure/": true,
+      "pnpm-lock.yaml": true,
+      "dist/": true,
+      ".turbo/": true,
+      ".next/": true,
+      "**/.retool_types/**": true,
+      "**/*tsconfig.json": true,
+      ".cache": true,
+      "retool.config.json": true
+    },
+    "files.autoSave": "afterDelay",
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always",
+      "source.fixAll.sortJSON": "always",
+      "source.organizeImports": "always",
+      "source.sortImports": "always",
+      "source.removeUnusedImports": "always"
+    },
+    "eslint.run": "onSave",
+    "eslint.format.enable": true,
+    "eslint.ignoreUntitled": true,
+    "eslint.useFlatConfig": true,
+    "[jsonc]": {
+      "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[json]": {
+      "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "jest.enable": true,
+    "typescript.preferences.preferTypeOnlyAutoImports": true,
+  },
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "SonarSource.sonarlint-vscode",
+      "bradlc.vscode-tailwindcss",
+      "Vercel.turbo-vsc",
+      "joshbolduc.commitlint",
+      "oven.bun-vscode",
+      "github.vscode-github-actions",
+      "GitHub.vscode-pull-request-github",
+      "GitHub.codespaces",
+      "folke.vscode-monorepo-workspace",
+      "formulahendry.auto-close-tag",
+      "formulahendry.auto-rename-tag",
+      "mikestead.dotenv",
+      "GitHub.copilot",
+      "GitHub.copilot-chat"
+    ]
+  },
+}

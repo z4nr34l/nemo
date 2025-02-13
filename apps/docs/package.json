@@ -1,13 +1,4 @@
 {
-  "name": "docs",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "build": "next build",
-    "dev": "next dev --turbopack",
-    "postinstall": "fumadocs-mdx",
-    "start": "next start"
-  },
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.2",
     "@types/flexsearch": "^0.7.6",
@@ -22,9 +13,9 @@
     "fumadocs-ui": "^14.4.0",
     "geist": "^1.2.2",
     "lucide-react": "^0.414.0",
-    "next": "15.0.3",
-    "react": "19.0.0-rc-f6cce072-20240723",
-    "react-dom": "19.0.0-rc-f6cce072-20240723",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
     "shiki": "^1.22.2",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
@@ -37,9 +28,18 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "10.4.16",
-    "eslint": "^8",
+    "eslint": "^9",
     "postcss": "8.4.32",
     "tailwindcss": "3.4.1",
     "typescript": "5.3.3"
-  }
+  },
+  "name": "docs",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev --turbopack",
+    "postinstall": "fumadocs-mdx",
+    "start": "next start"
+  },
+  "version": "0.0.0"
 }
