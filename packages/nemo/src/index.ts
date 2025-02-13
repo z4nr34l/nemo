@@ -50,7 +50,7 @@ export class NEMO {
 }
 
 /**
- * @deprecated Use `new NEMO()` instead. Example: `export const middleware = new NEMO(pathMiddlewareMap, globalMiddleware)`
+ * @deprecated Use `new NEMO()` instead. Example: `export const middleware = new NEMO(middlewares, globalMiddleware)`
  * Create middleware
  * @param middlewares - Middleware configuration
  * @param globalMiddleware - Global middleware configuration
