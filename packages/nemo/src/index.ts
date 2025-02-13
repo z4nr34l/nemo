@@ -18,7 +18,7 @@ export type NextMiddleware = (
 export type MiddlewareContext = Map<string, unknown>;
 
 export interface NemoEvent extends NextFetchEvent {
-  forward: (fn: NextMiddleware) => NextMiddlewareResult;
+  forward: (fn: NextMiddleware) => void;
 }
 
 export type MiddlewareChain = NextMiddleware | NextMiddleware[];
