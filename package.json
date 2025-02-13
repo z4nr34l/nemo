@@ -30,6 +30,7 @@
     "build": "turbo build",
     "clean": "turbo clean",
     "dev": "turbo dev --concurrency 20",
+    "examples": "turbo examples",
     "prepare": "husky",
     "release": "turbo build --filter='@rescale/nemo' && changeset publish",
     "version-packages": "changeset version"

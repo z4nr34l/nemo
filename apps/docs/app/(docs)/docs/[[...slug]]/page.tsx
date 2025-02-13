@@ -1,16 +1,16 @@
 import { source } from "@/app/source";
+import { metadataImage } from "@/lib/metadata";
+import { Popup, PopupContent, PopupTrigger } from "fumadocs-twoslash/ui";
+import { createTypeTable } from "fumadocs-typescript/ui";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+import defaultMdxComponents from "fumadocs-ui/mdx";
 import {
   DocsBody,
   DocsDescription,
   DocsPage,
   DocsTitle,
 } from "fumadocs-ui/page";
-import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 import { notFound } from "next/navigation";
-import defaultMdxComponents from "fumadocs-ui/mdx";
-import { metadataImage } from "@/lib/metadata";
-import { Popup, PopupContent, PopupTrigger } from "fumadocs-twoslash/ui";
-import { createTypeTable } from "fumadocs-typescript/ui";
 
 const { AutoTypeTable } = createTypeTable();
 

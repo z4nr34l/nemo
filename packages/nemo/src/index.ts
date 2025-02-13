@@ -180,5 +180,5 @@ export function createMiddleware(
  * @param path - The path to check.
  */
 function matchesPath(pattern: string, path: string): boolean {
-  return pathToRegexp(pattern).regexp.test(path);
+  return pathToRegexp(pattern).test(path);
 }
