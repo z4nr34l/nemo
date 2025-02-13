@@ -1,17 +1,17 @@
-import { type ReactNode } from 'react';
-import { DocsLayout } from 'fumadocs-ui/layouts/docs';
-import { BookIcon, HomeIcon } from 'lucide-react';
-import { source } from '@/app/source';
-import { Overlay } from '@/components/overlay';
-import { Viewport } from 'next';
+import { type ReactNode } from "react";
+import { DocsLayout } from "fumadocs-ui/layouts/docs";
+import { BookIcon, HomeIcon } from "lucide-react";
+import { source } from "@/app/source";
+import { Overlay } from "@/components/overlay";
+import { Viewport } from "next";
 
 export const viewport: Viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
   maximumScale: 5,
   themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#171717' },
-    { media: '(prefers-color-scheme: light)', color: '#fff' },
+    { media: "(prefers-color-scheme: dark)", color: "#171717" },
+    { media: "(prefers-color-scheme: light)", color: "#fff" },
   ],
 };
 
@@ -24,14 +24,14 @@ export default function RootDocsLayout({ children }: { children: ReactNode }) {
       links={[
         {
           icon: <HomeIcon />,
-          text: 'Home',
-          url: '/',
+          text: "Home",
+          url: "/",
         },
         {
           icon: <BookIcon />,
-          text: 'Docs',
-          url: '/docs',
-          active: 'nested-url',
+          text: "Docs",
+          url: "/docs",
+          active: "nested-url",
         },
       ]}
       tree={source.pageTree}

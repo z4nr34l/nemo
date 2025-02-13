@@ -2,14 +2,14 @@ import {
   type NextFetchEvent,
   type NextRequest,
   NextResponse,
-} from 'next/server';
-import { match, pathToRegexp } from 'path-to-regexp';
+} from "next/server";
+import { match, pathToRegexp } from "path-to-regexp";
 
 type MiddlewareReturn = Response | NextResponse | undefined | void;
 
 export type NextMiddleware = (
   request: NextRequest,
-  event: NextFetchEvent,
+  event: NextFetchEvent
 ) => MiddlewareReturn | Promise<MiddlewareReturn>;
 
 export type MiddlewareContext = Map<string, unknown>;
@@ -27,7 +27,7 @@ export interface MiddlewareFunctionProps {
 }
 
 export type NewMiddleware = (
-  props: MiddlewareFunctionProps,
+  props: MiddlewareFunctionProps
 ) => MiddlewareReturn | Promise<MiddlewareReturn>;
 
 export type MiddlewareFunction = NextMiddleware | NewMiddleware;
@@ -43,7 +43,7 @@ export type MiddlewareConfig = Record<
  * @returns True if the middleware is a legacy middleware, false otherwise.
  */
 function isLegacyMiddleware(
-  middleware: MiddlewareFunction,
+  middleware: MiddlewareFunction
 ): middleware is NextMiddleware {
   return middleware.length === 2;
 }
@@ -55,7 +55,7 @@ function isLegacyMiddleware(
  */
 export async function forward(
   middleware: MiddlewareFunction,
-  props: MiddlewareFunctionProps,
+  props: MiddlewareFunctionProps
 ): Promise<void> {
   const response = isLegacyMiddleware(middleware)
     ? await middleware(props.request, props.event)
@@ -71,7 +71,7 @@ export async function forward(
  */
 async function executeMiddleware(
   middleware: MiddlewareFunction,
-  props: MiddlewareFunctionProps,
+  props: MiddlewareFunctionProps
 ): Promise<MiddlewareReturn> {
   const response = isLegacyMiddleware(middleware)
     ? await middleware(props.request, props.event)
@@ -87,14 +87,14 @@ async function executeMiddleware(
 export function createMiddleware(
   pathMiddlewareMap: MiddlewareConfig,
   globalMiddleware?: Partial<
-    Record<'before' | 'after', MiddlewareFunction | MiddlewareFunction[]>
-  >,
+    Record<"before" | "after", MiddlewareFunction | MiddlewareFunction[]>
+  >
 ): NextMiddleware {
   return async (
     request: NextRequest,
-    event: NextFetchEvent,
+    event: NextFetchEvent
   ): Promise<NextResponse | Response> => {
-    const path = request.nextUrl.pathname || '/';
+    const path = request.nextUrl.pathname || "/";
     const context: MiddlewareContext = new Map<string, unknown>();
     const finalHeaders = new Headers(request.headers);
     let _response;
@@ -130,12 +130,12 @@ export function createMiddleware(
 
     for (const middlewareItem of allMiddlewareFunctions) {
       const middleware =
-        'pattern' in middlewareItem
+        "pattern" in middlewareItem
           ? middlewareItem.middleware
           : middlewareItem;
 
       const pattern =
-        'pattern' in middlewareItem ? middlewareItem.pattern : path;
+        "pattern" in middlewareItem ? middlewareItem.pattern : path;
 
       const middlewareResponse = await executeMiddleware(middleware, {
         request,
@@ -156,7 +156,7 @@ export function createMiddleware(
               response.cookies
                 .getAll()
                 .forEach((cookie) =>
-                  request.cookies.set(cookie.name, cookie.value),
+                  request.cookies.set(cookie.name, cookie.value)
                 );
             }
           }

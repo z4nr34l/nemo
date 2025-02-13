@@ -1,17 +1,17 @@
-import * as Base from 'fumadocs-ui/components/codeblock';
-import type { HTMLAttributes } from 'react';
-import { useMemo } from 'react';
-import { createHighlighter } from 'shiki';
+import * as Base from "fumadocs-ui/components/codeblock";
+import type { HTMLAttributes } from "react";
+import { useMemo } from "react";
+import { createHighlighter } from "shiki";
 
 const highlighter = await createHighlighter({
-  langs: ['bash', 'ts', 'tsx', 'typescript'],
-  themes: ['github-light', 'github-dark'],
+  langs: ["bash", "ts", "tsx", "typescript"],
+  themes: ["github-light", "github-dark"],
 });
 
 export type CodeBlockProps = HTMLAttributes<HTMLPreElement> & {
   code: string;
   wrapper?: Base.CodeBlockProps;
-  lang: 'bash' | 'ts' | 'tsx' | 'typescript';
+  lang: "bash" | "ts" | "tsx" | "typescript";
 };
 
 export function CodeBlock({
@@ -26,24 +26,24 @@ export function CodeBlock({
         lang,
         defaultColor: false,
         themes: {
-          light: 'github-light',
-          dark: 'github-dark',
+          light: "github-light",
+          dark: "github-dark",
         },
         transformers: [
           {
-            name: 'fumadocs:remove-escape',
+            name: "fumadocs:remove-escape",
             code(element) {
               element.children.forEach((line) => {
-                if (line.type !== 'element') return;
+                if (line.type !== "element") return;
 
                 line.children.forEach((child) => {
-                  if (child.type !== 'element') return;
+                  if (child.type !== "element") return;
                   const textNode = child.children[0];
-                  if (!textNode || textNode.type !== 'text') return;
+                  if (!textNode || textNode.type !== "text") return;
 
                   textNode.value = textNode.value.replace(
                     /\[\\!code/g,
-                    '[!code',
+                    "[!code"
                   );
                 });
               });
@@ -53,7 +53,7 @@ export function CodeBlock({
           },
         ],
       }),
-    [code, lang],
+    [code, lang]
   );
 
   return (

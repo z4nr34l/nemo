@@ -1,6 +1,6 @@
-import type { LucideIcon } from 'lucide-react';
-import { TerminalIcon } from 'lucide-react';
-import { ReactElement } from 'react';
+import type { LucideIcon } from "lucide-react";
+import { TerminalIcon } from "lucide-react";
+import { ReactElement } from "react";
 
 export function create({ icon: Icon }: { icon?: LucideIcon }): ReactElement {
   return (

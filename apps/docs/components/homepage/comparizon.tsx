@@ -1,4 +1,4 @@
-import { CodeBlock } from '@/components/code-block';
+import { CodeBlock } from "@/components/code-block";
 
 export function Comparizon() {
   return (
@@ -24,10 +24,10 @@ export function Comparizon() {
               className="h-full"
               wrapper={{
                 allowCopy: false,
-                title: 'middleware.ts',
-                lang: 'typescript',
+                title: "middleware.ts",
+                lang: "typescript",
                 icon: <TSIcon />,
-                className: 'my-0 rounded-none flex-1 h-full',
+                className: "my-0 rounded-none flex-1 h-full",
               }}
             />
           </div>
@@ -41,10 +41,10 @@ export function Comparizon() {
               className="h-full"
               wrapper={{
                 allowCopy: false,
-                title: 'middleware.ts',
-                lang: 'typescript',
+                title: "middleware.ts",
+                lang: "typescript",
                 icon: <TSIcon />,
-                className: 'my-0 rounded-none flex-1 h-full',
+                className: "my-0 rounded-none flex-1 h-full",
               }}
             />
           </div>
