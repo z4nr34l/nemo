@@ -57,6 +57,8 @@ export function createMiddleware(
     Record<"before" | "after", MiddlewareFunction | MiddlewareFunction[]>
   >,
 ) {
-  console.warn("");
+  console.warn(
+    "[WARN] `createMiddleware` is deprecated. Use `new NEMO()` instead.",
+  );
   return new NEMO(middlewares, globalMiddleware);
 }
