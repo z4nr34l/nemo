@@ -4,17 +4,21 @@ import {
   NextResponse,
 } from "next/server";
 
-type MiddlewareReturn = Response | NextResponse | undefined | null | void;
-
+export type NextMiddlewareResult =
+  | NextResponse
+  | Response
+  | null
+  | undefined
+  | void;
 export type NextMiddleware = (
   request: NextRequest,
   event: NextFetchEvent,
-) => MiddlewareReturn | Promise<MiddlewareReturn>;
+) => NextMiddlewareResult | Promise<NextMiddlewareResult>;
 
 export type MiddlewareContext = Map<string, unknown>;
 
 export interface NemoEvent extends NextFetchEvent {
-  forward: (response: MiddlewareReturn, event: NemoEvent) => void;
+  forward: (fn: NextMiddleware) => NextMiddlewareResult;
 }
 
 export type MiddlewareChain = NextMiddleware | NextMiddleware[];
@@ -36,10 +40,11 @@ export class NEMO {
     middlewares: MiddlewareConfig,
     globalMiddleware?: GlobalMiddlewareConfig,
   ) {
-    return async (request: NextRequest, event: NextFetchEvent) => {
+    return async (
+      request: NextRequest,
+      event: NextFetchEvent,
+    ): Promise<NextMiddlewareResult> => {
       console.log("[NEMO]");
-
-      return NextResponse.next();
     };
   }
 }
