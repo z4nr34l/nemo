@@ -1,19 +1,39 @@
 import type { WaitUntil } from "next/dist/server/after/builtin-request-context";
 import type { NextRequest } from "next/server";
 
-const responseSymbol = Symbol("response");
-const passThroughSymbol = Symbol("passThrough");
-const waitUntilSymbol = Symbol("waitUntil");
+// Change from private symbols to Symbol.for()
+const responseSymbol = Symbol.for("response");
+const passThroughSymbol = Symbol.for("passThrough");
+const waitUntilSymbol = Symbol.for("waitUntil");
 
-export class FetchEvent {
+export class FetchEvent implements Event {
   // TODO(after): get rid of the 'internal' variant and always use an external waitUntil
   // (this means removing `FetchEventResult.waitUntil` which also requires a builder change)
   readonly [waitUntilSymbol]:
     | { kind: "internal"; promises: Promise<any>[] }
     | { kind: "external"; function: WaitUntil };
 
-  [responseSymbol]?: Promise<Response>;
-  [passThroughSymbol] = false;
+  private [responseSymbol]: Promise<Response> | null = null;
+  private [passThroughSymbol] = false;
+  private hasResponded = false;
+
+  bubbles = false;
+  cancelBubble = false;
+  cancelable = false;
+  composed = false;
+  currentTarget = null;
+  defaultPrevented = false;
+  eventPhase = 0;
+  isTrusted = true;
+  returnValue = true;
+  srcElement = null;
+  target = null;
+  timeStamp = Date.now();
+  type = "fetch";
+  readonly NONE: 0 = 0;
+  readonly CAPTURING_PHASE: 1 = 1;
+  readonly AT_TARGET: 2 = 2;
+  readonly BUBBLING_PHASE: 3 = 3;
 
   constructor(_request: Request, waitUntil?: WaitUntil) {
     this[waitUntilSymbol] = waitUntil
@@ -21,11 +41,29 @@ export class FetchEvent {
       : { kind: "internal", promises: [] };
   }
 
+  composedPath(): EventTarget[] {
+    throw new Error("Method not implemented.");
+  }
+  initEvent(type: string, bubbles?: boolean, cancelable?: boolean): void {
+    throw new Error("Method not implemented.");
+  }
+  preventDefault(): void {
+    throw new Error("Method not implemented.");
+  }
+  stopImmediatePropagation(): void {
+    throw new Error("Method not implemented.");
+  }
+  stopPropagation(): void {
+    throw new Error("Method not implemented.");
+  }
+
   // TODO: is this dead code? NextFetchEvent never lets this get called
   respondWith(response: Response | Promise<Response>): void {
-    if (!this[responseSymbol]) {
-      this[responseSymbol] = Promise.resolve(response);
+    if (this.hasResponded) {
+      throw new Error("FetchEvent.respondWith() has already been called");
     }
+    this.hasResponded = true;
+    this[responseSymbol] = Promise.resolve(response);
   }
 
   // TODO: is this dead code? passThroughSymbol is unused
@@ -34,6 +72,11 @@ export class FetchEvent {
   }
 
   waitUntil(promise: Promise<any>): void {
+    if (this.hasResponded) {
+      throw new Error(
+        "FetchEvent.waitUntil() cannot be called after response has been sent",
+      );
+    }
     if (this[waitUntilSymbol].kind === "external") {
       // if we received an external waitUntil, we delegate to it
       // TODO(after): this will make us not go through `getServerError(error, 'edge-server')` in `sandbox`
@@ -84,6 +127,11 @@ export class NemoEvent extends NextFetchEvent {
     nemo?: Map<string, unknown>;
   }) {
     super(params as never);
+    if (params.nemo !== undefined && !(params.nemo instanceof Map)) {
+      throw new Error(
+        "NemoEvent context must be an instance of Map or undefined",
+      );
+    }
     this.context = params.nemo || new Map();
   }
 
