@@ -149,13 +149,37 @@ describe("NEMO", () => {
 
   describe("Debug Mode", () => {
     test("should enable debug logging", async () => {
-      const consoleSpy = mock(console.log);
-      const middleware: NextMiddleware = () => NextResponse.next();
+      const originalConsoleLog = console.log;
+      const consoleSpy = mock((...args: any[]) => {
+        originalConsoleLog(...args);
+      });
+      console.log = consoleSpy;
 
+      const middleware: NextMiddleware = () => NextResponse.next();
       const nemo = new NEMO({ "/": middleware }, undefined, { debug: true });
       await nemo.middleware(mockRequest(), mockEvent);
 
       expect(consoleSpy).toHaveBeenCalled();
+
+      // Restore original console.log
+      console.log = originalConsoleLog;
+    });
+
+    test("should not log when debug is disabled", async () => {
+      const originalConsoleLog = console.log;
+      const consoleSpy = mock((...args: any[]) => {
+        originalConsoleLog(...args);
+      });
+      console.log = consoleSpy;
+
+      const middleware: NextMiddleware = () => NextResponse.next();
+      const nemo = new NEMO({ "/": middleware }); // debug not enabled
+      await nemo.middleware(mockRequest(), mockEvent);
+
+      expect(consoleSpy).not.toHaveBeenCalled();
+
+      // Restore original console.log
+      console.log = originalConsoleLog;
     });
   });
 });
