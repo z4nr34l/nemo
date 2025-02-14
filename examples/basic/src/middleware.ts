@@ -6,7 +6,7 @@ const globlMiddleware = {
 }
 
 const middlewares = {
-  "/page1": [
+  "/page1/:path*": [
     (request) => {
       console.log("middleware 1 before", request.headers.get('x-custom-header'));
       request.headers.set("x-custom-header", "custom-value");
