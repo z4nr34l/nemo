@@ -3,18 +3,19 @@ import { pathToRegexp } from "path-to-regexp";
 import { ContextManager } from "./context-manager";
 import { NemoMiddlewareError } from "./errors";
 import { Logger } from "./logger";
+import { NemoRequest } from "./nemo-request";
 import {
   type GlobalMiddlewareConfig,
   type MiddlewareConfig,
   type MiddlewareMetadata,
   type NemoConfig,
-  type NemoRequest,
   type NextMiddleware,
   type NextMiddlewareResult,
   type NextMiddlewareWithMeta,
 } from "./types";
 
 export { NemoMiddlewareError } from "./errors";
+export { NemoRequest } from "./nemo-request";
 export * from "./types";
 
 export class NEMO {
@@ -338,10 +339,8 @@ export class NEMO {
     // Get fresh context for this request
     const context = this.contextManager.get();
 
-    // Create request with isolated context
-    const nemoRequest = Object.assign(request, {
-      context,
-    }) as NemoRequest;
+    // Create request with isolated context using the new NemoRequest
+    const nemoRequest = NemoRequest.from(request, context);
 
     const queue: NextMiddlewareWithMeta[] = this.propagateQueue(nemoRequest);
 
