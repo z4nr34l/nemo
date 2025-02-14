@@ -305,18 +305,20 @@ export class NEMO {
     let result: NextMiddlewareResult;
     const initialHeaders = new Headers(request.headers);
 
-    // Add timing tracking
-    const chainTiming = {
-      before: 0,
-      main: 0,
-      after: 0,
-    };
+    // Add timing tracking only when enabled
+    const chainTiming = this.config.enableTiming
+      ? {
+          before: 0,
+          main: 0,
+          after: 0,
+        }
+      : null;
 
     this.logger.log("Starting middleware queue processing");
 
     for (const middleware of queue) {
       try {
-        const startTime = performance.now();
+        const startTime = this.config.enableTiming ? performance.now() : 0;
 
         this.logger.log("Executing middleware:", {
           chain: middleware.__nemo?.chain,
@@ -326,12 +328,13 @@ export class NEMO {
 
         result = await middleware(request, event);
 
-        if (this.config.enableTiming) {
+        if (
+          this.config.enableTiming &&
+          chainTiming &&
+          middleware.__nemo?.chain
+        ) {
           const duration = performance.now() - startTime;
-          // Add duration to appropriate chain
-          if (middleware.__nemo?.chain) {
-            chainTiming[middleware.__nemo.chain] += duration;
-          }
+          chainTiming[middleware.__nemo.chain] += duration;
           this.logger.log(
             `Middleware execution time: ${duration.toFixed(2)}ms`,
           );
@@ -339,7 +342,7 @@ export class NEMO {
 
         if (result) {
           // Log final timing before early return
-          if (this.config.enableTiming) {
+          if (this.config.enableTiming && chainTiming) {
             this.logger.log("Chain timing summary:", {
               before: `${chainTiming.before.toFixed(2)}ms`,
               main: `${chainTiming.main.toFixed(2)}ms`,
@@ -378,7 +381,7 @@ export class NEMO {
     }
 
     // Log final timing before default return
-    if (this.config.enableTiming) {
+    if (this.config.enableTiming && chainTiming) {
       this.logger.log("Chain timing summary:", {
         before: `${chainTiming.before.toFixed(2)}ms`,
         main: `${chainTiming.main.toFixed(2)}ms`,
