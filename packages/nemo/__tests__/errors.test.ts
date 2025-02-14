@@ -17,7 +17,9 @@ describe("NemoMiddlewareError", () => {
       originalError,
     );
 
-    expect(error.message).toBe("Test message");
+    expect(error.message).toBe(
+      "Test message [main chain at path /test (matched by /test), index 0]",
+    );
     expect(error.context).toEqual(context);
     expect(error.originalError).toBe(originalError);
   });
@@ -32,7 +34,9 @@ describe("NemoMiddlewareError", () => {
 
     const error = new NemoMiddlewareError("Test message", context);
 
-    expect(error.message).toBe("Test message");
+    expect(error.message).toBe(
+      "Test message [main chain at path /test (matched by /test), index 0]",
+    );
     expect(error.context).toEqual(context);
     expect(error.originalError).toBeUndefined();
   });
