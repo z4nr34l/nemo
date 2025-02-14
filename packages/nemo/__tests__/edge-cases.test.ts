@@ -1,15 +1,15 @@
 import { describe, expect, mock, test } from "bun:test";
+import type { NextFetchEvent } from "next/server";
 import { NextRequest, NextResponse } from "next/server";
-import { NEMO, NemoEvent, type NextMiddleware } from "../src";
+import { NEMO, type NextMiddleware } from "../src";
 
 describe("NEMO Edge Cases", () => {
   const mockRequest = (path: string = "/") =>
     new NextRequest(`http://localhost${path}`);
 
-  const mockEvent = NemoEvent.from(
-    { waitUntil: mock(() => {}) } as any,
-    new Map(),
-  );
+  const mockEvent: NextFetchEvent = {
+    waitUntil: mock(() => {}),
+  } as never as NextFetchEvent;
 
   test("should handle deeply nested paths", async () => {
     const middleware = mock(() => NextResponse.next());
