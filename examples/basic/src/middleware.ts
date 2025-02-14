@@ -1,17 +1,19 @@
-import { NEMO, type MiddlewareConfig } from "@rescale/nemo";
+import { NEMO } from "@rescale/nemo";
+import { NextResponse, type NextRequest } from "next/server";
 
 const middlewares = {
   "/page1": [
-    (request) => {
-      console.log("middleware 1 before", request.headers);
+    (request: NextRequest) => {
+      console.log("middleware 1 before", request.headers.get('x-custom-header'));
       request.headers.set("x-custom-header", "custom-value");
-      console.log("middleware 1 after", request.headers);
+      console.log("middleware 1 after", request.headers.get('x-custom-header'));
     },
-    (request) => {
-      console.log("middleware 2", request.headers);
+    (request: NextRequest) => {
+      console.log("middleware 2", request.headers.get('x-custom-header'));
+      return NextResponse.json({ message: "Hello from middleware 2" });
     }
   ],
-} satisfies MiddlewareConfig;
+};
 
 // Create middlewares helper
 export const { middleware } = new NEMO(middlewares, undefined, {

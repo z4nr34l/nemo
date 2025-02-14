@@ -59,7 +59,7 @@ export class NEMO {
    * @param request - The request to propagate the queue for.
    * @returns The queue of middleware functions.
    */
-  private propagateQueue(request: NextRequest): MiddlewareChain {
+  private propagateQueue(request: NextRequest): NextMiddleware[] {
     let beforeGlobalMiddleware: MiddlewareChain = [];
     if (this.globalMiddleware?.before) {
       beforeGlobalMiddleware = Array.isArray(this.globalMiddleware.before)
@@ -90,13 +90,25 @@ export class NEMO {
   }
 
   private async processQueue(
-    queue: MiddlewareChain,
+    queue: NextMiddleware[],
     request: NextRequest,
     event: NextFetchEvent,
   ): Promise<NextMiddlewareResult> {
-    for (const middleware in queue) {
-      console.log(typeof middleware);
+    let result: NextMiddlewareResult;
+
+    for (const middleware of queue) {
+      if (this.config.debug) {
+        console.log("[NEMO] Executing middleware");
+      }
+
+      result = await middleware(request, event);
+
+      if (result) {
+        return result;
+      }
     }
+
+    return result;
   }
 
   constructor(
@@ -116,7 +128,7 @@ export class NEMO {
     request: NextRequest,
     event: NextFetchEvent,
   ): Promise<NextMiddlewareResult> => {
-    const queue: MiddlewareChain = this.propagateQueue(request);
+    const queue: NextMiddleware[] = this.propagateQueue(request);
 
     if (this.config.debug) {
       console.log("[NEMO] Processing request:", request.url);
