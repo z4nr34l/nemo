@@ -7,6 +7,12 @@ import { pathToRegexp } from "path-to-regexp";
 
 /**
  * Logger class
+ * @class Logger
+ * @private
+ * @method log - Log message
+ * @method error - Log error
+ * @method warn - Log warning
+ * @returns Logger
  */
 class Logger {
   private readonly debug: boolean;
@@ -40,7 +46,7 @@ export type NextMiddlewareResult =
   | undefined
   | void;
 export type NextMiddleware = (
-  request: NextRequest,
+  request: NemoRequest,
   event: NextFetchEvent,
 ) => NextMiddlewareResult | Promise<NextMiddlewareResult>;
 
@@ -110,7 +116,37 @@ export type NextMiddlewareWithMeta = NextMiddleware & {
 };
 
 /**
+ * Manages context state for middleware
+ * @class ContextManager
+ * @private
+ * @method get - Get context store
+ * @method set - Set context store
+ * @method clear - Clear context store
+ * @returns ContextManager
+ */
+class ContextManager {
+  private store: Map<string, unknown>;
+
+  constructor() {
+    this.store = new Map();
+  }
+
+  get(): Map<string, unknown> {
+    return new Map(this.store);
+  }
+
+  set(key: string, value: unknown): void {
+    this.store.set(key, value);
+  }
+
+  clear(): void {
+    this.store = new Map();
+  }
+}
+
+/**
  * NEMO Middleware
+ * @class NEMO
  * @param middlewares - Middleware configuration
  * @param globalMiddleware - Global middleware configuration
  * @returns NextMiddleware
@@ -119,8 +155,9 @@ export class NEMO {
   private config: NemoConfig;
   private middlewares: MiddlewareConfig;
   private globalMiddleware?: GlobalMiddlewareConfig;
-  private context: MiddlewareContext;
+  private contextManager: ContextManager;
   private logger: Logger;
+  private matchCache: Map<string, Map<string, boolean>> = new Map();
 
   /**
    * NEMO Middleware
@@ -141,7 +178,7 @@ export class NEMO {
     };
     this.middlewares = middlewares;
     this.globalMiddleware = globalMiddleware;
-    this.context = new Map();
+    this.contextManager = new ContextManager();
     this.logger = new Logger(this.config.debug || false);
 
     // Log initialization
@@ -155,12 +192,34 @@ export class NEMO {
   }
 
   /**
+   * Gets cached match result or computes and caches new result
+   * @param pattern - The pattern to match
+   * @param path - The path to check
+   */
+  private getCachedMatch(pattern: string, path: string): boolean {
+    let patternCache = this.matchCache.get(pattern);
+    if (!patternCache) {
+      patternCache = new Map();
+      this.matchCache.set(pattern, patternCache);
+    }
+
+    const cached = patternCache.get(path);
+    if (cached !== undefined) {
+      return cached;
+    }
+
+    const result = pathToRegexp(pattern).test(path);
+    patternCache.set(path, result);
+    return result;
+  }
+
+  /**
    * Checks if the given path matches the given pattern.
    * @param pattern - The pattern to match.
    * @param path - The path to check.
    */
   private matchesPath(pattern: string, path: string): boolean {
-    return pathToRegexp(pattern).test(path);
+    return this.getCachedMatch(pattern, path);
   }
 
   /**
@@ -410,9 +469,13 @@ export class NEMO {
     request: NextRequest,
     event: NextFetchEvent,
   ): Promise<NextMiddlewareResult> => {
-    // Enhance request with context
-    const nemoRequest = request as NemoRequest;
-    nemoRequest.context = this.context;
+    // Get fresh context for this request
+    const context = this.contextManager.get();
+
+    // Create request with isolated context
+    const nemoRequest = Object.assign(request, {
+      context,
+    }) as NemoRequest;
 
     const queue: NextMiddlewareWithMeta[] = this.propagateQueue(nemoRequest);
 
@@ -420,10 +483,11 @@ export class NEMO {
   };
 
   /**
-   * Clear middleware context
+   * Clear middleware context and cache
    */
   clearContext() {
-    this.context.clear();
+    this.contextManager.clear();
+    this.matchCache.clear();
   }
 }
 

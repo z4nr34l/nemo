@@ -4,6 +4,8 @@ import {
   createMiddleware,
   NEMO,
   NemoMiddlewareError,
+  type ErrorHandler,
+  type NemoRequest,
   type NextMiddleware,
 } from "../src";
 
@@ -211,6 +213,37 @@ describe("NEMO", () => {
     });
   });
 
+  describe("Path Matching Cache", () => {
+    test("should cache path matching results", async () => {
+      const middleware = mock(() => NextResponse.next());
+      const nemo = new NEMO({ "/test/:id": middleware });
+
+      // First request - should compute and cache
+      await nemo.middleware(mockRequest("/test/123"), mockEvent);
+
+      // Second request - should use cache
+      await nemo.middleware(mockRequest("/test/123"), mockEvent);
+
+      expect(middleware).toHaveBeenCalledTimes(2);
+    });
+
+    test("should clear cache when clearContext is called", async () => {
+      const middleware = mock(() => NextResponse.next());
+      const nemo = new NEMO({ "/test/:id": middleware });
+
+      // First request
+      await nemo.middleware(mockRequest("/test/123"), mockEvent);
+
+      // Clear cache
+      nemo.clearContext();
+
+      // Second request - should recompute
+      await nemo.middleware(mockRequest("/test/123"), mockEvent);
+
+      expect(middleware).toHaveBeenCalledTimes(2);
+    });
+  });
+
   describe("Global Middleware", () => {
     test("should execute before middleware first", async () => {
       const order: string[] = [];
@@ -281,6 +314,38 @@ describe("NEMO", () => {
 
       expect(response?.headers.get("x-first")).toBe("first");
       expect(response?.headers.get("x-second")).toBe("second");
+    });
+  });
+
+  describe("Context Handling", () => {
+    test("should share context between middleware in chain", async () => {
+      const middleware1: NextMiddleware = (req: NextRequest) => {
+        (req as NemoRequest).context.set("test", "value");
+      };
+
+      const middleware2: NextMiddleware = (req: NextRequest) => {
+        expect((req as NemoRequest).context.get("test")).toBe("value");
+        return NextResponse.next();
+      };
+
+      const nemo = new NEMO({ "/": [middleware1, middleware2] });
+      await nemo.middleware(mockRequest(), mockEvent);
+    });
+
+    test("should clear context when clearContext is called", async () => {
+      const middleware1: NextMiddleware = (req: NextRequest) => {
+        (req as NemoRequest).context.set("test", "value");
+      };
+
+      const nemo = new NEMO({ "/": middleware1 });
+      await nemo.middleware(mockRequest(), mockEvent);
+
+      nemo.clearContext();
+
+      // Use a new request with the fresh context
+      const req = mockRequest();
+      await nemo.middleware(req, mockEvent);
+      expect((req as NemoRequest).context.get("test")).toBeUndefined();
     });
   });
 
@@ -431,6 +496,119 @@ describe("NEMO", () => {
         expect(nemoError.context.routeKey).toBe("/test/:id");
         expect(nemoError.context.index).toBe(0);
       }
+    });
+  });
+
+  describe("Enhanced Error Handling", () => {
+    test("should use custom error handler when provided", async () => {
+      const errorMiddleware: NextMiddleware = () => {
+        throw new Error("Custom error");
+      };
+
+      const errorHandler: ErrorHandler = mock((error, context) => {
+        expect(error.message).toBe("Custom error");
+        expect(context.chain).toBe("main");
+        return NextResponse.next();
+      });
+
+      const nemo = new NEMO({ "/": errorMiddleware }, undefined, {
+        errorHandler,
+      });
+
+      await nemo.middleware(mockRequest(), mockEvent);
+      expect(errorHandler).toHaveBeenCalled();
+    });
+
+    test("should continue chain when silent mode is enabled", async () => {
+      const errorMiddleware: NextMiddleware = () => {
+        throw new Error("Silent error");
+      };
+
+      const nextMiddleware = mock(() => NextResponse.next());
+
+      const nemo = new NEMO(
+        { "/": [errorMiddleware, nextMiddleware] },
+        undefined,
+        { silent: true },
+      );
+
+      await nemo.middleware(mockRequest(), mockEvent);
+      expect(nextMiddleware).toHaveBeenCalled();
+    });
+
+    test("should preserve error context in silent mode", async () => {
+      const errorMiddleware: NextMiddleware = () => {
+        throw new Error("Test error");
+      };
+
+      const nextMiddleware: NextMiddleware = (req: NextRequest) => {
+        const context = (req as NemoRequest).context;
+        expect(context.get("lastError")).toBeInstanceOf(Error);
+        return NextResponse.next();
+      };
+
+      const nemo = new NEMO(
+        { "/": [errorMiddleware, nextMiddleware] },
+        undefined,
+        { silent: true },
+      );
+
+      await nemo.middleware(mockRequest(), mockEvent);
+    });
+  });
+
+  describe("Timing Features", () => {
+    test("should track timing when enabled", async () => {
+      const middleware: NextMiddleware = async () => {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        return NextResponse.next();
+      };
+
+      const consoleSpy = mock(console.log);
+      console.log = consoleSpy;
+
+      const nemo = new NEMO({ "/": middleware }, undefined, {
+        debug: true,
+        enableTiming: true,
+      });
+
+      await nemo.middleware(mockRequest(), mockEvent);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("[NEMO]"),
+        "Chain timing summary:",
+        expect.objectContaining({
+          main: expect.stringMatching(/\d+\.\d+ms/),
+          total: expect.stringMatching(/\d+\.\d+ms/),
+        }),
+      );
+
+      console.log = consoleSpy as unknown as typeof console.log;
+    });
+
+    test("should not track timing when disabled", async () => {
+      const middleware: NextMiddleware = async () => {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        return NextResponse.next();
+      };
+
+      const consoleSpy = mock(console.log);
+      console.log = consoleSpy;
+
+      const nemo = new NEMO({ "/": middleware }, undefined, {
+        debug: true,
+        enableTiming: false,
+      });
+
+      await nemo.middleware(mockRequest(), mockEvent);
+
+      expect(consoleSpy).not.toHaveBeenCalledWith(
+        expect.stringContaining("[NEMO]"),
+        "Chain timing summary:",
+        expect.any(Object),
+      );
+
+      console.log = consoleSpy as unknown as typeof console.log;
     });
   });
 
