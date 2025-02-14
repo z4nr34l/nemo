@@ -64,6 +64,26 @@ describe("NEMO", () => {
       const diff = (nemo as any).getHeadersDiff(initial, final);
       expect(diff).toEqual({});
     });
+
+    test("should detect deleted headers", () => {
+      const initial = new Headers({
+        "deleted-header": "value",
+      });
+      const final = new Headers();
+
+      const diff = (nemo as any).getHeadersDiff(initial, final);
+      expect(diff).toEqual({
+        "deleted-header": "",
+      });
+    });
+
+    test("should handle empty headers", () => {
+      const initial = new Headers();
+      const final = new Headers();
+
+      const diff = (nemo as any).getHeadersDiff(initial, final);
+      expect(diff).toEqual({});
+    });
   });
 
   describe("Middleware Processing", () => {
@@ -311,6 +331,132 @@ describe("NEMO", () => {
 
       await middleware(mockRequest("/test"), mockEvent);
       expect(testMiddleware).toHaveBeenCalled();
+    });
+  });
+
+  describe("Configuration", () => {
+    test("should apply default config values", () => {
+      const nemo = new NEMO({});
+      expect((nemo as any).config).toEqual({
+        debug: false,
+        silent: false,
+        enableTiming: false,
+      });
+    });
+
+    test("should merge custom config with defaults", () => {
+      const nemo = new NEMO({}, undefined, {
+        debug: true,
+        enableTiming: true,
+      });
+      expect((nemo as any).config).toEqual({
+        debug: true,
+        silent: false,
+        enableTiming: true,
+      });
+    });
+  });
+
+  describe("Timing", () => {
+    test("should track timing when enabled", async () => {
+      const middleware = mock(() => {
+        return NextResponse.next();
+      });
+
+      const nemo = new NEMO({ "/": middleware }, undefined, {
+        debug: true,
+        enableTiming: true,
+      });
+
+      await nemo.middleware(mockRequest(), mockEvent);
+      // Just verify it doesn't throw - actual timing values are non-deterministic
+    });
+
+    test("should track timing for all middleware chains", async () => {
+      const before = mock(() => undefined);
+      const main = mock(() => undefined);
+      const after = mock(() => NextResponse.next());
+
+      const nemo = new NEMO(
+        { "/": main },
+        { before, after },
+        {
+          debug: true,
+          enableTiming: true,
+        },
+      );
+
+      await nemo.middleware(mockRequest(), mockEvent);
+      expect(before).toHaveBeenCalled();
+      expect(main).toHaveBeenCalled();
+      expect(after).toHaveBeenCalled();
+    });
+  });
+
+  describe("Context Management", () => {
+    test("should clear context and cache", () => {
+      const nemo = new NEMO({});
+      (nemo as any).matchCache.set("test", new Map([["path", true]]));
+
+      nemo.clearContext();
+
+      expect((nemo as any).matchCache.size).toBe(0);
+    });
+  });
+
+  describe("Path Matching Cache", () => {
+    test("should cache path matching results", async () => {
+      const middleware = mock(() => NextResponse.next());
+      const nemo = new NEMO({ "/test/:id": middleware });
+
+      // First call - should create cache
+      await nemo.middleware(mockRequest("/test/123"), mockEvent);
+      const cache = (nemo as any).matchCache.get("/test/:id");
+      expect(cache?.get("/test/123")).toBe(true);
+
+      // Second call - should use cache
+      await nemo.middleware(mockRequest("/test/123"), mockEvent);
+      expect(middleware).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe("Global Middleware Arrays", () => {
+    test("should handle array of before middlewares", async () => {
+      const order: string[] = [];
+      const before1 = mock(() => {
+        order.push("before1");
+      });
+      const before2 = mock(() => {
+        order.push("before2");
+      });
+      const main = mock(() => {
+        order.push("main");
+        return NextResponse.next();
+      });
+
+      const nemo = new NEMO({ "/": main }, { before: [before1, before2] });
+
+      await nemo.middleware(mockRequest(), mockEvent);
+      expect(order).toEqual(["before1", "before2", "main"]);
+    });
+
+    test("should handle array of after middlewares", async () => {
+      const order: string[] = [];
+      const main = mock(() => {
+        order.push("main");
+      });
+      const after1 = mock(() => {
+        order.push("after1");
+      });
+      const after2 = mock(() => {
+        order.push("after2");
+        return NextResponse.next();
+      });
+
+      const nemo = new NEMO({ "/": main }, { after: [after1, after2] });
+
+      await nemo.middleware(mockRequest(), mockEvent);
+      expect(order).toEqual(["main", "after1", "after2"]);
     });
   });
 });
