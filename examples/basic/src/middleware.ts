@@ -28,7 +28,8 @@ const middlewares = {
 
 // Create middlewares helper
 export const { middleware } = new NEMO(middlewares, globlMiddleware, {
-  debug: true
+  debug: true,
+  enableTiming: true
 });
 
 export const config = {

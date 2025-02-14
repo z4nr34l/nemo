@@ -5,6 +5,32 @@ import {
 } from "next/server";
 import { pathToRegexp } from "path-to-regexp";
 
+// Add Logger class at the top
+class Logger {
+  private readonly debug: boolean;
+  private readonly prefix: string = "[NEMO]";
+
+  constructor(debug: boolean) {
+    this.debug = debug;
+  }
+
+  log(...args: any[]) {
+    if (this.debug) {
+      console.log(this.prefix, ...args);
+    }
+  }
+
+  error(...args: any[]) {
+    if (this.debug) {
+      console.error(this.prefix, ...args);
+    }
+  }
+
+  warn(...args: any[]) {
+    console.warn(this.prefix, ...args);
+  }
+}
+
 export type NextMiddlewareResult =
   | NextResponse
   | Response
@@ -18,9 +44,14 @@ export type NextMiddleware = (
 
 export type MiddlewareContext = Map<string, unknown>;
 
-export interface NemoEvent extends NextFetchEvent {
-  forward: (fn: NextMiddleware) => void;
+export interface NemoRequest extends NextRequest {
+  context: MiddlewareContext;
 }
+
+export type ErrorHandler = (
+  error: Error,
+  context: MiddlewareErrorContext,
+) => NextMiddlewareResult | Promise<NextMiddlewareResult>;
 
 export type MiddlewareChain = NextMiddleware | NextMiddleware[];
 
@@ -33,6 +64,8 @@ export type GlobalMiddlewareConfig = Partial<
 export interface NemoConfig {
   debug?: boolean;
   silent?: boolean;
+  errorHandler?: ErrorHandler;
+  enableTiming?: boolean;
 }
 
 export interface MiddlewareErrorContext {
@@ -77,6 +110,40 @@ export class NEMO {
   private config: NemoConfig;
   private middlewares: MiddlewareConfig;
   private globalMiddleware?: GlobalMiddlewareConfig;
+  private context: MiddlewareContext;
+  private logger: Logger;
+
+  /**
+   * NEMO Middleware
+   * @param middlewares - Middleware configuration
+   * @param globalMiddleware - Global middleware configuration
+   * @param config - NEMO configuration
+   */
+  constructor(
+    middlewares: MiddlewareConfig,
+    globalMiddleware?: GlobalMiddlewareConfig,
+    config?: NemoConfig,
+  ) {
+    this.config = {
+      debug: false,
+      silent: false,
+      enableTiming: false,
+      ...config,
+    };
+    this.middlewares = middlewares;
+    this.globalMiddleware = globalMiddleware;
+    this.context = new Map();
+    this.logger = new Logger(this.config.debug || false);
+
+    // Log initialization
+    this.logger.log("Initialized with config:", {
+      debug: this.config.debug,
+      silent: this.config.silent,
+      enableTiming: this.config.enableTiming,
+      middlewareCount: Object.keys(middlewares).length,
+      hasGlobalMiddleware: !!globalMiddleware,
+    });
+  }
 
   /**
    * Checks if the given path matches the given pattern.
@@ -98,10 +165,21 @@ export class NEMO {
     finalHeaders: Headers,
   ): Record<string, string> {
     const diff: Record<string, string> = {};
+    const seen = new Set<string>();
 
+    // Optimize header comparison using Sets
     finalHeaders.forEach((value, key) => {
-      if (!initialHeaders.has(key) || initialHeaders.get(key) !== value) {
+      seen.add(key);
+      const initialValue = initialHeaders.get(key);
+      if (!initialValue || initialValue !== value) {
         diff[key] = value;
+      }
+    });
+
+    // Check for deleted headers
+    initialHeaders.forEach((_, key) => {
+      if (!seen.has(key)) {
+        diff[key] = ""; // Mark for deletion
       }
     });
 
@@ -129,8 +207,10 @@ export class NEMO {
    * @returns The queue of middleware functions.
    */
   private propagateQueue(request: NextRequest): NextMiddlewareWithMeta[] {
-    let routeKey = "";
     const pathname = request.nextUrl.pathname;
+    this.logger.log("Processing request for path:", pathname);
+
+    let routeKey = "/";
 
     const _middlewares = Object.entries(this.middlewares).filter(([key]) => {
       const matches = this.matchesPath(key, pathname);
@@ -186,7 +266,19 @@ export class NEMO {
       }),
     );
 
-    return [...beforeMiddlewares, ...mainMiddlewares, ...afterMiddlewares];
+    const queue = [
+      ...beforeMiddlewares,
+      ...mainMiddlewares,
+      ...afterMiddlewares,
+    ];
+    this.logger.log("Generated middleware queue:", {
+      total: queue.length,
+      before: beforeMiddlewares.length,
+      main: mainMiddlewares.length,
+      after: afterMiddlewares.length,
+    });
+
+    return queue;
   }
 
   /**
@@ -198,26 +290,52 @@ export class NEMO {
    */
   private async processQueue(
     queue: NextMiddlewareWithMeta[],
-    request: NextRequest,
+    request: NemoRequest,
     event: NextFetchEvent,
   ): Promise<NextMiddlewareResult> {
     let result: NextMiddlewareResult;
     const initialHeaders = new Headers(request.headers);
 
+    this.logger.log("Starting middleware queue processing");
+
     for (const middleware of queue) {
       try {
-        if (this.config.debug) {
-          console.log(`[NEMO] Executing middleware:`, middleware.__nemo);
-        }
+        const startTime = this.config.enableTiming ? performance.now() : 0;
+
+        this.logger.log("Executing middleware:", {
+          chain: middleware.__nemo?.chain,
+          index: middleware.__nemo?.index,
+          pathname: middleware.__nemo?.pathname,
+        });
 
         result = await middleware(request, event);
 
+        if (this.config.enableTiming) {
+          const duration = performance.now() - startTime;
+          this.logger.log(
+            `Middleware execution time: ${duration.toFixed(2)}ms`,
+          );
+        }
+
         if (result) {
+          this.logger.log("Middleware returned result, ending chain");
           return result;
         }
       } catch (error) {
-        if (this.config.debug) {
-          console.error("[NEMO] Middleware error:", error);
+        this.logger.error("Middleware execution failed:", {
+          error,
+          metadata: middleware.__nemo,
+        });
+
+        if (this.config.errorHandler) {
+          const handled = await this.config.errorHandler(
+            error as Error,
+            middleware.__nemo!,
+          );
+          if (handled) {
+            this.logger.log("Error handled by custom handler");
+            return handled;
+          }
         }
 
         if (!this.config.silent) {
@@ -231,37 +349,13 @@ export class NEMO {
     }
 
     const finalHeaders = new Headers(request.headers);
-    if (this.config.debug) {
-      console.log(
-        "[NEMO] Final request headers",
-        this.getHeadersDiff(initialHeaders, finalHeaders),
-      );
-    }
+    const headerDiff = this.getHeadersDiff(initialHeaders, finalHeaders);
+    this.logger.log("Headers modified:", headerDiff);
 
     return NextResponse.next({
-      headers: new Headers(this.getHeadersDiff(initialHeaders, finalHeaders)),
+      headers: new Headers(headerDiff),
       request,
     });
-  }
-
-  /**
-   * NEMO Middleware
-   * @param middlewares - Middleware configuration
-   * @param globalMiddleware - Global middleware configuration
-   * @param config - NEMO configuration
-   */
-  constructor(
-    middlewares: MiddlewareConfig,
-    globalMiddleware?: GlobalMiddlewareConfig,
-    config?: NemoConfig,
-  ) {
-    this.config = {
-      debug: false,
-      silent: false,
-      ...config,
-    };
-    this.middlewares = middlewares;
-    this.globalMiddleware = globalMiddleware;
   }
 
   /**
@@ -274,10 +368,21 @@ export class NEMO {
     request: NextRequest,
     event: NextFetchEvent,
   ): Promise<NextMiddlewareResult> => {
-    const queue: NextMiddlewareWithMeta[] = this.propagateQueue(request);
+    // Enhance request with context
+    const nemoRequest = request as NemoRequest;
+    nemoRequest.context = this.context;
 
-    return this.processQueue(queue, request, event);
+    const queue: NextMiddlewareWithMeta[] = this.propagateQueue(nemoRequest);
+
+    return this.processQueue(queue, nemoRequest, event);
   };
+
+  /**
+   * Clear middleware context
+   */
+  clearContext() {
+    this.context.clear();
+  }
 }
 
 /**
