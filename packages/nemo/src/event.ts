@@ -5,7 +5,7 @@ const responseSymbol = Symbol("response");
 const passThroughSymbol = Symbol("passThrough");
 const waitUntilSymbol = Symbol("waitUntil");
 
-class FetchEvent {
+export class FetchEvent {
   // TODO(after): get rid of the 'internal' variant and always use an external waitUntil
   // (this means removing `FetchEventResult.waitUntil` which also requires a builder change)
   readonly [waitUntilSymbol]:
