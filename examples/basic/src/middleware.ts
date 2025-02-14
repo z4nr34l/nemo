@@ -1,5 +1,5 @@
 import { NEMO } from "@rescale/nemo";
-import { type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 const middlewares = {
   "/page1": [
@@ -13,6 +13,13 @@ const middlewares = {
       console.log("middleware 2", "x-custom-header", request.headers.get('x-custom-header'));
     }
   ],
+  "/page2": [
+    (request: NextRequest) => {
+      return NextResponse.next({
+        headers: { "x-test": "value" },
+      })
+    }
+  ]
 };
 
 // Create middlewares helper
