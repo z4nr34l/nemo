@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from "bun:test";
 import { NextRequest, NextResponse, type NextFetchEvent } from "next/server";
-import { NEMO, type NextMiddleware } from "../src";
+import { NEMO, NemoMiddlewareError, type NextMiddleware } from "../src";
 
 describe("NEMO", () => {
   const mockRequest = (path: string = "/") => {
@@ -266,6 +266,114 @@ describe("NEMO", () => {
 
       // Restore original console.log
       console.log = originalConsoleLog;
+    });
+  });
+
+  describe("Error Handling", () => {
+    test("should provide context for errors in before middleware", async () => {
+      const errorMiddleware: NextMiddleware = () => {
+        throw new Error("Test error");
+      };
+
+      const nemo = new NEMO({ "/": () => {} }, { before: errorMiddleware });
+
+      try {
+        await nemo.middleware(mockRequest(), mockEvent);
+        fail("Expected error to be thrown");
+      } catch (error) {
+        expect(error).toBeInstanceOf(NemoMiddlewareError);
+        const nemoError = error as NemoMiddlewareError;
+        expect(nemoError.context.chain).toBe("before");
+        expect(nemoError.context.index).toBe(0);
+        expect(nemoError.originalError).toBeInstanceOf(Error);
+      }
+    });
+
+    test("should provide context for errors in main middleware", async () => {
+      const errorMiddleware: NextMiddleware = () => {
+        throw new Error("Test error");
+      };
+
+      const nemo = new NEMO({
+        "/test": errorMiddleware,
+      });
+
+      try {
+        await nemo.middleware(mockRequest("/test"), mockEvent);
+        fail("Expected error to be thrown");
+      } catch (error) {
+        expect(error).toBeInstanceOf(NemoMiddlewareError);
+        const nemoError = error as NemoMiddlewareError;
+        expect(nemoError.context.chain).toBe("main");
+        expect(nemoError.context.path).toBe("/test");
+        expect(nemoError.context.index).toBe(0);
+        expect(nemoError.originalError).toBeInstanceOf(Error);
+      }
+    });
+
+    test("should provide context for errors in after middleware", async () => {
+      const errorMiddleware: NextMiddleware = () => {
+        throw new Error("Test error");
+      };
+
+      const nemo = new NEMO({ "/": () => {} }, { after: errorMiddleware });
+
+      try {
+        await nemo.middleware(mockRequest(), mockEvent);
+        fail("Expected error to be thrown");
+      } catch (error) {
+        expect(error).toBeInstanceOf(NemoMiddlewareError);
+        const nemoError = error as NemoMiddlewareError;
+        expect(nemoError.context.chain).toBe("after");
+        expect(nemoError.context.index).toBe(0);
+        expect(nemoError.originalError).toBeInstanceOf(Error);
+      }
+    });
+
+    test("should provide correct error context in middleware chains", async () => {
+      const middleware1: NextMiddleware = () => {};
+      const errorMiddleware: NextMiddleware = () => {
+        throw new Error("Test error");
+      };
+      const middleware3: NextMiddleware = () => {};
+
+      const nemo = new NEMO({
+        "/test": [middleware1, errorMiddleware, middleware3],
+      });
+
+      try {
+        await nemo.middleware(mockRequest("/test"), mockEvent);
+        fail("Expected error to be thrown");
+      } catch (error) {
+        expect(error).toBeInstanceOf(NemoMiddlewareError);
+        const nemoError = error as NemoMiddlewareError;
+        expect(nemoError.context.chain).toBe("main");
+        expect(nemoError.context.path).toBe("/test");
+        expect(nemoError.context.index).toBe(1);
+        expect(nemoError.originalError).toBeInstanceOf(Error);
+      }
+    });
+
+    test("should include regex key in error context for main middleware", async () => {
+      const errorMiddleware: NextMiddleware = () => {
+        throw new Error("Test error");
+      };
+
+      const nemo = new NEMO({
+        "/test/:id": errorMiddleware,
+      });
+
+      try {
+        await nemo.middleware(mockRequest("/test/123"), mockEvent);
+        fail("Expected error to be thrown");
+      } catch (error) {
+        expect(error).toBeInstanceOf(NemoMiddlewareError);
+        const nemoError = error as NemoMiddlewareError;
+        expect(nemoError.context.chain).toBe("main");
+        expect(nemoError.context.path).toBe("/test/:id");
+        expect(nemoError.context.regexKey).toBe("/test/:id");
+        expect(nemoError.context.index).toBe(0);
+      }
     });
   });
 });

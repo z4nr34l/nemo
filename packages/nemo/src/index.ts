@@ -32,7 +32,39 @@ export type GlobalMiddlewareConfig = Partial<
 
 export interface NemoConfig {
   debug?: boolean;
+  silent?: boolean;
 }
+
+export interface MiddlewareErrorContext {
+  chain: "before" | "main" | "after";
+  path?: string;
+  index: number;
+}
+
+export class NemoMiddlewareError extends Error {
+  constructor(
+    message: string,
+    public readonly context: MiddlewareErrorContext,
+    public readonly originalError: unknown,
+  ) {
+    super(
+      `${message} [${context.chain} chain${
+        context.path ? ` at path ${context.path}` : ""
+      }, index ${context.index}]`,
+    );
+  }
+}
+
+export interface MiddlewareMetadata {
+  chain: "before" | "main" | "after";
+  path?: string;
+  index: number;
+  regexKey?: string;
+}
+
+export type NextMiddlewareWithMeta = NextMiddleware & {
+  __nemo?: MiddlewareMetadata;
+};
 
 /**
  * NEMO Middleware
@@ -76,42 +108,74 @@ export class NEMO {
   }
 
   /**
+   * Attaches metadata to the given middleware function.
+   * @param middleware - The middleware function to attach metadata to.
+   * @param metadata - The metadata to attach.
+   * @returns The middleware function with attached metadata.
+   */
+  private attachMetadata(
+    middleware: NextMiddleware,
+    metadata: MiddlewareMetadata,
+  ): NextMiddlewareWithMeta {
+    const middlewareWithMeta = middleware as NextMiddlewareWithMeta;
+    middlewareWithMeta.__nemo = metadata;
+    return middlewareWithMeta;
+  }
+
+  /**
    * Propagate the queue of middleware functions for the given request.
    * @param request - The request to propagate the queue for.
    * @returns The queue of middleware functions.
    */
-  private propagateQueue(request: NextRequest): NextMiddleware[] {
-    let beforeGlobalMiddleware: MiddlewareChain = [];
-    if (this.globalMiddleware?.before) {
-      beforeGlobalMiddleware = Array.isArray(this.globalMiddleware.before)
-        ? this.globalMiddleware.before
-        : [this.globalMiddleware.before];
-    }
+  private propagateQueue(request: NextRequest): NextMiddlewareWithMeta[] {
+    const beforeMiddlewares = (
+      this.globalMiddleware?.before
+        ? Array.isArray(this.globalMiddleware.before)
+          ? this.globalMiddleware.before
+          : [this.globalMiddleware.before]
+        : []
+    ).map((middleware, index) =>
+      this.attachMetadata(middleware, { chain: "before", index }),
+    );
 
-    let afterGlobalMiddleware: MiddlewareChain = [];
-    if (this.globalMiddleware?.after) {
-      afterGlobalMiddleware = Array.isArray(this.globalMiddleware.after)
-        ? this.globalMiddleware.after
-        : [this.globalMiddleware.after];
-    }
+    const mainMiddlewares = Object.entries(this.middlewares)
+      .filter(([key]) => this.matchesPath(key, request.nextUrl.pathname))
+      .flatMap(([path, middlewares]) => {
+        const middlewareArray = Array.isArray(middlewares)
+          ? middlewares
+          : [middlewares];
+        return middlewareArray.map((middleware, index) =>
+          this.attachMetadata(middleware, {
+            chain: "main",
+            path,
+            index,
+            regexKey: path,
+          }),
+        );
+      });
 
-    const allMiddlewareFunctions = [
-      ...beforeGlobalMiddleware,
-      ...Object.entries(this.middlewares)
-        .filter(([key]) => this.matchesPath(key, request.nextUrl.pathname))
-        .flatMap(([_, middlewareFunctions]) => {
-          return Array.isArray(middlewareFunctions)
-            ? middlewareFunctions
-            : [middlewareFunctions];
-        }),
-      ...afterGlobalMiddleware,
-    ];
+    const afterMiddlewares = (
+      this.globalMiddleware?.after
+        ? Array.isArray(this.globalMiddleware.after)
+          ? this.globalMiddleware.after
+          : [this.globalMiddleware.after]
+        : []
+    ).map((middleware, index) =>
+      this.attachMetadata(middleware, { chain: "after", index }),
+    );
 
-    return allMiddlewareFunctions;
+    return [...beforeMiddlewares, ...mainMiddlewares, ...afterMiddlewares];
   }
 
+  /**
+   * Process the queue of middleware functions.
+   * @param queue - The queue of middleware functions to process.
+   * @param request - The request to process the queue for.
+   * @param event - The fetch event to process the queue for.
+   * @returns The result of the middleware processing.
+   */
   private async processQueue(
-    queue: NextMiddleware[],
+    queue: NextMiddlewareWithMeta[],
     request: NextRequest,
     event: NextFetchEvent,
   ): Promise<NextMiddlewareResult> {
@@ -119,31 +183,51 @@ export class NEMO {
     const initialHeaders = new Headers(request.headers);
 
     for (const middleware of queue) {
-      result = await middleware(request, event);
+      try {
+        if (this.config.debug) {
+          console.log(`[NEMO] Executing middleware:`, middleware.__nemo);
+        }
 
-      if (result) {
-        return result;
+        result = await middleware(request, event);
+
+        if (result) {
+          return result;
+        }
+      } catch (error) {
+        if (this.config.debug) {
+          console.error("[NEMO] Middleware error:", error);
+        }
+
+        if (!this.config.silent) {
+          throw new NemoMiddlewareError(
+            "Middleware execution failed",
+            middleware.__nemo!,
+            error,
+          );
+        }
       }
     }
 
-    if (result) {
-      return result;
-    } else {
-      const finalHeaders = new Headers(request.headers);
-      if (this.config.debug) {
-        console.log(
-          "[NEMO] Final request headers",
-          this.getHeadersDiff(initialHeaders, finalHeaders),
-        );
-      }
-
-      return NextResponse.next({
-        headers: new Headers(this.getHeadersDiff(initialHeaders, finalHeaders)),
-        request,
-      });
+    const finalHeaders = new Headers(request.headers);
+    if (this.config.debug) {
+      console.log(
+        "[NEMO] Final request headers",
+        this.getHeadersDiff(initialHeaders, finalHeaders),
+      );
     }
+
+    return NextResponse.next({
+      headers: new Headers(this.getHeadersDiff(initialHeaders, finalHeaders)),
+      request,
+    });
   }
 
+  /**
+   * NEMO Middleware
+   * @param middlewares - Middleware configuration
+   * @param globalMiddleware - Global middleware configuration
+   * @param config - NEMO configuration
+   */
   constructor(
     middlewares: MiddlewareConfig,
     globalMiddleware?: GlobalMiddlewareConfig,
@@ -151,21 +235,24 @@ export class NEMO {
   ) {
     this.config = {
       debug: false,
+      silent: false,
       ...config,
     };
     this.middlewares = middlewares;
     this.globalMiddleware = globalMiddleware;
   }
 
+  /**
+   * Middleware
+   * @param request - The request to process the middleware for.
+   * @param event - The fetch event to process the middleware for.
+   * @returns The result of the middleware processing.
+   */
   middleware = async (
     request: NextRequest,
     event: NextFetchEvent,
   ): Promise<NextMiddlewareResult> => {
-    const queue: NextMiddleware[] = this.propagateQueue(request);
-
-    if (this.config.debug) {
-      console.log("[NEMO] Processing request:", request.url);
-    }
+    const queue: NextMiddlewareWithMeta[] = this.propagateQueue(request);
 
     return this.processQueue(queue, request, event);
   };
