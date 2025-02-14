@@ -71,4 +71,59 @@ describe("ContextManager", () => {
     expect(context.get("test")).toBeUndefined();
     expect(context.get("newTest")).toBe("newValue");
   });
+
+  test("set should store values correctly", () => {
+    const manager = new ContextManager();
+    manager.set("key1", "value1");
+    const context = manager.get();
+    expect(context.get("key1")).toBe("value1");
+  });
+
+  test("set should override existing values", () => {
+    const manager = new ContextManager();
+    manager.set("key1", "value1");
+    manager.set("key1", "value2");
+    const context = manager.get();
+    expect(context.get("key1")).toBe("value2");
+  });
+
+  test("set should handle different value types", () => {
+    const manager = new ContextManager();
+    const testObj = { test: "value" };
+    const testArr = [1, 2, 3];
+
+    manager.set("null", null);
+    manager.set("undefined", undefined);
+    manager.set("object", testObj);
+    manager.set("array", testArr);
+
+    const context = manager.get();
+    expect(context.get("null")).toBeNull();
+    expect(context.get("undefined")).toBeUndefined();
+    expect(context.get("object")).toEqual(testObj);
+    expect(context.get("array")).toEqual(testArr);
+  });
+
+  test("get should return a new map instance", () => {
+    const manager = new ContextManager();
+    manager.set("key1", "value1");
+
+    const context1 = manager.get();
+    const context2 = manager.get();
+
+    expect(context1).not.toBe(context2);
+    expect(context1.get("key1")).toBe("value1");
+    expect(context2.get("key1")).toBe("value1");
+  });
+
+  test("modifications to returned map should not affect original store", () => {
+    const manager = new ContextManager();
+    manager.set("key1", "value1");
+
+    const context = manager.get();
+    context.set("key2", "value2");
+
+    const newContext = manager.get();
+    expect(newContext.has("key2")).toBe(false);
+  });
 });
