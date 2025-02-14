@@ -1,6 +1,5 @@
 import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 import { pathToRegexp } from "path-to-regexp";
-import { ContextManager } from "./context-manager";
 import { NemoMiddlewareError } from "./errors";
 import { NemoEvent } from "./event";
 import { Logger } from "./logger";
@@ -22,7 +21,7 @@ export class NEMO {
   private config: NemoConfig;
   private middlewares: MiddlewareConfig;
   private globalMiddleware?: GlobalMiddlewareConfig;
-  private contextManager: ContextManager;
+  private context: Map<string, unknown>;
   private logger: Logger;
   private matchCache: Map<string, Map<string, boolean>> = new Map();
 
@@ -45,7 +44,7 @@ export class NEMO {
     };
     this.middlewares = middlewares;
     this.globalMiddleware = globalMiddleware;
-    this.contextManager = new ContextManager();
+    this.context = new Map();
     this.logger = new Logger(this.config.debug || false);
 
     // Log initialization
@@ -337,7 +336,7 @@ export class NEMO {
     event: NextFetchEvent,
   ): Promise<NextMiddlewareResult> => {
     // Get fresh context for this request
-    const context = this.contextManager.get();
+    const context = new Map(this.context);
 
     // Ensure we have a valid NextFetchEvent
     const nemoEvent = NemoEvent.from(event as never, context);
@@ -351,7 +350,7 @@ export class NEMO {
    * Clear middleware context and cache
    */
   clearContext() {
-    this.contextManager.clear();
+    this.context.clear();
     this.matchCache.clear();
   }
 }
