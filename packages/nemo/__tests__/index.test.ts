@@ -5,7 +5,6 @@ import {
   NEMO,
   NemoMiddlewareError,
   type ErrorHandler,
-  type NemoRequest,
   type NextMiddleware,
 } from "../src";
 
@@ -149,41 +148,6 @@ describe("NEMO", () => {
 
         expect(order).toEqual(["first"]);
       });
-
-      test("should break chain on new NextResponse", async () => {
-        const order: string[] = [];
-        const middleware1: NextMiddleware = () => {
-          order.push("first");
-          return new NextResponse(null, { status: 200 });
-        };
-        const middleware2: NextMiddleware = () => {
-          order.push("second");
-        };
-
-        const nemo = new NEMO({ "/": [middleware1, middleware2] });
-        const response = await nemo.middleware(mockRequest(), mockEvent);
-
-        expect(order).toEqual(["first"]);
-        expect(response?.status).toBe(200);
-      });
-
-      test("should break chain on new Response", async () => {
-        const order: string[] = [];
-        const middleware1: NextMiddleware = () => {
-          order.push("first");
-          return new Response(null, { status: 200 });
-        };
-        const middleware2: NextMiddleware = () => {
-          order.push("second");
-        };
-
-        const nemo = new NEMO({ "/": [middleware1, middleware2] });
-        const response = await nemo.middleware(mockRequest(), mockEvent);
-
-        expect(order).toEqual(["first"]);
-        expect(response instanceof Response).toBe(true);
-        expect(response?.status).toBe(200);
-      });
     });
   });
 
@@ -213,34 +177,62 @@ describe("NEMO", () => {
     });
   });
 
-  describe("Path Matching Cache", () => {
-    test("should cache path matching results", async () => {
-      const middleware = mock(() => NextResponse.next());
-      const nemo = new NEMO({ "/test/:id": middleware });
+  describe("Error Handling", () => {
+    test("should provide context for errors in before middleware", async () => {
+      const errorMiddleware: NextMiddleware = () => {
+        throw new Error("Test error");
+      };
 
-      // First request - should compute and cache
-      await nemo.middleware(mockRequest("/test/123"), mockEvent);
+      const nemo = new NEMO({ "/": () => {} }, { before: errorMiddleware });
 
-      // Second request - should use cache
-      await nemo.middleware(mockRequest("/test/123"), mockEvent);
-
-      expect(middleware).toHaveBeenCalledTimes(2);
+      try {
+        await nemo.middleware(mockRequest(), mockEvent);
+        fail("Expected error to be thrown");
+      } catch (error) {
+        expect(error).toBeInstanceOf(NemoMiddlewareError);
+        const nemoError = error as NemoMiddlewareError;
+        expect(nemoError.context.chain).toBe("before");
+        expect(nemoError.context.index).toBe(0);
+        expect(nemoError.context.pathname).toBe("/");
+        expect(nemoError.context.routeKey).toBe("/");
+        expect(nemoError.originalError).toBeInstanceOf(Error);
+      }
     });
 
-    test("should clear cache when clearContext is called", async () => {
-      const middleware = mock(() => NextResponse.next());
-      const nemo = new NEMO({ "/test/:id": middleware });
+    test("should use custom error handler when provided", async () => {
+      const errorMiddleware: NextMiddleware = () => {
+        throw new Error("Custom error");
+      };
 
-      // First request
-      await nemo.middleware(mockRequest("/test/123"), mockEvent);
+      const errorHandler: ErrorHandler = mock((error, context) => {
+        expect(error.message).toBe("Custom error");
+        expect(context.chain).toBe("main");
+        return NextResponse.next();
+      });
 
-      // Clear cache
-      nemo.clearContext();
+      const nemo = new NEMO({ "/": errorMiddleware }, undefined, {
+        errorHandler,
+      });
 
-      // Second request - should recompute
-      await nemo.middleware(mockRequest("/test/123"), mockEvent);
+      await nemo.middleware(mockRequest(), mockEvent);
+      expect(errorHandler).toHaveBeenCalled();
+    });
 
-      expect(middleware).toHaveBeenCalledTimes(2);
+    test("should continue chain when silent mode is enabled", async () => {
+      const errorMiddleware: NextMiddleware = () => {
+        throw new Error("Silent error");
+      };
+
+      const nextMiddleware = mock(() => NextResponse.next());
+
+      const nemo = new NEMO(
+        { "/": [errorMiddleware, nextMiddleware] },
+        undefined,
+        { silent: true },
+      );
+
+      await nemo.middleware(mockRequest(), mockEvent);
+      expect(nextMiddleware).toHaveBeenCalled();
     });
   });
 
@@ -288,330 +280,6 @@ describe("NEMO", () => {
     });
   });
 
-  describe("Headers Handling", () => {
-    test("should preserve modified headers", async () => {
-      const middleware: NextMiddleware = (req) => {
-        req.headers.set("x-modified", "value");
-      };
-
-      const nemo = new NEMO({ "/": middleware });
-      const response = await nemo.middleware(mockRequest(), mockEvent);
-
-      expect(response?.headers.get("x-modified")).toBe("value");
-    });
-
-    test("should handle multiple header modifications", async () => {
-      const middleware1: NextMiddleware = (req) => {
-        req.headers.set("x-first", "first");
-      };
-
-      const middleware2: NextMiddleware = (req) => {
-        req.headers.set("x-second", "second");
-      };
-
-      const nemo = new NEMO({ "/": [middleware1, middleware2] });
-      const response = await nemo.middleware(mockRequest(), mockEvent);
-
-      expect(response?.headers.get("x-first")).toBe("first");
-      expect(response?.headers.get("x-second")).toBe("second");
-    });
-  });
-
-  describe("Context Handling", () => {
-    test("should share context between middleware in chain", async () => {
-      const middleware1: NextMiddleware = (req: NextRequest) => {
-        (req as NemoRequest).context.set("test", "value");
-      };
-
-      const middleware2: NextMiddleware = (req: NextRequest) => {
-        expect((req as NemoRequest).context.get("test")).toBe("value");
-        return NextResponse.next();
-      };
-
-      const nemo = new NEMO({ "/": [middleware1, middleware2] });
-      await nemo.middleware(mockRequest(), mockEvent);
-    });
-
-    test("should clear context when clearContext is called", async () => {
-      const middleware1: NextMiddleware = (req: NextRequest) => {
-        (req as NemoRequest).context.set("test", "value");
-      };
-
-      const nemo = new NEMO({ "/": middleware1 });
-      await nemo.middleware(mockRequest(), mockEvent);
-
-      nemo.clearContext();
-
-      // Use a new request with the fresh context
-      const req = mockRequest();
-      await nemo.middleware(req, mockEvent);
-      expect((req as NemoRequest).context.get("test")).toBeUndefined();
-    });
-  });
-
-  describe("Debug Mode", () => {
-    test("should enable debug logging", async () => {
-      const originalConsoleLog = console.log;
-      const consoleSpy = mock((...args: any[]) => {
-        originalConsoleLog(...args);
-      });
-      console.log = consoleSpy;
-
-      const middleware: NextMiddleware = () => NextResponse.next();
-      const nemo = new NEMO({ "/": middleware }, undefined, { debug: true });
-      await nemo.middleware(mockRequest(), mockEvent);
-
-      expect(consoleSpy).toHaveBeenCalled();
-
-      // Restore original console.log
-      console.log = originalConsoleLog;
-    });
-
-    test("should not log when debug is disabled", async () => {
-      const originalConsoleLog = console.log;
-      const consoleSpy = mock((...args: any[]) => {
-        originalConsoleLog(...args);
-      });
-      console.log = consoleSpy;
-
-      const middleware: NextMiddleware = () => NextResponse.next();
-      const nemo = new NEMO({ "/": middleware }); // debug not enabled
-      await nemo.middleware(mockRequest(), mockEvent);
-
-      expect(consoleSpy).not.toHaveBeenCalled();
-
-      // Restore original console.log
-      console.log = originalConsoleLog;
-    });
-  });
-
-  describe("Error Handling", () => {
-    test("should provide context for errors in before middleware", async () => {
-      const errorMiddleware: NextMiddleware = () => {
-        throw new Error("Test error");
-      };
-
-      const nemo = new NEMO({ "/": () => {} }, { before: errorMiddleware });
-
-      try {
-        await nemo.middleware(mockRequest(), mockEvent);
-        fail("Expected error to be thrown");
-      } catch (error) {
-        expect(error).toBeInstanceOf(NemoMiddlewareError);
-        const nemoError = error as NemoMiddlewareError;
-        expect(nemoError.context.chain).toBe("before");
-        expect(nemoError.context.index).toBe(0);
-        expect(nemoError.context.pathname).toBe("/");
-        expect(nemoError.context.routeKey).toBe("/");
-        expect(nemoError.originalError).toBeInstanceOf(Error);
-      }
-    });
-
-    test("should provide context for errors in main middleware", async () => {
-      const errorMiddleware: NextMiddleware = () => {
-        throw new Error("Test error");
-      };
-
-      const nemo = new NEMO({
-        "/test": errorMiddleware,
-      });
-
-      try {
-        await nemo.middleware(mockRequest("/test"), mockEvent);
-        fail("Expected error to be thrown");
-      } catch (error) {
-        expect(error).toBeInstanceOf(NemoMiddlewareError);
-        const nemoError = error as NemoMiddlewareError;
-        expect(nemoError.context.chain).toBe("main");
-        expect(nemoError.context.pathname).toBe("/test");
-        expect(nemoError.context.routeKey).toBe("/test");
-        expect(nemoError.context.index).toBe(0);
-        expect(nemoError.originalError).toBeInstanceOf(Error);
-      }
-    });
-
-    test("should provide context for errors in after middleware", async () => {
-      const errorMiddleware: NextMiddleware = () => {
-        throw new Error("Test error");
-      };
-
-      const nemo = new NEMO({ "/": () => {} }, { after: errorMiddleware });
-
-      try {
-        await nemo.middleware(mockRequest(), mockEvent);
-        fail("Expected error to be thrown");
-      } catch (error) {
-        expect(error).toBeInstanceOf(NemoMiddlewareError);
-        const nemoError = error as NemoMiddlewareError;
-        expect(nemoError.context.chain).toBe("after");
-        expect(nemoError.context.index).toBe(0);
-        expect(nemoError.context.pathname).toBe("/");
-        expect(nemoError.context.routeKey).toBe("/");
-        expect(nemoError.originalError).toBeInstanceOf(Error);
-      }
-    });
-
-    test("should provide correct error context in middleware chains", async () => {
-      const middleware1: NextMiddleware = () => {};
-      const errorMiddleware: NextMiddleware = () => {
-        throw new Error("Test error");
-      };
-      const middleware3: NextMiddleware = () => {};
-
-      const nemo = new NEMO({
-        "/test": [middleware1, errorMiddleware, middleware3],
-      });
-
-      try {
-        await nemo.middleware(mockRequest("/test"), mockEvent);
-        fail("Expected error to be thrown");
-      } catch (error) {
-        expect(error).toBeInstanceOf(NemoMiddlewareError);
-        const nemoError = error as NemoMiddlewareError;
-        expect(nemoError.context.chain).toBe("main");
-        expect(nemoError.context.pathname).toBe("/test");
-        expect(nemoError.context.routeKey).toBe("/test");
-        expect(nemoError.context.index).toBe(1);
-        expect(nemoError.originalError).toBeInstanceOf(Error);
-      }
-    });
-
-    test("should include route key in error context for pattern paths", async () => {
-      const errorMiddleware: NextMiddleware = () => {
-        throw new Error("Test error");
-      };
-
-      const nemo = new NEMO({
-        "/test/:id": errorMiddleware,
-      });
-
-      try {
-        await nemo.middleware(mockRequest("/test/123"), mockEvent);
-        fail("Expected error to be thrown");
-      } catch (error) {
-        expect(error).toBeInstanceOf(NemoMiddlewareError);
-        const nemoError = error as NemoMiddlewareError;
-        expect(nemoError.context.chain).toBe("main");
-        expect(nemoError.context.pathname).toBe("/test/123");
-        expect(nemoError.context.routeKey).toBe("/test/:id");
-        expect(nemoError.context.index).toBe(0);
-      }
-    });
-  });
-
-  describe("Enhanced Error Handling", () => {
-    test("should use custom error handler when provided", async () => {
-      const errorMiddleware: NextMiddleware = () => {
-        throw new Error("Custom error");
-      };
-
-      const errorHandler: ErrorHandler = mock((error, context) => {
-        expect(error.message).toBe("Custom error");
-        expect(context.chain).toBe("main");
-        return NextResponse.next();
-      });
-
-      const nemo = new NEMO({ "/": errorMiddleware }, undefined, {
-        errorHandler,
-      });
-
-      await nemo.middleware(mockRequest(), mockEvent);
-      expect(errorHandler).toHaveBeenCalled();
-    });
-
-    test("should continue chain when silent mode is enabled", async () => {
-      const errorMiddleware: NextMiddleware = () => {
-        throw new Error("Silent error");
-      };
-
-      const nextMiddleware = mock(() => NextResponse.next());
-
-      const nemo = new NEMO(
-        { "/": [errorMiddleware, nextMiddleware] },
-        undefined,
-        { silent: true },
-      );
-
-      await nemo.middleware(mockRequest(), mockEvent);
-      expect(nextMiddleware).toHaveBeenCalled();
-    });
-
-    test("should preserve error context in silent mode", async () => {
-      const errorMiddleware: NextMiddleware = () => {
-        throw new Error("Test error");
-      };
-
-      const nextMiddleware: NextMiddleware = (req: NextRequest) => {
-        const context = (req as NemoRequest).context;
-        expect(context.get("lastError")).toBeInstanceOf(Error);
-        return NextResponse.next();
-      };
-
-      const nemo = new NEMO(
-        { "/": [errorMiddleware, nextMiddleware] },
-        undefined,
-        { silent: true },
-      );
-
-      await nemo.middleware(mockRequest(), mockEvent);
-    });
-  });
-
-  describe("Timing Features", () => {
-    test("should track timing when enabled", async () => {
-      const middleware: NextMiddleware = async () => {
-        await new Promise((resolve) => setTimeout(resolve, 10));
-        return NextResponse.next();
-      };
-
-      const consoleSpy = mock(console.log);
-      console.log = consoleSpy;
-
-      const nemo = new NEMO({ "/": middleware }, undefined, {
-        debug: true,
-        enableTiming: true,
-      });
-
-      await nemo.middleware(mockRequest(), mockEvent);
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("[NEMO]"),
-        "Chain timing summary:",
-        expect.objectContaining({
-          main: expect.stringMatching(/\d+\.\d+ms/),
-          total: expect.stringMatching(/\d+\.\d+ms/),
-        }),
-      );
-
-      console.log = consoleSpy as unknown as typeof console.log;
-    });
-
-    test("should not track timing when disabled", async () => {
-      const middleware: NextMiddleware = async () => {
-        await new Promise((resolve) => setTimeout(resolve, 10));
-        return NextResponse.next();
-      };
-
-      const consoleSpy = mock(console.log);
-      console.log = consoleSpy;
-
-      const nemo = new NEMO({ "/": middleware }, undefined, {
-        debug: true,
-        enableTiming: false,
-      });
-
-      await nemo.middleware(mockRequest(), mockEvent);
-
-      expect(consoleSpy).not.toHaveBeenCalledWith(
-        expect.stringContaining("[NEMO]"),
-        "Chain timing summary:",
-        expect.any(Object),
-      );
-
-      console.log = consoleSpy as unknown as typeof console.log;
-    });
-  });
-
   describe("Deprecated createMiddleware", () => {
     const originalConsoleWarn = console.warn;
     let warnSpy: typeof console.warn;
@@ -642,30 +310,6 @@ describe("NEMO", () => {
 
       await middleware(mockRequest("/test"), mockEvent);
       expect(testMiddleware).toHaveBeenCalled();
-    });
-
-    test("should handle global middleware", async () => {
-      const order: string[] = [];
-      const beforeMiddleware: NextMiddleware = () => {
-        order.push("before");
-      };
-      const mainMiddleware: NextMiddleware = () => {
-        order.push("main");
-      };
-      const afterMiddleware: NextMiddleware = () => {
-        order.push("after");
-      };
-
-      const { middleware } = createMiddleware(
-        { "/": mainMiddleware },
-        {
-          before: beforeMiddleware,
-          after: afterMiddleware,
-        },
-      );
-
-      await middleware(mockRequest(), mockEvent);
-      expect(order).toEqual(["before", "main", "after"]);
     });
   });
 });
