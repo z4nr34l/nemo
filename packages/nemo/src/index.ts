@@ -5,7 +5,9 @@ import {
 } from "next/server";
 import { pathToRegexp } from "path-to-regexp";
 
-// Add Logger class at the top
+/**
+ * Logger class
+ */
 class Logger {
   private readonly debug: boolean;
   private readonly prefix: string = "[NEMO]";
@@ -75,6 +77,13 @@ export interface MiddlewareErrorContext {
   routeKey: string;
 }
 
+/**
+ * NemoMiddlewareError
+ * @param message - Error message
+ * @param context - Middleware error context
+ * @param originalError - Original error
+ * @returns Error
+ */
 export class NemoMiddlewareError extends Error {
   constructor(
     message: string,
@@ -296,11 +305,18 @@ export class NEMO {
     let result: NextMiddlewareResult;
     const initialHeaders = new Headers(request.headers);
 
+    // Add timing tracking
+    const chainTiming = {
+      before: 0,
+      main: 0,
+      after: 0,
+    };
+
     this.logger.log("Starting middleware queue processing");
 
     for (const middleware of queue) {
       try {
-        const startTime = this.config.enableTiming ? performance.now() : 0;
+        const startTime = performance.now();
 
         this.logger.log("Executing middleware:", {
           chain: middleware.__nemo?.chain,
@@ -312,12 +328,25 @@ export class NEMO {
 
         if (this.config.enableTiming) {
           const duration = performance.now() - startTime;
+          // Add duration to appropriate chain
+          if (middleware.__nemo?.chain) {
+            chainTiming[middleware.__nemo.chain] += duration;
+          }
           this.logger.log(
             `Middleware execution time: ${duration.toFixed(2)}ms`,
           );
         }
 
         if (result) {
+          // Log final timing before early return
+          if (this.config.enableTiming) {
+            this.logger.log("Chain timing summary:", {
+              before: `${chainTiming.before.toFixed(2)}ms`,
+              main: `${chainTiming.main.toFixed(2)}ms`,
+              after: `${chainTiming.after.toFixed(2)}ms`,
+              total: `${(chainTiming.before + chainTiming.main + chainTiming.after).toFixed(2)}ms`,
+            });
+          }
           this.logger.log("Middleware returned result, ending chain");
           return result;
         }
@@ -346,6 +375,16 @@ export class NEMO {
           );
         }
       }
+    }
+
+    // Log final timing before default return
+    if (this.config.enableTiming) {
+      this.logger.log("Chain timing summary:", {
+        before: `${chainTiming.before.toFixed(2)}ms`,
+        main: `${chainTiming.main.toFixed(2)}ms`,
+        after: `${chainTiming.after.toFixed(2)}ms`,
+        total: `${(chainTiming.before + chainTiming.main + chainTiming.after).toFixed(2)}ms`,
+      });
     }
 
     const finalHeaders = new Headers(request.headers);
