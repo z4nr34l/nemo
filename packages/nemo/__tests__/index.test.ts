@@ -285,6 +285,8 @@ describe("NEMO", () => {
         const nemoError = error as NemoMiddlewareError;
         expect(nemoError.context.chain).toBe("before");
         expect(nemoError.context.index).toBe(0);
+        expect(nemoError.context.pathname).toBe("/");
+        expect(nemoError.context.routeKey).toBe("/");
         expect(nemoError.originalError).toBeInstanceOf(Error);
       }
     });
@@ -305,7 +307,8 @@ describe("NEMO", () => {
         expect(error).toBeInstanceOf(NemoMiddlewareError);
         const nemoError = error as NemoMiddlewareError;
         expect(nemoError.context.chain).toBe("main");
-        expect(nemoError.context.path).toBe("/test");
+        expect(nemoError.context.pathname).toBe("/test");
+        expect(nemoError.context.routeKey).toBe("/test");
         expect(nemoError.context.index).toBe(0);
         expect(nemoError.originalError).toBeInstanceOf(Error);
       }
@@ -326,6 +329,8 @@ describe("NEMO", () => {
         const nemoError = error as NemoMiddlewareError;
         expect(nemoError.context.chain).toBe("after");
         expect(nemoError.context.index).toBe(0);
+        expect(nemoError.context.pathname).toBe("/");
+        expect(nemoError.context.routeKey).toBe("/");
         expect(nemoError.originalError).toBeInstanceOf(Error);
       }
     });
@@ -348,13 +353,14 @@ describe("NEMO", () => {
         expect(error).toBeInstanceOf(NemoMiddlewareError);
         const nemoError = error as NemoMiddlewareError;
         expect(nemoError.context.chain).toBe("main");
-        expect(nemoError.context.path).toBe("/test");
+        expect(nemoError.context.pathname).toBe("/test");
+        expect(nemoError.context.routeKey).toBe("/test");
         expect(nemoError.context.index).toBe(1);
         expect(nemoError.originalError).toBeInstanceOf(Error);
       }
     });
 
-    test("should include regex key in error context for main middleware", async () => {
+    test("should include route key in error context for pattern paths", async () => {
       const errorMiddleware: NextMiddleware = () => {
         throw new Error("Test error");
       };
@@ -370,8 +376,8 @@ describe("NEMO", () => {
         expect(error).toBeInstanceOf(NemoMiddlewareError);
         const nemoError = error as NemoMiddlewareError;
         expect(nemoError.context.chain).toBe("main");
-        expect(nemoError.context.path).toBe("/test/:id");
-        expect(nemoError.context.regexKey).toBe("/test/:id");
+        expect(nemoError.context.pathname).toBe("/test/123");
+        expect(nemoError.context.routeKey).toBe("/test/:id");
         expect(nemoError.context.index).toBe(0);
       }
     });

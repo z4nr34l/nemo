@@ -1,6 +1,10 @@
 import { NEMO } from "@rescale/nemo";
 import { NextResponse, type NextRequest } from "next/server";
 
+const globlMiddleware = {
+  before: () => {}
+}
+
 const middlewares = {
   "/page1": [
     (request: NextRequest) => {
@@ -23,7 +27,7 @@ const middlewares = {
 };
 
 // Create middlewares helper
-export const { middleware } = new NEMO(middlewares, undefined, {
+export const { middleware } = new NEMO(middlewares, globlMiddleware, {
   debug: true
 });
 

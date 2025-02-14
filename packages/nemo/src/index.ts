@@ -37,8 +37,9 @@ export interface NemoConfig {
 
 export interface MiddlewareErrorContext {
   chain: "before" | "main" | "after";
-  path?: string;
   index: number;
+  pathname: string;
+  routeKey: string;
 }
 
 export class NemoMiddlewareError extends Error {
@@ -48,8 +49,8 @@ export class NemoMiddlewareError extends Error {
     public readonly originalError: unknown,
   ) {
     super(
-      `${message} [${context.chain} chain${
-        context.path ? ` at path ${context.path}` : ""
+      `${message} [${context.chain} chain at path ${context.pathname}${
+        context.routeKey ? ` (matched by ${context.routeKey})` : ""
       }, index ${context.index}]`,
     );
   }
@@ -57,9 +58,9 @@ export class NemoMiddlewareError extends Error {
 
 export interface MiddlewareMetadata {
   chain: "before" | "main" | "after";
-  path?: string;
   index: number;
-  regexKey?: string;
+  pathname: string;
+  routeKey: string;
 }
 
 export type NextMiddlewareWithMeta = NextMiddleware & {
@@ -128,6 +129,19 @@ export class NEMO {
    * @returns The queue of middleware functions.
    */
   private propagateQueue(request: NextRequest): NextMiddlewareWithMeta[] {
+    let routeKey = "";
+    const pathname = request.nextUrl.pathname;
+
+    const _middlewares = Object.entries(this.middlewares).filter(([key]) => {
+      const matches = this.matchesPath(key, pathname);
+
+      if (matches) {
+        routeKey = key;
+      }
+
+      return matches;
+    });
+
     const beforeMiddlewares = (
       this.globalMiddleware?.before
         ? Array.isArray(this.globalMiddleware.before)
@@ -135,24 +149,27 @@ export class NEMO {
           : [this.globalMiddleware.before]
         : []
     ).map((middleware, index) =>
-      this.attachMetadata(middleware, { chain: "before", index }),
+      this.attachMetadata(middleware, {
+        chain: "before",
+        index,
+        pathname,
+        routeKey,
+      }),
     );
 
-    const mainMiddlewares = Object.entries(this.middlewares)
-      .filter(([key]) => this.matchesPath(key, request.nextUrl.pathname))
-      .flatMap(([path, middlewares]) => {
-        const middlewareArray = Array.isArray(middlewares)
-          ? middlewares
-          : [middlewares];
-        return middlewareArray.map((middleware, index) =>
-          this.attachMetadata(middleware, {
-            chain: "main",
-            path,
-            index,
-            regexKey: path,
-          }),
-        );
-      });
+    const mainMiddlewares = _middlewares.flatMap(([_, middlewares]) => {
+      const middlewareArray = Array.isArray(middlewares)
+        ? middlewares
+        : [middlewares];
+      return middlewareArray.map((middleware, index) =>
+        this.attachMetadata(middleware, {
+          chain: "main",
+          index,
+          pathname,
+          routeKey,
+        }),
+      );
+    });
 
     const afterMiddlewares = (
       this.globalMiddleware?.after
@@ -161,7 +178,12 @@ export class NEMO {
           : [this.globalMiddleware.after]
         : []
     ).map((middleware, index) =>
-      this.attachMetadata(middleware, { chain: "after", index }),
+      this.attachMetadata(middleware, {
+        chain: "after",
+        index,
+        pathname,
+        routeKey,
+      }),
     );
 
     return [...beforeMiddlewares, ...mainMiddlewares, ...afterMiddlewares];
