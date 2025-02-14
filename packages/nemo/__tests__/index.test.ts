@@ -1,6 +1,11 @@
-import { describe, expect, mock, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import { NextRequest, NextResponse, type NextFetchEvent } from "next/server";
-import { NEMO, NemoMiddlewareError, type NextMiddleware } from "../src";
+import {
+  createMiddleware,
+  NEMO,
+  NemoMiddlewareError,
+  type NextMiddleware,
+} from "../src";
 
 describe("NEMO", () => {
   const mockRequest = (path: string = "/") => {
@@ -12,6 +17,52 @@ describe("NEMO", () => {
   const mockEvent = {
     waitUntil: mock(() => {}),
   } as never as NextFetchEvent;
+
+  describe("Internals", () => {
+    let nemo: NEMO;
+
+    beforeEach(() => {
+      nemo = new NEMO({});
+    });
+
+    test("should detect new headers", () => {
+      const initial = new Headers();
+      const final = new Headers({
+        "new-header": "value",
+      });
+
+      const diff = (nemo as any).getHeadersDiff(initial, final);
+      expect(diff).toEqual({
+        "new-header": "value",
+      });
+    });
+
+    test("should detect modified headers", () => {
+      const initial = new Headers({
+        "existing-header": "old-value",
+      });
+      const final = new Headers({
+        "existing-header": "new-value",
+      });
+
+      const diff = (nemo as any).getHeadersDiff(initial, final);
+      expect(diff).toEqual({
+        "existing-header": "new-value",
+      });
+    });
+
+    test("should ignore unchanged headers", () => {
+      const initial = new Headers({
+        "unchanged-header": "same-value",
+      });
+      const final = new Headers({
+        "unchanged-header": "same-value",
+      });
+
+      const diff = (nemo as any).getHeadersDiff(initial, final);
+      expect(diff).toEqual({});
+    });
+  });
 
   describe("Middleware Processing", () => {
     test("should process simple middleware", async () => {
@@ -380,6 +431,63 @@ describe("NEMO", () => {
         expect(nemoError.context.routeKey).toBe("/test/:id");
         expect(nemoError.context.index).toBe(0);
       }
+    });
+  });
+
+  describe("Deprecated createMiddleware", () => {
+    const originalConsoleWarn = console.warn;
+    let warnSpy: typeof console.warn;
+
+    beforeEach(() => {
+      warnSpy = mock((...args: any[]) => {
+        originalConsoleWarn(...args);
+      });
+      console.warn = warnSpy;
+    });
+
+    afterEach(() => {
+      console.warn = originalConsoleWarn;
+    });
+
+    test("should show deprecation warning", () => {
+      const middleware = mock(() => NextResponse.next());
+      createMiddleware({ "/": middleware });
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        "[NEMO] `createMiddleware` is deprecated. Use `new NEMO()` instead.",
+      );
+    });
+
+    test("should return a working middleware instance", async () => {
+      const testMiddleware = mock(() => NextResponse.next());
+      const { middleware } = createMiddleware({ "/test": testMiddleware });
+
+      await middleware(mockRequest("/test"), mockEvent);
+      expect(testMiddleware).toHaveBeenCalled();
+    });
+
+    test("should handle global middleware", async () => {
+      const order: string[] = [];
+      const beforeMiddleware: NextMiddleware = () => {
+        order.push("before");
+      };
+      const mainMiddleware: NextMiddleware = () => {
+        order.push("main");
+      };
+      const afterMiddleware: NextMiddleware = () => {
+        order.push("after");
+      };
+
+      const { middleware } = createMiddleware(
+        { "/": mainMiddleware },
+        {
+          before: beforeMiddleware,
+          after: afterMiddleware,
+        },
+      );
+
+      await middleware(mockRequest(), mockEvent);
+      expect(order).toEqual(["before", "main", "after"]);
     });
   });
 });

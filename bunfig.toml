@@ -1,4 +1,4 @@
 [test]
 coverage = true # always enable coverage
-coverageReporter  = ["lcov"]
+coverageReporter  = ["text","lcov"]
 coverageDir = "packages/nemo/coverage"
