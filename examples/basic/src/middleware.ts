@@ -1,5 +1,5 @@
 import { NEMO } from "@rescale/nemo";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
 
 const middlewares = {
   "/page1": [
@@ -9,8 +9,8 @@ const middlewares = {
       console.log("middleware 1 after", request.headers.get('x-custom-header'));
     },
     (request: NextRequest) => {
-      console.log("middleware 2", request.headers.get('x-custom-header'));
-      return NextResponse.json({ message: "Hello from middleware 2" });
+      console.log("middleware 2", "x-custom-sent-header", request.headers.get('x-custom-sent-header'));
+      console.log("middleware 2", "x-custom-header", request.headers.get('x-custom-header'));
     }
   ],
 };

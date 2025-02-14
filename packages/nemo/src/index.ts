@@ -108,7 +108,15 @@ export class NEMO {
       }
     }
 
-    return result;
+    if (result) {
+      return result;
+    } else {
+      return NextResponse.next({
+        request: {
+          headers: new Headers(request.headers),
+        },
+      });
+    }
   }
 
   constructor(
