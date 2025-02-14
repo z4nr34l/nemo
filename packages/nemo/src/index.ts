@@ -55,6 +55,27 @@ export class NEMO {
   }
 
   /**
+   * Porównuje początkowe i końcowe nagłówki i zwraca różnicę
+   * @param initialHeaders - Początkowe nagłówki żądania
+   * @param finalHeaders - Końcowe nagłówki żądania
+   * @returns Obiekt zawierający nowe i zmodyfikowane nagłówki
+   */
+  private getHeadersDiff(
+    initialHeaders: Headers,
+    finalHeaders: Headers,
+  ): Record<string, string> {
+    const diff: Record<string, string> = {};
+
+    finalHeaders.forEach((value, key) => {
+      if (!initialHeaders.has(key) || initialHeaders.get(key) !== value) {
+        diff[key] = value;
+      }
+    });
+
+    return diff;
+  }
+
+  /**
    * Propagate the queue of middleware functions for the given request.
    * @param request - The request to propagate the queue for.
    * @returns The queue of middleware functions.
@@ -95,6 +116,11 @@ export class NEMO {
     event: NextFetchEvent,
   ): Promise<NextMiddlewareResult> {
     let result: NextMiddlewareResult;
+    const initialHeaders = new Headers(request.headers);
+
+    if (this.config.debug) {
+      console.log("[NEMO] Initial request headers", initialHeaders);
+    }
 
     for (const middleware of queue) {
       if (this.config.debug) {
@@ -111,10 +137,14 @@ export class NEMO {
     if (result) {
       return result;
     } else {
+      const finalHeaders = new Headers(request.headers);
+      if (this.config.debug) {
+        console.log("[NEMO] Final request headers", finalHeaders);
+      }
+
       return NextResponse.next({
-        request: {
-          headers: new Headers(request.headers),
-        },
+        headers: this.getHeadersDiff(initialHeaders, finalHeaders),
+        request,
       });
     }
   }
