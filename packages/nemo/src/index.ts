@@ -1,156 +1,22 @@
-import {
-  type NextFetchEvent,
-  type NextRequest,
-  NextResponse,
-} from "next/server";
+import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 import { pathToRegexp } from "path-to-regexp";
+import { ContextManager } from "./context-manager";
+import { NemoMiddlewareError } from "./errors";
+import { Logger } from "./logger";
+import {
+  type GlobalMiddlewareConfig,
+  type MiddlewareConfig,
+  type MiddlewareMetadata,
+  type NemoConfig,
+  type NemoRequest,
+  type NextMiddleware,
+  type NextMiddlewareResult,
+  type NextMiddlewareWithMeta,
+} from "./types";
 
-/**
- * Logger class
- * @class Logger
- * @private
- * @method log - Log message
- * @method error - Log error
- * @method warn - Log warning
- * @returns Logger
- */
-class Logger {
-  private readonly debug: boolean;
-  private readonly prefix: string = "[NEMO]";
+export { NemoMiddlewareError } from "./errors";
+export * from "./types";
 
-  constructor(debug: boolean) {
-    this.debug = debug;
-  }
-
-  log(...args: any[]) {
-    if (this.debug) {
-      console.log(this.prefix, ...args);
-    }
-  }
-
-  error(...args: any[]) {
-    if (this.debug) {
-      console.error(this.prefix, ...args);
-    }
-  }
-
-  warn(...args: any[]) {
-    console.warn(this.prefix, ...args);
-  }
-}
-
-export type NextMiddlewareResult =
-  | NextResponse
-  | Response
-  | null
-  | undefined
-  | void;
-export type NextMiddleware = (
-  request: NemoRequest,
-  event: NextFetchEvent,
-) => NextMiddlewareResult | Promise<NextMiddlewareResult>;
-
-export type MiddlewareContext = Map<string, unknown>;
-
-export interface NemoRequest extends NextRequest {
-  context: MiddlewareContext;
-}
-
-export type ErrorHandler = (
-  error: Error,
-  context: MiddlewareErrorContext,
-) => NextMiddlewareResult | Promise<NextMiddlewareResult>;
-
-export type MiddlewareChain = NextMiddleware | NextMiddleware[];
-
-export type MiddlewareConfig = Record<string, MiddlewareChain>;
-
-export type GlobalMiddlewareConfig = Partial<
-  Record<"before" | "after", MiddlewareChain>
->;
-
-export interface NemoConfig {
-  debug?: boolean;
-  silent?: boolean;
-  errorHandler?: ErrorHandler;
-  enableTiming?: boolean;
-}
-
-export interface MiddlewareErrorContext {
-  chain: "before" | "main" | "after";
-  index: number;
-  pathname: string;
-  routeKey: string;
-}
-
-/**
- * NemoMiddlewareError
- * @param message - Error message
- * @param context - Middleware error context
- * @param originalError - Original error
- * @returns Error
- */
-export class NemoMiddlewareError extends Error {
-  constructor(
-    message: string,
-    public readonly context: MiddlewareErrorContext,
-    public readonly originalError: unknown,
-  ) {
-    super(
-      `${message} [${context.chain} chain at path ${context.pathname}${
-        context.routeKey ? ` (matched by ${context.routeKey})` : ""
-      }, index ${context.index}]`,
-    );
-  }
-}
-
-export interface MiddlewareMetadata {
-  chain: "before" | "main" | "after";
-  index: number;
-  pathname: string;
-  routeKey: string;
-}
-
-export type NextMiddlewareWithMeta = NextMiddleware & {
-  __nemo?: MiddlewareMetadata;
-};
-
-/**
- * Manages context state for middleware
- * @class ContextManager
- * @private
- * @method get - Get context store
- * @method set - Set context store
- * @method clear - Clear context store
- * @returns ContextManager
- */
-class ContextManager {
-  private store: Map<string, unknown>;
-
-  constructor() {
-    this.store = new Map();
-  }
-
-  get(): Map<string, unknown> {
-    return new Map(this.store);
-  }
-
-  set(key: string, value: unknown): void {
-    this.store.set(key, value);
-  }
-
-  clear(): void {
-    this.store = new Map();
-  }
-}
-
-/**
- * NEMO Middleware
- * @class NEMO
- * @param middlewares - Middleware configuration
- * @param globalMiddleware - Global middleware configuration
- * @returns NextMiddleware
- */
 export class NEMO {
   private config: NemoConfig;
   private middlewares: MiddlewareConfig;
@@ -500,9 +366,7 @@ export class NEMO {
  */
 export function createMiddleware(
   middlewares: MiddlewareConfig,
-  globalMiddleware?: Partial<
-    Record<"before" | "after", NextMiddleware | NextMiddleware[]>
-  >,
+  globalMiddleware?: GlobalMiddlewareConfig,
 ) {
   console.warn(
     "[NEMO] `createMiddleware` is deprecated. Use `new NEMO()` instead.",
