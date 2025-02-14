@@ -85,7 +85,10 @@ export class NEMO {
    * @param path - The path to check.
    */
   private matchesPath(pattern: string, path: string): boolean {
-    return this.getCachedMatch(pattern, path);
+    // Decode URI components to handle Unicode characters
+    const decodedPath = decodeURIComponent(path);
+    const decodedPattern = decodeURIComponent(pattern);
+    return this.getCachedMatch(decodedPattern, decodedPath);
   }
 
   /**
