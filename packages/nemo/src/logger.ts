@@ -13,9 +13,7 @@ export class Logger {
   }
 
   error(...args: any[]) {
-    if (this.debug) {
-      console.error(this.prefix, ...args);
-    }
+    console.error(this.prefix, ...args);
   }
 
   warn(...args: any[]) {
