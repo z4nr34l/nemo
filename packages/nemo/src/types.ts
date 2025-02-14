@@ -1,4 +1,5 @@
-import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import type { NemoEvent } from "./event";
 
 export type NextMiddlewareResult =
   | NextResponse
@@ -7,8 +8,8 @@ export type NextMiddlewareResult =
   | undefined
   | void;
 export type NextMiddleware = (
-  request: NemoRequest,
-  event: NextFetchEvent,
+  request: NextRequest,
+  event: NemoEvent,
 ) => NextMiddlewareResult | Promise<NextMiddlewareResult>;
 
 export type MiddlewareContext = Map<string, unknown>;

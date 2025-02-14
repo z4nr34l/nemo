@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
-import { NextRequest, NextResponse, type NextFetchEvent } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   createMiddleware,
   NEMO,
+  NemoEvent,
   NemoMiddlewareError,
   type ErrorHandler,
   type NextMiddleware,
@@ -15,9 +16,10 @@ describe("NEMO", () => {
     });
   };
 
-  const mockEvent = {
-    waitUntil: mock(() => {}),
-  } as never as NextFetchEvent;
+  const mockEvent = NemoEvent.from(
+    { waitUntil: mock(() => {}) } as any,
+    new Map(),
+  );
 
   describe("Internals", () => {
     let nemo: NEMO;

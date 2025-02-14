@@ -2,8 +2,8 @@ import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 import { pathToRegexp } from "path-to-regexp";
 import { ContextManager } from "./context-manager";
 import { NemoMiddlewareError } from "./errors";
+import { NemoEvent } from "./event";
 import { Logger } from "./logger";
-import { NemoRequest } from "./nemo-request";
 import {
   type GlobalMiddlewareConfig,
   type MiddlewareConfig,
@@ -15,7 +15,7 @@ import {
 } from "./types";
 
 export { NemoMiddlewareError } from "./errors";
-export { NemoRequest } from "./nemo-request";
+export { NemoEvent } from "./event";
 export * from "./types";
 
 export class NEMO {
@@ -225,8 +225,8 @@ export class NEMO {
    */
   private async processQueue(
     queue: NextMiddlewareWithMeta[],
-    request: NemoRequest,
-    event: NextFetchEvent,
+    request: NextRequest,
+    event: NemoEvent,
   ): Promise<NextMiddlewareResult> {
     let result: NextMiddlewareResult;
     const initialHeaders = new Headers(request.headers);
@@ -339,12 +339,12 @@ export class NEMO {
     // Get fresh context for this request
     const context = this.contextManager.get();
 
-    // Create request with isolated context using the new NemoRequest
-    const nemoRequest = NemoRequest.from(request, context);
+    // Ensure we have a valid NextFetchEvent
+    const nemoEvent = NemoEvent.from(event as never, context);
 
-    const queue: NextMiddlewareWithMeta[] = this.propagateQueue(nemoRequest);
+    const queue: NextMiddlewareWithMeta[] = this.propagateQueue(request);
 
-    return this.processQueue(queue, nemoRequest, event);
+    return this.processQueue(queue, request, nemoEvent);
   };
 
   /**

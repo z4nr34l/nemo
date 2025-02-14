@@ -4,7 +4,7 @@ export class NemoMiddlewareError extends Error {
   constructor(
     message: string,
     public readonly context: MiddlewareErrorContext,
-    public readonly originalError: unknown,
+    public readonly originalError?: unknown,
   ) {
     super(
       `${message} [${context.chain} chain at path ${context.pathname}${
