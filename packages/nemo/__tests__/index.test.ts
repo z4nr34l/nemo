@@ -46,6 +46,92 @@ describe("NEMO", () => {
       expect(response?.headers.get("x-test-1")).not.toBe("value1");
       expect(response?.headers.get("x-test-2")).toBe("value2");
     });
+
+    describe("Chain Breaking", () => {
+      test("should break chain on NextResponse.next()", async () => {
+        const order: string[] = [];
+        const middleware1: NextMiddleware = () => {
+          order.push("first");
+          return NextResponse.next();
+        };
+        const middleware2: NextMiddleware = () => {
+          order.push("second");
+        };
+
+        const nemo = new NEMO({ "/": [middleware1, middleware2] });
+        await nemo.middleware(mockRequest(), mockEvent);
+
+        expect(order).toEqual(["first"]);
+      });
+
+      test("should break chain on NextResponse.redirect", async () => {
+        const order: string[] = [];
+        const middleware1: NextMiddleware = () => {
+          order.push("first");
+          return NextResponse.redirect("https://example.com");
+        };
+        const middleware2: NextMiddleware = () => {
+          order.push("second");
+        };
+
+        const nemo = new NEMO({ "/": [middleware1, middleware2] });
+        const response = await nemo.middleware(mockRequest(), mockEvent);
+
+        expect(order).toEqual(["first"]);
+        expect(response?.status).toBe(307);
+      });
+
+      test("should break chain on NextResponse.rewrite", async () => {
+        const order: string[] = [];
+        const middleware1: NextMiddleware = () => {
+          order.push("first");
+          return NextResponse.rewrite("https://example.com");
+        };
+        const middleware2: NextMiddleware = () => {
+          order.push("second");
+        };
+
+        const nemo = new NEMO({ "/": [middleware1, middleware2] });
+        await nemo.middleware(mockRequest(), mockEvent);
+
+        expect(order).toEqual(["first"]);
+      });
+
+      test("should break chain on new NextResponse", async () => {
+        const order: string[] = [];
+        const middleware1: NextMiddleware = () => {
+          order.push("first");
+          return new NextResponse(null, { status: 200 });
+        };
+        const middleware2: NextMiddleware = () => {
+          order.push("second");
+        };
+
+        const nemo = new NEMO({ "/": [middleware1, middleware2] });
+        const response = await nemo.middleware(mockRequest(), mockEvent);
+
+        expect(order).toEqual(["first"]);
+        expect(response?.status).toBe(200);
+      });
+
+      test("should break chain on new Response", async () => {
+        const order: string[] = [];
+        const middleware1: NextMiddleware = () => {
+          order.push("first");
+          return new Response(null, { status: 200 });
+        };
+        const middleware2: NextMiddleware = () => {
+          order.push("second");
+        };
+
+        const nemo = new NEMO({ "/": [middleware1, middleware2] });
+        const response = await nemo.middleware(mockRequest(), mockEvent);
+
+        expect(order).toEqual(["first"]);
+        expect(response instanceof Response).toBe(true);
+        expect(response?.status).toBe(200);
+      });
+    });
   });
 
   describe("Path Matching", () => {
