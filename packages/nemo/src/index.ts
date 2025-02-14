@@ -118,15 +118,7 @@ export class NEMO {
     let result: NextMiddlewareResult;
     const initialHeaders = new Headers(request.headers);
 
-    if (this.config.debug) {
-      console.log("[NEMO] Initial request headers", initialHeaders);
-    }
-
     for (const middleware of queue) {
-      if (this.config.debug) {
-        console.log("[NEMO] Executing middleware");
-      }
-
       result = await middleware(request, event);
 
       if (result) {
@@ -139,11 +131,14 @@ export class NEMO {
     } else {
       const finalHeaders = new Headers(request.headers);
       if (this.config.debug) {
-        console.log("[NEMO] Final request headers", finalHeaders);
+        console.log(
+          "[NEMO] Final request headers",
+          this.getHeadersDiff(initialHeaders, finalHeaders),
+        );
       }
 
       return NextResponse.next({
-        headers: this.getHeadersDiff(initialHeaders, finalHeaders),
+        headers: new Headers(this.getHeadersDiff(initialHeaders, finalHeaders)),
         request,
       });
     }
