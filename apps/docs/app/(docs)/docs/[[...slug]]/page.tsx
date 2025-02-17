@@ -1,8 +1,12 @@
 import { source } from "@/app/source";
 import { metadataImage } from "@/lib/metadata";
-import { Popup, PopupContent, PopupTrigger } from "fumadocs-twoslash/ui";
-import { createTypeTable } from "fumadocs-typescript/ui";
+import { Popup, PopupContent, PopupTrigger } from 'fumadocs-twoslash/ui';
+import { createTypeTable } from 'fumadocs-typescript/ui';
+import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
+import { Callout } from "fumadocs-ui/components/callout";
+import { Step, Steps } from "fumadocs-ui/components/steps";
 import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+import { TypeTable } from "fumadocs-ui/components/type-table";
 import defaultMdxComponents from "fumadocs-ui/mdx";
 import {
   DocsBody,
@@ -11,8 +15,7 @@ import {
   DocsTitle,
 } from "fumadocs-ui/page";
 import { notFound } from "next/navigation";
-
-const { AutoTypeTable } = createTypeTable();
+import type { ReactElement } from "react";
 
 export default async function Page(props: {
   params: Promise<{ slug?: string[] }>;
@@ -20,6 +23,8 @@ export default async function Page(props: {
   const params = await props.params;
   const page = source.getPage(params.slug);
   if (!page) notFound();
+
+  const { AutoTypeTable } = createTypeTable();
 
   const MDX = page.data.body;
 
@@ -38,10 +43,27 @@ export default async function Page(props: {
         <MDX
           components={{
             ...defaultMdxComponents,
-            Tab,
             Tabs,
-            Popup,
+            Tab,
+            Callout,
+            TypeTable,
+            Accordion,
+            Accordions,
+            Step,
+            Steps,
             AutoTypeTable,
+            InstallTabs: ({
+              items,
+              children,
+            }: {
+              items: string[];
+              children: ReactElement;
+            }) => (
+              <Tabs items={items} id="package-manager">
+                {children}
+              </Tabs>
+            ),
+            Popup,
             PopupContent,
             PopupTrigger,
           }}

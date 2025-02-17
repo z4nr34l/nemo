@@ -1,9 +1,9 @@
-import { ReactElement } from "react";
+import { Comparizon } from "@/components/homepage/comparizon";
 import { Hero } from "@/components/homepage/hero";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { Activity, Github, Globe, Link2, PackageOpen } from "lucide-react";
-import { Comparizon } from "@/components/homepage/comparizon";
+import Link from "next/link";
+import { ReactElement } from "react";
 
 export default function HomePage(): ReactElement {
   return (

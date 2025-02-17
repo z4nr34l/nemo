@@ -1,9 +1,9 @@
-import { type ReactNode } from "react";
-import { DocsLayout } from "fumadocs-ui/layouts/docs";
-import { BookIcon, HomeIcon } from "lucide-react";
 import { source } from "@/app/source";
 import { Overlay } from "@/components/overlay";
+import { DocsLayout } from "fumadocs-ui/layouts/docs";
+import { BookIcon, HomeIcon } from "lucide-react";
 import { Viewport } from "next";
+import { type ReactNode } from "react";
 
 export const viewport: Viewport = {
   width: "device-width",

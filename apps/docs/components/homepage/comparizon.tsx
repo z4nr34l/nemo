@@ -77,7 +77,7 @@ export const middleware = async (req: NextRequest) => {
     return NextResponse.next();
   }
 
-  if(req.nextUrl.pathname.startsWith('/team')) {
+  if(req.nextUrl.pathname.startsWith('/team/') || req.nextUrl.pathname.startsWith('/t/')) {
     user = await getUserByToken(token);
 
     if(!user) {
@@ -106,14 +106,14 @@ import { auth } from '@/app/(auth)/auth/_middleware';
 import { team } from '@/app/(team)/team/_middleware';
 
 const globalMiddlewares = {
-  before: auth,
+  before: auth, // OR: [auth, ...]
 };
 
 const middlewares = {
-  '/team/:slug': team,
+  '/(team|t)/:slug': team, // OR: [team, ...]
 };
 
-export const middleware = createMiddleware(middlewares);
+export const middleware = new NEMO(middlewares, globalMiddlewares);
 
 export const config = {
   matcher: ['/((?!_next/|_static|_vercel|[\\\\w-]+\\\\.\\\\w+).*)'],

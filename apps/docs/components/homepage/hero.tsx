@@ -44,7 +44,7 @@ function Content() {
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">NEMO</h1>
         </div>
         <p className="text-muted-foreground">
-          Untangle your requests and simplify middlewares mess
+          Untangle your requests and simplify middleware mess
         </p>
       </div>
       <div className="col-span-1 md:col-span-2" />
