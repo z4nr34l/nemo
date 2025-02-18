@@ -74,16 +74,18 @@ export default [
       // if you want to override the default language mapper inside, you can provide your own
       languageMapper: {},
     }),
+    rule: {
+      ...mdx.flat.rules,
+      "react/jsx-no-undef": "off",
+    },
   },
   {
     ...mdx.flatCodeBlocks,
     rules: {
       ...mdx.flatCodeBlocks.rules,
       // if you want to override some rules for code blocks
-      "spaced-comment": ["error", "always", { markers: ["!code"] }],
       "no-var": "error",
       "prefer-const": "error",
-      "react/jsx-no-undef": "off",
     },
   },
 ];
