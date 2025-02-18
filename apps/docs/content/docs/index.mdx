@@ -4,9 +4,7 @@ description: Supercharge your Next.js middleware with NEMO
 icon: Book
 ---
 
-
-import {SquareFunctionIcon, WrenchIcon} from "lucide-react";
-import {Step, Steps} from 'fumadocs-ui/components/steps';
+import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
 
 ## Installation
 
@@ -35,7 +33,7 @@ import {Step, Steps} from 'fumadocs-ui/components/steps';
     ```typescript title="middleware.ts"
     import { createMiddleware } from '@rescale/nemo';
 
-    export const middleware = createMiddleware(/* your functions will go here */); // [!code ++]
+    export const { middleware } = new NEMO(); // [!code ++]
 
     // [...]
     ```
@@ -45,18 +43,18 @@ import {Step, Steps} from 'fumadocs-ui/components/steps';
 
     ```typescript title="middleware.ts"
     import { createMiddleware } from '@rescale/nemo'; // [!code --]
-    import { createMiddleware, type MiddlewareFunctionProps } from '@rescale/nemo'; // [!code ++]
+    import { createMiddleware, type MiddlewareConfig } from '@rescale/nemo'; // [!code ++]
 
     const middlewares = { // [!code ++]
       '/': [ // [!code ++]
-        async ({ request }: MiddlewareFunctionProps) => { // [!code ++]
+        async (request) => { // [!code ++]
           console.log('There is NEMO', request.nextUrl.pathname); // [!code ++]
         }, // [!code ++]
       ], // [!code ++]
-    }; // [!code ++]
+    } satisfies MiddlewareConfig; // [!code ++]
 
-    export const middleware = createMiddleware(/* your functions will go here */); // [!code --]
-    export const middleware = createMiddleware(middlewares); // [!code ++]
+    export const { middleware } = new NEMO(); // [!code --]
+    export const { middleware } = new NEMO(middlewares); // [!code ++]
 
     // [...]
     ```
@@ -92,18 +90,18 @@ import {Step, Steps} from 'fumadocs-ui/components/steps';
   <Step>
     ### Finally, let's put it all together.
 
-    ```typescript title="middleware.ts"
-    import { createMiddleware, type MiddlewareFunctionProps } from '@rescale/nemo';
+    ```typescript twoslash title="middleware.ts"
+    import { NEMO, type MiddlewareConfig } from '@rescale/nemo';
 
     const middlewares = {
       '/': [
-        async ({ request }: MiddlewareFunctionProps) => {
+        async (request) => {
           console.log('There is NEMO', request.nextUrl.pathname);
         },
       ],
-    };
+    } satisfies MiddlewareConfig;
 
-    export const middleware = createMiddleware(middlewares);
+    export const { middleware } = new NEMO(middlewares);
 
     export const config = {
       matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
@@ -118,16 +116,5 @@ import {Step, Steps} from 'fumadocs-ui/components/steps';
 
 I'm working with Next.js project for a few years now, after Vercel moved multiple `/**/_middleware.ts` files to a single `/middleware.ts` file, there was a unfilled gap - but just for now. After a 2023 retro I had found that there is no good solution for that problem, so I took matters into my own hands. I wanted to share that motivation with everyone here, as I think that we all need to remember how it all started.
 
-Hope it will save you some time and would make your project DX better!import { Step, Steps } from 'fumadocs-ui/components/steps';
-import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
-import { Step, Steps } from 'fumadocs-ui/components/steps';
-import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
-import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
-import { Step, Steps } from 'fumadocs-ui/components/steps';
-import { Step, Steps } from 'fumadocs-ui/components/steps';
-import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
-import { Step, Steps } from 'fumadocs-ui/components/steps';
-import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
-import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
-import { Step, Steps } from 'fumadocs-ui/components/steps';
+Hope it will save you some time and would make your project DX better!
 

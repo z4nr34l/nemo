@@ -62,6 +62,9 @@
     },
     "jest.enable": false,
     "typescript.preferences.preferTypeOnlyAutoImports": true,
+    "[mdx]": {
+      "editor.defaultFormatter": "unifiedjs.vscode-mdx"
+    }
   },
   "extensions": {
     "recommendations": [

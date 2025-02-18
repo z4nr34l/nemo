@@ -113,7 +113,7 @@ const middlewares = {
   '/(team|t)/:slug': team, // OR: [team, ...]
 };
 
-export const middleware = new NEMO(middlewares, globalMiddlewares);
+export const { middleware } = new NEMO(middlewares, globalMiddlewares);
 
 export const config = {
   matcher: ['/((?!_next/|_static|_vercel|[\\\\w-]+\\\\.\\\\w+).*)'],
