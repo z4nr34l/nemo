@@ -1,8 +1,13 @@
 import js from "@eslint/js";
+import pluginNext from "@next/eslint-plugin-next";
 import eslintConfigPrettier from "eslint-config-prettier";
+import * as mdx from "eslint-plugin-mdx";
 import onlyWarn from "eslint-plugin-only-warn";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
+import pluginReact from "eslint-plugin-react";
+import pluginReactHooks from "eslint-plugin-react-hooks";
 import turboPlugin from "eslint-plugin-turbo";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 
 /**
@@ -58,6 +63,27 @@ export default [
       ...pluginReactHooks.configs.recommended.rules,
       // React scope no longer necessary with new JSX transform.
       "react/react-in-jsx-scope": "off",
+    },
+  },
+  {
+    ...mdx.flat,
+    // optional, if you want to lint code blocks at the same
+    processor: mdx.createRemarkProcessor({
+      lintCodeBlocks: true,
+      // optional, if you want to disable language mapper, set it to `false`
+      // if you want to override the default language mapper inside, you can provide your own
+      languageMapper: {},
+    }),
+  },
+  {
+    ...mdx.flatCodeBlocks,
+    rules: {
+      ...mdx.flatCodeBlocks.rules,
+      // if you want to override some rules for code blocks
+      "spaced-comment": ["error", "always", { markers: ["!code"] }],
+      "no-var": "error",
+      "prefer-const": "error",
+      "react/jsx-no-undef": "off",
     },
   },
 ];

@@ -20,7 +20,7 @@ export interface NemoRequest extends NextRequest {
 
 export type ErrorHandler = (
   error: Error,
-  context: MiddlewareErrorContext,
+  metadata: MiddlewareMetadata,
 ) => NextMiddlewareResult | Promise<NextMiddlewareResult>;
 
 export type MiddlewareChain = NextMiddleware | NextMiddleware[];
@@ -36,13 +36,6 @@ export interface NemoConfig {
   silent?: boolean;
   errorHandler?: ErrorHandler;
   enableTiming?: boolean;
-}
-
-export interface MiddlewareErrorContext {
-  chain: "before" | "main" | "after";
-  index: number;
-  pathname: string;
-  routeKey: string;
 }
 
 export interface MiddlewareMetadata {

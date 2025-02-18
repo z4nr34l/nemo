@@ -4,7 +4,7 @@ description: Middleware functions standardization, explanation and usage
 icon: Play
 ---
 
-import {WaypointsIcon, ArrowRightIcon} from "lucide-react";
+import { WaypointsIcon, ArrowRightIcon } from "lucide-react";
 
 This package introduces middleware functions standardization for more elastic approach to development and feature delivery.
 
@@ -13,9 +13,16 @@ This package introduces middleware functions standardization for more elastic ap
 This example shows all props that are provided for your usage.
 
 ```ts title="_middleware.ts"
-async ({ request, response, context, event, forward, params }: MiddlewareFunctionProps) => {
+async ({
+  request,
+  response,
+  context,
+  event,
+  forward,
+  params,
+}: MiddlewareFunctionProps) => {
   // function body
-}
+};
 ```
 
 ## Explanation
@@ -34,20 +41,26 @@ Type: [NextResponse](https://nextjs.org/docs/app/api-reference/functions/next-re
 
 This property contains (optional) resposne object that were forwarded in prev middleware function using `forward()` function.
 
-<Card href="/docs/forward-functions" title="Forward functions" description="Learn more about Forward functions in middleware" icon={<ArrowRightIcon/>}/>
+<Card
+  href="/docs/forward-functions"
+  title="Forward functions"
+  description="Learn more about Forward functions in middleware"
+  icon={<ArrowRightIcon />}
+/>
 
 It can be used for example for checking custom headers from external packages middlewares output that was forwarded in chain.
 
 ```ts title="_middleware.ts"
 async ({ response }: MiddlewareFunctionProps) => {
   if (response) {
-    console.log(response.headers.get('x-custom-header'));
+    console.log(response.headers.get("x-custom-header"));
   }
-}
+};
 ```
 
 <Callout>
-  If forwarded middleware added any custom headers or cookies, they will be passed to user at the end of the chain no matter if you handled that.
+  If forwarded middleware added any custom headers or cookies, they will be
+  passed to user at the end of the chain no matter if you handled that.
 </Callout>
 
 ### Prop:&nbsp;&nbsp;`context`
@@ -56,10 +69,16 @@ Type: [Map\<string, unknown\>](https://developer.mozilla.org/en-US/docs/Web/Java
 
 This property contains context shared across whole execution chain for every function.
 
-<Card href="/docs/context" title="Shared context" description="Learn more about Shared Context in middleware" icon={<WaypointsIcon/>}/>
+<Card
+  href="/docs/context"
+  title="Shared context"
+  description="Learn more about Shared Context in middleware"
+  icon={<WaypointsIcon />}
+/>
 
 <Callout>
-  If you want to know more about Map interface usage please refer to these [docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map).
+  If you want to know more about Map interface usage please refer to these
+  [docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map).
 </Callout>
 
 ### Prop:&nbsp;&nbsp;`event`
@@ -71,7 +90,8 @@ This property contains event object for serverless functions execution.
 <Callout>
   It can be used to use Next.js 15 new features like ` event.waitUntil()`.
 
-  You can read more there: [Next.js 15 waitUntil](https://nextjs.org/docs/app/building-your-application/routing/middleware#waituntil-and-nextfetchevent)
+You can read more there: [Next.js 15 waitUntil](https://nextjs.org/docs/app/building-your-application/routing/middleware#waituntil-and-nextfetchevent)
+
 </Callout>
 
 ### Prop:&nbsp;&nbsp;`forward`
@@ -80,7 +100,12 @@ Type: `(response: MiddlewareReturn) => void`
 
 The `forward` function allows you to forward the response from one middleware function to another. This can be useful for chaining middleware functions together and creating more complex middleware logic.
 
-<Card href="/docs/forward-functions" title="Forward functions" description="Learn more about Forward functions in middleware" icon={<ArrowRightIcon/>}/>
+<Card
+  href="/docs/forward-functions"
+  title="Forward functions"
+  description="Learn more about Forward functions in middleware"
+  icon={<ArrowRightIcon />}
+/>
 
 ### Prop:&nbsp;&nbsp;`params`
 
@@ -94,5 +119,5 @@ This property contains route parameters parsed from the URL path. Just like it's
 
 async ({ params }: MiddlewareFunctionProps) => {
   console.log(params().slug); // Output: 123
-}
+};
 ```

@@ -1,15 +1,15 @@
-import type { MiddlewareErrorContext } from "./types";
+import type { MiddlewareMetadata } from "./types";
 
 export class NemoMiddlewareError extends Error {
   constructor(
     message: string,
-    public readonly context: MiddlewareErrorContext,
+    public readonly metadata: MiddlewareMetadata,
     public readonly originalError?: unknown,
   ) {
     super(
-      `${message} [${context.chain} chain at path ${context.pathname}${
-        context.routeKey ? ` (matched by ${context.routeKey})` : ""
-      }, index ${context.index}]`,
+      `${message} [${metadata.chain} chain at path ${metadata.pathname}${
+        metadata.routeKey ? ` (matched by ${metadata.routeKey})` : ""
+      }, index ${metadata.index}]`,
     );
   }
 }

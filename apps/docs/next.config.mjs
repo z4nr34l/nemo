@@ -1,4 +1,4 @@
-import { createMDX } from 'fumadocs-mdx/next';
+import { createMDX } from "fumadocs-mdx/next";
 
 const withMDX = createMDX();
 
@@ -7,10 +7,10 @@ const config = {
   reactStrictMode: true,
   poweredByHeader: false,
   compiler: {
-    ...(process.env.VERCEL_ENV === 'production'
+    ...(process.env.VERCEL_ENV === "production"
       ? {
           removeConsole: {
-            exclude: ['error'],
+            exclude: ["error"],
           },
         }
       : {}),
@@ -18,8 +18,8 @@ const config = {
   redirects: () => {
     return [
       {
-        source: '/sitemap.xml',
-        destination: '/sitemap',
+        source: "/sitemap.xml",
+        destination: "/sitemap",
         permanent: true,
       },
     ];

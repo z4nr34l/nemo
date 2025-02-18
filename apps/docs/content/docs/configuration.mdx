@@ -12,12 +12,19 @@ The `createMiddleware` function is the main entry point for the Next Easy Middle
 
 This is our basic construction which we will use to create a middleware helper.
 
-```ts title="middleware.ts"
+```ts twoslash title="middleware.ts"
+import {
+  NEMO,
+  type MiddlewareConfig,
+  type GlobalMiddlewareConfig,
+  type NemoConfig,
+} from "@rescale/nemo";
+
 const middlewares = {
-  '/api': async ({ request }: MiddlewareFunctionProps) => {
+  "/:path*": async (request) => {
     // middleware functions for /api route
   },
-};
+} satisfies MiddlewareConfig;
 
 const globalMiddlewares = {
   before: async () => {
@@ -25,10 +32,19 @@ const globalMiddlewares = {
   },
   after: async () => {
     // global middleware function that will be executed after any route middleware
-  }
-}
+  },
+} satisfies GlobalMiddlewareConfig;
 
-export const middleware = createMiddleware(middlewares, globalMiddlewares);
+const config = {
+  debug: true, // default is false
+  silent: true, // default is false
+  enableTiming: true, // default is false
+  errorHandler: (error, metadata) => {
+    // custom error handler
+  },
+} satisfies NemoConfig;
+
+export const { middleware } = new NEMO(middlewares, globalMiddlewares, config);
 ```
 
 ## Path middlewares construction (`middlewares`)
@@ -63,7 +79,10 @@ In this library is used [path-to-regexp](https://github.com/pillarjs/path-to-reg
 </Tabs>
 
 <Callout type="warn">
-  This library uses latest version of `path-to-regexp` due to DoS vulnerability in previous versions that Next.js uses. Please refer to [path-to-regexp](https://github.com/pillarjs/path-to-regexp?tab=readme-ov-file#errors) for current regex support information.
+  This library uses latest version of `path-to-regexp` due to DoS vulnerability
+  in previous versions that Next.js uses. Please refer to
+  [path-to-regexp](https://github.com/pillarjs/path-to-regexp?tab=readme-ov-file#errors)
+  for current regex support information.
 </Callout>
 
 ### Middleware function
@@ -98,7 +117,12 @@ This is a function that will be executed for the specific route. It can be a sin
   </Tab>
 </Tabs>
 
-<Card href="/docs/functions" title="Functions" description="Learn more about NEMO Functions" icon={<PlayIcon/>}/>
+<Card
+  href="/docs/functions"
+  title="Functions"
+  description="Learn more about NEMO Functions"
+  icon={<PlayIcon />}
+/>
 
 ## Global middlewares construction (`globalMiddlewares`)
 

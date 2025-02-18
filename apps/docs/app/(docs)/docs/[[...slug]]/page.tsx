@@ -1,7 +1,7 @@
 import { source } from "@/app/source";
 import { metadataImage } from "@/lib/metadata";
-import { Popup, PopupContent, PopupTrigger } from 'fumadocs-twoslash/ui';
-import { createTypeTable } from 'fumadocs-typescript/ui';
+import { Popup, PopupContent, PopupTrigger } from "fumadocs-twoslash/ui";
+import { createTypeTable } from "fumadocs-typescript/ui";
 import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 import { Callout } from "fumadocs-ui/components/callout";
 import { Step, Steps } from "fumadocs-ui/components/steps";

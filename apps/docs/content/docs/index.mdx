@@ -15,6 +15,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
     ```package-install
     @rescale/nemo
     ```
+
   </Step>
   <Step>
     ### Import the package inside middleware.ts file.
@@ -26,6 +27,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
 
     // [...]
     ```
+
   </Step>
   <Step>
     ### Use the createMiddleware function to create a middleware helper.
@@ -37,6 +39,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
 
     // [...]
     ```
+
   </Step>
   <Step>
     ### Define your middlewares config and update the createMiddleware function parameters.
@@ -65,6 +68,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
       <Card href="/docs/configuration" title="Configuration" description="Learn more about middlewres configuration" icon={<WrenchIcon/>}/>
       <Card href="/docs/functions" title="Functions" description="Learn more about middlewre functions" icon={<SquareFunctionIcon/>}/>
     </Cards>
+
   </Step>
   <Step>
     ### Optimize your middleware execution to not execute it on every signle request.
@@ -86,6 +90,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
     <Callout>
       Reed more about [Next.js middleware configuration](https://nextjs.org/docs/app/file-conventions/middleware#config-object-optional)
     </Callout>
+
   </Step>
   <Step>
     ### Finally, let's put it all together.
@@ -109,6 +114,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
     ```
 
     That's how should your `middleware.ts` file looks like after all steps.
+
   </Step>
 </Steps>
 
@@ -117,4 +123,3 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
 I'm working with Next.js project for a few years now, after Vercel moved multiple `/**/_middleware.ts` files to a single `/middleware.ts` file, there was a unfilled gap - but just for now. After a 2023 retro I had found that there is no good solution for that problem, so I took matters into my own hands. I wanted to share that motivation with everyone here, as I think that we all need to remember how it all started.
 
 Hope it will save you some time and would make your project DX better!
-

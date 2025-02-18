@@ -13,19 +13,23 @@ Forward functions in NEMO allow you to forward the response from one middleware 
 This example shows how to use the forward function in a middleware.
 
 ```ts title="middleware.ts"
-import { forward, type MiddlewareFunctionProps } from '@rescale/nemo';
+import { forward, type MiddlewareFunctionProps } from "@rescale/nemo";
 
-const firstMiddleware = async ({ request, response, forward }: MiddlewareFunctionProps) => {
-  console.log('First middleware');
+const firstMiddleware = async ({
+  request,
+  response,
+  forward,
+}: MiddlewareFunctionProps) => {
+  console.log("First middleware");
   forward(response);
 };
 
 const secondMiddleware = async ({ request }: MiddlewareFunctionProps) => {
-  console.log('Second middleware');
+  console.log("Second middleware");
 };
 
 const middlewares = {
-  '/api': [firstMiddleware, secondMiddleware],
+  "/api": [firstMiddleware, secondMiddleware],
 };
 
 export const middleware = createMiddleware(middlewares);
@@ -44,30 +48,40 @@ The `forward` function allows you to forward the response from one middleware fu
 In this example, the `firstMiddleware` logs a message and forwards the response to the `secondMiddleware`, which logs another message and returns the response.
 
 ```ts title="middleware.ts"
-import { forward, type MiddlewareFunctionProps } from '@rescale/nemo';
+import { forward, type MiddlewareFunctionProps } from "@rescale/nemo";
 
-const firstMiddleware = async ({ request, response, forward }: MiddlewareFunctionProps) => {
-  console.log('First middleware');
+const firstMiddleware = async ({
+  request,
+  response,
+  forward,
+}: MiddlewareFunctionProps) => {
+  console.log("First middleware");
   forward(response);
 };
 
 const secondMiddleware = async ({ request }: MiddlewareFunctionProps) => {
-  console.log('Second middleware');
+  console.log("Second middleware");
 };
 
 const middlewares = {
-  '/api': [firstMiddleware, secondMiddleware],
+  "/api": [firstMiddleware, secondMiddleware],
 };
 
 export const middleware = createMiddleware(middlewares);
 ```
 
 <Callout>
-  The `forward` function should be called with the response object that you want to forward to the next middleware function.
+  The `forward` function should be called with the response object that you want
+  to forward to the next middleware function.
 </Callout>
 
 ### Related Topics
 
 <Cards>
-  <Card title="Functions" icon={<ArrowRightIcon/>} description="Learn more about middleware functions" href="/docs/functions"/>
+  <Card
+    title="Functions"
+    icon={<ArrowRightIcon />}
+    description="Learn more about middleware functions"
+    href="/docs/functions"
+  />
 </Cards>

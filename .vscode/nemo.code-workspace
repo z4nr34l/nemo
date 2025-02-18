@@ -44,16 +44,43 @@
     "editor.formatOnPaste": true,
     "editor.defaultFormatter": "dbaeumer.vscode-eslint",
     "editor.codeActionsOnSave": {
-      "source.fixAll": "always",
-      "source.fixAll.sortJSON": "always",
-      "source.organizeImports": "always",
-      "source.sortImports": "always",
-      "source.removeUnusedImports": "always"
+      "source.fixAll": "explicit",
+      "source.fixAll.sortJSON": "explicit",
+      "source.organizeImports": "explicit",
+      "source.sortImports": "explicit",
+      "source.removeUnusedImports": "explicit"
     },
     "eslint.run": "onSave",
     "eslint.format.enable": true,
     "eslint.ignoreUntitled": true,
     "eslint.useFlatConfig": true,
+    "eslint.probe": [
+      "astro",
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact",
+      "html",
+      "vue",
+      "json",
+      "jsonc",
+      "mdx",
+      "md",
+      "markdown"
+    ],
+    "eslint.validate": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact",
+      "html",
+      "vue",
+      "json",
+      "jsonc",
+      "mdx",
+      "md",
+      "markdown"
+    ],
     "[jsonc]": {
       "editor.defaultFormatter": "vscode.json-language-features"
     },
@@ -63,8 +90,18 @@
     "jest.enable": false,
     "typescript.preferences.preferTypeOnlyAutoImports": true,
     "[mdx]": {
-      "editor.defaultFormatter": "unifiedjs.vscode-mdx"
-    }
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+      "files.trimTrailingWhitespace": false,
+      "editor.rulers": [
+        100
+      ],
+      "editor.wordWrap": "wordWrapColumn",
+      "editor.wordWrapColumn": 100,
+      "editor.codeActionsOnSave": {
+        "source.sortImports": false,
+        "source.organizeImports": false
+      }
+    },
   },
   "extensions": {
     "recommendations": [

@@ -4,7 +4,6 @@ description: Project structure and organization proposal
 icon: Folder
 ---
 
-import { File, Folder, Files } from 'fumadocs-ui/components/files';
 import { SquareFunctionIcon } from "lucide-react";
 
 ### Motivation
@@ -16,9 +15,15 @@ The project structure is a key factor in the development process. It helps to or
 <Files>
   <Folder name="app" defaultOpen>
     <Folder name="(internal)" defaultOpen>
-      <File name="_middleware.ts" icon={<SquareFunctionIcon className="text-amber-500"/>}/>
+      <File
+        name="_middleware.ts"
+        icon={<SquareFunctionIcon className="text-amber-500" />}
+      />
       <Folder name="[slug]" defaultOpen>
-        <File name="_middleware.ts" icon={<SquareFunctionIcon className="text-amber-500"/>}/>
+        <File
+          name="_middleware.ts"
+          icon={<SquareFunctionIcon className="text-amber-500" />}
+        />
         <File name="layout.tsx" />
         <File name="page.tsx" />
       </Folder>
@@ -27,7 +32,10 @@ The project structure is a key factor in the development process. It helps to or
       <File name="layout.tsx" />
       <File name="page.tsx" />
     </Folder>
-    <File name="_middleware.ts" icon={<SquareFunctionIcon className="text-amber-500"/>}/>
+    <File
+      name="_middleware.ts"
+      icon={<SquareFunctionIcon className="text-amber-500" />}
+    />
     <File name="layout.tsx" />
     <File name="page.tsx" />
     <File name="global.css" />
@@ -37,21 +45,29 @@ The project structure is a key factor in the development process. It helps to or
     <File name="tabs.tsx" />
     <File name="dialog.tsx" />
   </Folder>
-  <File name="middleware.ts" icon={<SquareFunctionIcon className="text-amber-500"/>}/>
+  <File
+    name="middleware.ts"
+    icon={<SquareFunctionIcon className="text-amber-500" />}
+  />
   <File name="package.json" />
 </Files>
-
 
 ### Explanation
 
 `app` folder contains the main application code. It is divided into two subfolders: `(internal)` and `(public)`. The `(internal)` folder contains the internal pages, while the `(public)` folder contains the public pages. Each grouped layout has its own `layout.tsx` file and a `page.tsx` file. The `_middleware.ts` file is used to define middleware functions for route groups or pages that it's used in.
 
 <Callout>
-  Use imports inside the `middleware.ts` file to use separate middleware functions inside global middleware configuration.
+  Use imports inside the `middleware.ts` file to use separate middleware
+  functions inside global middleware configuration.
 </Callout>
 
 ### Related topics
 
 <Cards>
-  <Card title="Functions naming" icon={<SquareFunctionIcon/>} description="How to name middleware functions" href="/docs/conventions/functions-naming"/>
+  <Card
+    title="Functions naming"
+    icon={<SquareFunctionIcon />}
+    description="How to name middleware functions"
+    href="/docs/conventions/functions-naming"
+  />
 </Cards>

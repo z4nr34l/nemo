@@ -199,7 +199,7 @@ describe("NEMO", () => {
   });
 
   describe("Error Handling", () => {
-    test("should provide context for errors in before middleware", async () => {
+    test("should provide metadata for errors in before middleware", async () => {
       const errorMiddleware: NextMiddleware = () => {
         throw new Error("Test error");
       };
@@ -212,10 +212,10 @@ describe("NEMO", () => {
       } catch (error) {
         expect(error).toBeInstanceOf(NemoMiddlewareError);
         const nemoError = error as NemoMiddlewareError;
-        expect(nemoError.context.chain).toBe("before");
-        expect(nemoError.context.index).toBe(0);
-        expect(nemoError.context.pathname).toBe("/");
-        expect(nemoError.context.routeKey).toBe("/");
+        expect(nemoError.metadata.chain).toBe("before");
+        expect(nemoError.metadata.index).toBe(0);
+        expect(nemoError.metadata.pathname).toBe("/");
+        expect(nemoError.metadata.routeKey).toBe("/");
         expect(nemoError.originalError).toBeInstanceOf(Error);
       }
     });
