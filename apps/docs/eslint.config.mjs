@@ -74,7 +74,7 @@ export default [
       // if you want to override the default language mapper inside, you can provide your own
       languageMapper: {},
     }),
-    rule: {
+    rules: {
       ...mdx.flat.rules,
       "react/jsx-no-undef": "off",
     },
@@ -86,6 +86,7 @@ export default [
       // if you want to override some rules for code blocks
       "no-var": "error",
       "prefer-const": "error",
+      "@typescript-eslint/no-unused-vars": "off",
     },
   },
 ];

@@ -8,8 +8,9 @@ import { SquareFunctionIcon, PlayIcon } from "lucide-react";
 
 ## Middlewares
 
+**Type**: `MiddlewareConfig`
+
 **Chain type**: `"main"`
-Type: `MiddlewareConfig`
 
 The `middlewares` object is a key-value pair where the key is the route path and the value is an array of middleware functions. Each middleware function is an async function that takes a single argument, `request`, which is an object containing the request details.
 
@@ -25,8 +26,9 @@ const middlewares = {
 
 ## Global Middlewares
 
+**Type**: `GlobalMiddlewareConfig`
+
 **Chain type**: `"before" | "after"`
-Type: `GlobalMiddlewareConfig`
 
 The `globalMiddlewares` object is a key-value pair where the key is the middleware type and the value is an async function. The middleware type can be either `before` or `after`. The `before` middleware function will be executed before any route middleware, and the `after` middleware function will be executed after any route middleware.
 
@@ -117,7 +119,7 @@ const globalMiddlewares = {
   },
 } satisfies GlobalMiddlewareConfig;
 
-const config = {
+const nemoConfig = {
   debug: true, // default is false
   silent: true, // default is false
   enableTiming: true, // default is false
@@ -126,5 +128,13 @@ const config = {
   },
 } satisfies NemoConfig;
 
-export const { middleware } = new NEMO(middlewares, globalMiddlewares, config);
+export const { middleware } = new NEMO(
+  middlewares,
+  globalMiddlewares,
+  nemoConfig,
+);
+
+export const config = {
+  matcher: ["/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)"],
+};
 ```
