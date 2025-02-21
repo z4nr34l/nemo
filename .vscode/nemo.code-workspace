@@ -34,7 +34,7 @@
       ".turbo/": true,
       ".next/": true,
       "**/.retool_types/**": true,
-      "**/*tsconfig.json": false,
+      "**/*tsconfig.json": true,
       ".cache": true,
       "retool.config.json": true
     },
@@ -98,8 +98,8 @@
       "editor.wordWrap": "wordWrapColumn",
       "editor.wordWrapColumn": 100,
       "editor.codeActionsOnSave": {
-        "source.sortImports": false,
-        "source.organizeImports": false
+        "source.sortImports": "never",
+        "source.organizeImports": "never"
       }
     },
   },

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest, NextResponse } from "next/server";
 import type { NemoEvent } from "./event";
 
 export type NextMiddlewareResult =

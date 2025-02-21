@@ -39,5 +39,8 @@
     "packages/*",
     "examples/*",
     "apps/*"
-  ]
+  ],
+  "dependencies": {
+    "@fumadocs/mdx-remote": "^1.2.0"
+  }
 }
