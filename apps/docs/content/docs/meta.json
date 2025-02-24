@@ -1,6 +1,6 @@
 {
   "pages": [
-    "---Guide---",
+    "---Getting started---",
     "index",
     "configuration",
     "matcher",
@@ -9,7 +9,7 @@
     "---Conventions---",
     "...conventions",
     "---3rd parties---",
-    "...3rd-parties"
+    "3rd-parties"
   ],
   "root": true,
   "title": "Docs"
