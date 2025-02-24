@@ -4,6 +4,7 @@ import { Popup, PopupContent, PopupTrigger } from "fumadocs-twoslash/ui";
 import { createTypeTable } from "fumadocs-typescript/ui";
 import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 import { Callout } from "fumadocs-ui/components/callout";
+import { File, Files, Folder } from "fumadocs-ui/components/files";
 import { Step, Steps } from "fumadocs-ui/components/steps";
 import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 import { TypeTable } from "fumadocs-ui/components/type-table";
@@ -51,6 +52,9 @@ export default async function Page(props: {
             Accordions,
             Step,
             Steps,
+            File,
+            Folder,
+            Files,
             AutoTypeTable,
             InstallTabs: ({
               items,

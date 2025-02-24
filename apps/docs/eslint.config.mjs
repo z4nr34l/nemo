@@ -77,6 +77,7 @@ export default [
     rules: {
       ...mdx.flat.rules,
       "react/jsx-no-undef": "off",
+      "prettier/prettier": "off",
     },
   },
   {
