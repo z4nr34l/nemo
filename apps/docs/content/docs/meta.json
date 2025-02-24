@@ -1,6 +1,4 @@
 {
-  "title": "Docs",
-  "root": true,
   "pages": [
     "---Guide---",
     "index",
@@ -8,10 +6,11 @@
     "matcher",
     "functions",
     "context",
-    "forward-functions",
     "---Conventions---",
     "...conventions",
-    "---API Reference---",
-    "...api-reference"
-  ]
+    "---3rd parties---",
+    "...3rd-parties"
+  ],
+  "root": true,
+  "title": "Docs"
 }
