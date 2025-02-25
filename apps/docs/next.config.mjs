@@ -18,9 +18,9 @@ const config = {
   redirects: () => {
     return [
       {
-        source: "/sitemap.xml",
-        destination: "/sitemap",
-        permanent: true,
+        source: "/docs",
+        destination: "/docs/latest",
+        permanent: process.env.NODE_ENV === "production",
       },
     ];
   },
