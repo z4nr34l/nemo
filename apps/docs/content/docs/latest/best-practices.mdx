@@ -1,0 +1,72 @@
+---
+title: Best practices
+description: Best practices for developing Next.js middleware
+icon: ThumbsUp
+---
+
+
+## Performance
+
+Middleware performance is critical to the overall performance of your application. Whole middleware execution time should be as low as possible as it's executed before every request - which means it's directly affecting TTFB (Time To First Byte) of your application.
+
+### Concurrency
+
+Minimize the number of blocking operations in your middleware. If you need to perform blocking operations, consider using concurrency to parallelize the operations.
+
+```ts title="/app/auth/_middleware.ts"
+import { NextMiddleware } from '@rescale/nemo';
+
+export const auth: NextMiddleware = () => {
+  // Fetch user and roles concurrently // [!code focus]
+  const [user, roles] = await Promise.all([ // [!code focus]
+    fetchUser(), // [!code focus]
+    fetchRoles(), // [!code focus]
+  ]); // [!code focus]
+
+  if(!user | !roles) {
+    return NextResponse.redirect('/login');
+  }
+}
+```
+
+### Caching
+
+Caching is a powerful technique to improve the performance of your middleware and reduce heavy operations like db queries. There are two types of caching you can use:
+
+#### Cross-middleware caching
+
+Use build-in storage (shared context) to cache data that is used across multiple middleware functions in a chain.
+
+This will reduce the number of requests to external services and reduce middleware exeuction time.
+
+```ts title="/app/auth/_middleware.ts"
+```
+
+#### Cross-requests caching
+
+Build a custom adapter to cache data between requests using for example redis, Vercel Edge Config or other KV storage.
+
+<Callout type="warn">
+**Waring!** Keep this as fast as possible - long 
+</Callout>
+
+```ts title="/app/auth/_middleware.ts"
+```
+
+### Error handling
+
+## Security
+
+### Rate limiting
+
+### Authentication
+
+### Authorization
+
+## Reliability
+
+### Monitoring
+
+### Logging
+
+### Testing

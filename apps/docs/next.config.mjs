@@ -24,6 +24,13 @@ const config = {
       },
     ];
   },
+  async rewrites() {
+    return {
+      beforeFiles: [],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
 };
 
 export default withMDX(config);

@@ -15,9 +15,12 @@ import { remarkInstall } from "fumadocs-docgen";
 import { defineConfig, defineDocs } from "fumadocs-mdx/config";
 import { transformerTwoslash } from "fumadocs-twoslash";
 
-export const { docs, meta } = defineDocs();
+export const { docs, meta } = defineDocs({
+  dir: "content/docs",
+});
 
 export default defineConfig({
+  lastModifiedTime: "git",
   mdxOptions: {
     remarkPlugins: [remarkInstall, remarkImage, remarkStructure],
     rehypeCodeOptions: {

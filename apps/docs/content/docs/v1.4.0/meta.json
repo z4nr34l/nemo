@@ -1,0 +1,19 @@
+{
+  "description": "Archive version",
+  "icon": "Archive",
+  "pages": [
+    "---Guide---",
+    "index",
+    "configuration",
+    "matcher",
+    "functions",
+    "context",
+    "forward-functions",
+    "---Conventions---",
+    "...conventions",
+    "---API Reference---",
+    "...api-reference"
+  ],
+  "root": true,
+  "title": "v1.4.0"
+}

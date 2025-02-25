@@ -1,13 +1,13 @@
-import "./global.css";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
-import type { ReactNode } from "react";
+import { baseUrl, createMetadata } from "@/lib/metadata";
 import { cn } from "@/lib/utils";
-import { Viewport } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { RootProvider } from "fumadocs-ui/provider";
-import { baseUrl, createMetadata } from "@/lib/metadata";
+import { GeistMono } from "geist/font/mono";
+import { GeistSans } from "geist/font/sans";
+import { Viewport } from "next";
 import Script from "next/script";
+import type { ReactNode } from "react";
+import "./global.css";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -36,7 +36,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       className={cn(
         GeistSans.variable,
         GeistMono.variable,
-        "antialiased font-sans"
+        "antialiased font-sans",
       )}
       suppressHydrationWarning
     >

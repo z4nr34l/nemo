@@ -1,4 +1,6 @@
 {
+  "description": "Latest version",
+  "icon": "Tag",
   "pages": [
     "---Getting started---",
     "index",
@@ -13,5 +15,5 @@
     "3rd-parties"
   ],
   "root": true,
-  "title": "Docs"
+  "title": "v2.0.0"
 }

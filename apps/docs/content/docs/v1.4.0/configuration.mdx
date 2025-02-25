@@ -1,0 +1,147 @@
+---
+title: Configuration
+description: Package configuration and explanation
+icon: Wrench
+---
+
+import { SquareFunctionIcon, PlayIcon } from "lucide-react";
+
+The `createMiddleware` function is the main entry point for the Next Easy Middlewares package. It allows you to create a middleware helper that can be used to define middleware functions for your Next.js application.
+
+## Configuration
+
+This is our basic construction which we will use to create a middleware helper.
+
+```ts title="middleware.ts"
+const middlewares = {
+  '/api': async ({ request }: MiddlewareFunctionProps) => {
+    // middleware functions for /api route
+  },
+};
+
+const globalMiddlewares = {
+  before: async () => {
+    // global middleware function that will be executed before any route middleware
+  },
+  after: async () => {
+    // global middleware function that will be executed after any route middleware
+  }
+}
+
+export const middleware = createMiddleware(middlewares, globalMiddlewares);
+```
+
+## Path middlewares construction (`middlewares`)
+
+**Type**: [`Record<string, MiddlewareFunction | MiddlewareFunction[]>`](/docs/functions)
+
+This property contains a map of middleware functions that will be executed for specific routes. The key is the route path, and the value is the middleware function.
+
+Let's break down the construction:
+
+### Matcher
+
+**Type**: `string` (`middlewares` object key)
+
+In this library is used [path-to-regexp](https://github.com/pillarjs/path-to-regexp) package to match the middleware routes path in a same way as Next.js does in config's matcher prop.
+
+<Tabs items={["Simple", "Route segments"]}>
+  <Tab value="Simple">
+    ```ts title="middleware.ts"
+    const middlewares = {
+      '/api': // middleware functions for /api route // [!code focus]
+    };
+    ```
+  </Tab>
+  <Tab value="Route segments">
+    ```ts title="middleware.ts"
+    const middlewares = {
+      '/team/:slug{/*path}': // middleware functions for /team/<slug>* route // [!code focus]
+    };
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="warn">
+  This library uses latest version of `path-to-regexp` due to DoS vulnerability in previous versions that Next.js uses. Please refer to [path-to-regexp](https://github.com/pillarjs/path-to-regexp?tab=readme-ov-file#errors) for current regex support information.
+</Callout>
+
+### Middleware function
+
+**Type**: [`MiddlewareFunction | MiddlewareFunction[]`](/docs/functions)
+
+This is a function that will be executed for the specific route. It can be a single function or an array of functions that will be executed in order.
+
+<Tabs items={["Single function", "Chained functions"]}>
+  <Tab value="Single function">
+    ```ts title="middleware.ts"
+    const middlewares = {
+      '/api': async ({ request }: MiddlewareFunctionProps) => {
+        // middleware functions for /api route
+      },
+    };
+    ```
+  </Tab>
+  <Tab value="Chained functions">
+    ```ts title="middleware.ts"
+    const middlewares = {
+      '/api': [
+        async ({ request, context }: MiddlewareFunctionProps) => {
+          // middleware functions for /api route
+        },
+        async ({ request, context }: MiddlewareFunctionProps) => {
+          // middleware functions for /api route
+        }
+      ]
+    };
+    ```
+  </Tab>
+</Tabs>
+
+<Card href="/docs/functions" title="Functions" description="Learn more about NEMO Functions" icon={<PlayIcon/>}/>
+
+## Global middlewares construction (`globalMiddlewares`)
+
+**Type**: [`Record<"before" | "after", MiddlewareFunction | MiddlewareFunction[]>`](/docs/functions)
+
+This property contains global middleware functions that will be executed before and after any route middleware.
+
+### Before
+
+**Type**: [`MiddlewareFunction | MiddlewareFunction[]`](/docs/functions)
+
+This is a global middleware function(s) that will be executed before any route middleware.
+
+### After
+
+**Type**: [`MiddlewareFunction | MiddlewareFunction[]`](/docs/functions)
+
+This is a global middleware function(s) that will be executed after any route middleware.
+
+<Tabs items={["Single function", "Chained functions"]}>
+  <Tab value="Single function">
+    ```ts title="middleware.ts"
+    const globalMiddlewares = {
+      // you can also define `after:` here
+      before: async ({ request }: MiddlewareFunctionProps) => {
+        // middleware functions for /api route
+      },
+    };
+    ```
+  </Tab>
+  <Tab value="Chained functions">
+    ```ts title="middleware.ts"
+    const globalMiddlewares = {
+    // you can also define `after:` here
+      before: [
+        async ({ request, context }: MiddlewareFunctionProps) => {
+          // middleware functions for /api route
+        },
+        async ({ request, context }: MiddlewareFunctionProps) => {
+          // middleware functions for /api route
+        }
+      ]
+    };
+    ```
+  </Tab>
+</Tabs>
