@@ -281,4 +281,90 @@ describe("NemoEvent", () => {
     expect(event.context.get("null")).toBeNull();
     expect(event.context.get("undefined")).toBeUndefined();
   });
+
+  test("context implements iterator methods correctly", () => {
+    const testContext = {
+      a: 1,
+      b: 2,
+      c: 3,
+    };
+    const event = new NemoEvent({
+      request: mockRequest as any,
+      sourcePage: "/test",
+      context: mockContext,
+      nemo: testContext,
+    });
+
+    // Test entries()
+    const entries = Array.from(event.context.entries());
+    expect(entries).toEqual([
+      ["a", 1],
+      ["b", 2],
+      ["c", 3],
+    ]);
+
+    // Test keys()
+    const keys = Array.from(event.context.keys());
+    expect(keys).toEqual(["a", "b", "c"]);
+
+    // Test values()
+    const values = Array.from(event.context.values());
+    expect(values).toEqual([1, 2, 3]);
+
+    // Test forEach
+    const forEachResults: [string, unknown][] = [];
+    event.context.forEach((value, key) => {
+      forEachResults.push([key, value]);
+    });
+    expect(forEachResults).toEqual([
+      ["a", 1],
+      ["b", 2],
+      ["c", 3],
+    ]);
+
+    // Test Symbol.iterator
+    const iteratorResults: [string, unknown][] = [];
+    for (const [key, value] of event.context) {
+      iteratorResults.push([key, value]);
+    }
+    expect(iteratorResults).toEqual([
+      ["a", 1],
+      ["b", 2],
+      ["c", 3],
+    ]);
+  });
+
+  test("context clear() removes all entries", () => {
+    const event = new NemoEvent({
+      request: mockRequest as any,
+      sourcePage: "/test",
+      context: mockContext,
+      nemo: { a: 1, b: 2 },
+    });
+
+    expect(event.context.size).toBe(2);
+    event.context.clear();
+    expect(event.context.size).toBe(0);
+    expect(Array.from(event.context.entries())).toEqual([]);
+  });
+
+  test("from method creates new context with merged data", () => {
+    const nextEvent = new NextFetchEvent({
+      request: mockRequest as any,
+      page: "/test",
+      context: mockContext,
+    });
+
+    const existingContext = { existing: true };
+    const newContext = { new: true };
+
+    // First create with existing context
+    const nemoEvent1 = NemoEvent.from(nextEvent, existingContext);
+    expect(nemoEvent1.context.get("existing")).toBe(true);
+
+    // Then create new one with different context
+    const nemoEvent2 = NemoEvent.from(nemoEvent1, newContext);
+    expect(nemoEvent2.context.get("new")).toBe(true);
+    expect(nemoEvent2.context.get("existing")).toBeUndefined();
+  });
 });
