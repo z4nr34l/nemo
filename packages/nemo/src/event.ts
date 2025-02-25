@@ -118,6 +118,8 @@ export class NextFetchEvent extends FetchEvent {
  * through the middleware chain.
  */
 export class NemoEvent extends NextFetchEvent {
+  storage: StorageAdapter;
+
   constructor(params: {
     request: NextRequest;
     sourcePage: string;
@@ -128,10 +130,7 @@ export class NemoEvent extends NextFetchEvent {
     storage?: StorageAdapter;
   }) {
     super(params as never);
-    Object.assign(
-      this,
-      params.storage || new MemoryStorageAdapter(params.nemo),
-    );
+    this.storage = params.storage || new MemoryStorageAdapter(params.nemo);
   }
 
   static from(
