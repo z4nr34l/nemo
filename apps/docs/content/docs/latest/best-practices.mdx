@@ -65,16 +65,14 @@ Build a custom adapter to cache data between requests using for example redis, V
 **Waring!** Keep this as fast as possible, as longer the middleware executes the longer the TTFB will be.
 </Callout>
 
-<Tabs items={["_middleware.ts", "redis.ts"]}>
-  <Tab value="_middleware.ts">
-    ```ts title="/app/auth/_middleware.ts"
-    ```
-  </Tab>
-  <Tab value="redis.ts">
-    ```ts title="/lib/redis.ts"
-    ```
-  </Tab>
-</Tabs>
+```ts title="middleware.ts"
+import { NEMO } from '@rescale/nemo';
+import { RedisAdapter } from "@/lib/nemo/redis";
+
+export const { middleware } = new NEMO(middlewares, globalMiddleware, {
+  storage: () => new RedisAdapter()
+});
+```
 
 ### Error handling
 
