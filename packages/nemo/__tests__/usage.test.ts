@@ -1,5 +1,5 @@
 import { describe, expect, mock, test } from "bun:test";
-import { NextRequest, NextResponse, type NextFetchEvent } from "next/server";
+import { NextRequest, type NextFetchEvent } from "next/server";
 import { NEMO } from "../src";
 
 describe("Usage and DX Tests", () => {
@@ -16,12 +16,10 @@ describe("Usage and DX Tests", () => {
         "/": [
           async (req, { storage }) => {
             storage.set("testKey", "testValue");
-            return NextResponse.next();
           },
           async (req, { storage }) => {
             const value = storage.get<string>("testKey");
             expect(value).toBe("testValue");
-            return NextResponse.next();
           },
         ],
       });
@@ -49,7 +47,6 @@ describe("Usage and DX Tests", () => {
             expect(user).toBeDefined();
             expect(user?.id).toBe(1);
             expect(user?.name).toBe("Test");
-            return NextResponse.next();
           },
         ],
       });
@@ -72,8 +69,6 @@ describe("Usage and DX Tests", () => {
 
             storage.delete("counter");
             expect(storage.has("counter")).toBe(false);
-
-            return NextResponse.next();
           },
         ],
       });
@@ -92,20 +87,17 @@ describe("Usage and DX Tests", () => {
             expect(value).toBe("before");
             storage.set("step", "main");
             order.push("main");
-            return NextResponse.next();
           },
         },
         {
           before: async (req, { storage }) => {
             storage.set("step", "before");
             order.push("before");
-            return NextResponse.next();
           },
           after: async (req, { storage }) => {
             const value = storage.get<string>("step");
             expect(value).toBe("main");
             order.push("after");
-            return NextResponse.next();
           },
         },
       );
