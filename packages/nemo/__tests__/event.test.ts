@@ -202,9 +202,7 @@ describe("NemoEvent", () => {
       },
       nemo: { key: "value" },
     });
-    expect(event.context.toString()).toBe(
-      JSON.stringify({ key: "value" }, null, 2),
-    );
+    expect(event.context.toString()).toBe(JSON.stringify({ key: "value" }));
   });
 
   test("throws when initialized with invalid context", () => {

@@ -183,7 +183,7 @@ export class NemoEvent extends NextFetchEvent {
         return entries[Symbol.iterator]();
       },
       toString: (): string => {
-        return JSON.stringify(this._context, null, 2);
+        return JSON.stringify(this._context);
       },
     };
   }
