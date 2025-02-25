@@ -169,6 +169,21 @@ export class NemoEvent extends NextFetchEvent {
           ),
         );
       },
+      fromString: (json: string): boolean => {
+        try {
+          const parsed = JSON.parse(json);
+          if (typeof parsed !== "object" || parsed === null) {
+            return false;
+          }
+          this._context = parsed;
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      fromEntries: (entries: Iterable<readonly [string, unknown]>): void => {
+        this._context = Object.fromEntries(entries);
+      },
       entries: (): IterableIterator<[string, unknown]> => {
         return entries[Symbol.iterator]();
       },

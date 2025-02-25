@@ -280,6 +280,46 @@ describe("NemoEvent", () => {
     expect(event.context.get("undefined")).toBeUndefined();
   });
 
+  test("context fromString correctly parses JSON", () => {
+    const event = new NemoEvent({
+      request: mockRequest as any,
+      sourcePage: "/test",
+      context: mockContext,
+    });
+
+    expect(event.context.fromString('{"test": "value"}')).toBe(true);
+    expect(event.context.get("test")).toBe("value");
+  });
+
+  test("context fromString returns false for invalid JSON", () => {
+    const event = new NemoEvent({
+      request: mockRequest as any,
+      sourcePage: "/test",
+      context: mockContext,
+    });
+
+    expect(event.context.fromString("invalid json")).toBe(false);
+    expect(event.context.fromString("null")).toBe(false);
+    expect(event.context.fromString('"string"')).toBe(false);
+  });
+
+  test("context fromEntries sets context from entries", () => {
+    const event = new NemoEvent({
+      request: mockRequest as any,
+      sourcePage: "/test",
+      context: mockContext,
+    });
+
+    const entries: [string, unknown][] = [
+      ["key1", "value1"],
+      ["key2", "value2"],
+    ];
+
+    event.context.fromEntries(entries);
+    expect(event.context.get("key1")).toBe("value1");
+    expect(event.context.get("key2")).toBe("value2");
+  });
+
   test("context implements iterator methods correctly", () => {
     const testContext = {
       a: 1,
