@@ -394,7 +394,7 @@ describe("NEMO", () => {
     });
   });
 
-  describe("Context Management", () => {
+  describe("Cache Management", () => {
     test("should clear context and cache", () => {
       const nemo = new NEMO({});
       (nemo as any).matchCache.set("test", new Map([["path", true]]));
