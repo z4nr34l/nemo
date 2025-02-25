@@ -40,6 +40,21 @@ Use build-in storage (shared context) to cache data that is used across multiple
 This will reduce the number of requests to external services and reduce middleware exeuction time.
 
 ```ts title="/app/auth/_middleware.ts"
+import { NextMiddleware } from '@rescale/nemo';
+
+export const auth: NextMiddleware = (request, { storage }) => { // [!code focus]
+  const [user, roles] = await Promise.all([
+    fetchUser(),
+    fetchRoles(),
+  ]);
+
+  storage.set('user', user); // [!code focus]
+  storage.set('roles', roles); // [!code focus]
+
+  if(!user | !roles) {
+    return NextResponse.redirect('/login');
+  }
+}
 ```
 
 #### Cross-requests caching
@@ -47,11 +62,19 @@ This will reduce the number of requests to external services and reduce middlewa
 Build a custom adapter to cache data between requests using for example redis, Vercel Edge Config or other KV storage.
 
 <Callout type="warn">
-**Waring!** Keep this as fast as possible - long 
+**Waring!** Keep this as fast as possible, as longer the middleware executes the longer the TTFB will be.
 </Callout>
 
-```ts title="/app/auth/_middleware.ts"
-```
+<Tabs items={["_middleware.ts", "redis.ts"]}>
+  <Tab value="_middleware.ts">
+    ```ts title="/app/auth/_middleware.ts"
+    ```
+  </Tab>
+  <Tab value="redis.ts">
+    ```ts title="/lib/redis.ts"
+    ```
+  </Tab>
+</Tabs>
 
 ### Error handling
 
