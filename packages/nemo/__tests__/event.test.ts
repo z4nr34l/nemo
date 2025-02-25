@@ -1,3 +1,5 @@
+import { beforeEach, describe, expect, mock, test } from "bun:test";
+import type { WaitUntil } from "next/dist/server/after/builtin-request-context";
 import type { NextRequest } from "next/server";
 import {
   FetchEvent,
@@ -8,11 +10,11 @@ import {
 
 describe("FetchEvent", () => {
   let mockRequest: Request;
-  let mockWaitUntil: jest.Mock;
+  let mockWaitUntil: WaitUntil;
 
   beforeEach(() => {
     mockRequest = new Request("https://example.com");
-    mockWaitUntil = jest.fn();
+    mockWaitUntil = mock(() => {});
   });
 
   test("constructor initializes with internal waitUntil when no external provided", () => {
@@ -30,8 +32,7 @@ describe("FetchEvent", () => {
     const event = new FetchEvent(mockRequest);
     const mockResponse = new Response("test");
     event.respondWith(mockResponse);
-    // @ts-expect-error - accessing private symbol
-    const responsePromise = event[Symbol.for("response")];
+    const responsePromise = (event as any)[Symbol.for("response")];
     const response = await responsePromise;
     expect(response).toBe(mockResponse);
   });
@@ -39,8 +40,7 @@ describe("FetchEvent", () => {
   test("passThroughOnException sets passThrough flag", () => {
     const event = new FetchEvent(mockRequest);
     event.passThroughOnException();
-    // @ts-expect-error - accessing private symbol
-    expect(event[Symbol.for("passThrough")]).toBe(true);
+    expect((event as any)[Symbol.for("passThrough")]).toBe(true);
   });
 
   test("waitUntil with internal handling", async () => {
@@ -107,11 +107,11 @@ describe("FetchEvent", () => {
 
 describe("NextFetchEvent", () => {
   let mockRequest: Request;
-  let mockContext: { waitUntil: jest.Mock };
+  let mockContext: { waitUntil: WaitUntil };
 
   beforeEach(() => {
     mockRequest = new Request("https://example.com");
-    mockContext = { waitUntil: jest.fn() };
+    mockContext = { waitUntil: mock(() => {}) };
   });
 
   test("constructor initializes with correct properties", () => {
@@ -164,47 +164,60 @@ describe("NextFetchEvent", () => {
 
 describe("NemoEvent", () => {
   let mockRequest: Request;
-  let mockContext: { waitUntil: jest.Mock };
+  let mockContext: { waitUntil: WaitUntil };
 
   beforeEach(() => {
     mockRequest = new Request("https://example.com");
-    mockContext = { waitUntil: jest.fn() };
+    mockContext = { waitUntil: mock(() => {}) };
   });
 
-  test("constructor initializes with default context", () => {
+  test("constructor initializes with empty context", () => {
     const event = new NemoEvent({
       request: mockRequest as any,
-      page: "/test",
-      context: mockContext,
+      sourcePage: "/test",
+      context: { waitUntil: mockContext.waitUntil },
     });
-    expect(event.context).toBeInstanceOf(Map);
+    expect(event.context instanceof Object).toBe(true);
     expect(event.context.size).toBe(0);
   });
 
   test("constructor initializes with provided context", () => {
-    const customContext = new Map([["key", "value"]]);
     const event = new NemoEvent({
       request: mockRequest as any,
-      page: "/test",
-      context: mockContext,
-      nemo: customContext,
+      sourcePage: "/test",
+      context: {
+        waitUntil: mockContext.waitUntil,
+      },
+      nemo: { key: "value" },
     });
-    expect(event.context).toBe(customContext);
     expect(event.context.get("key")).toBe("value");
   });
 
-  test("from method creates NemoEvent from NextFetchEvent", () => {
-    const nextEvent = new NextFetchEvent({
+  test("context toString returns formatted JSON", () => {
+    const event = new NemoEvent({
       request: mockRequest as any,
-      page: "/test",
-      context: mockContext,
+      sourcePage: "/test",
+      context: {
+        waitUntil: mockContext.waitUntil,
+      },
+      nemo: { key: "value" },
     });
-    const customContext = new Map([["key", "value"]]);
-    const nemoEvent = NemoEvent.from(nextEvent, customContext);
+    expect(event.context.toString()).toBe(
+      JSON.stringify({ key: "value" }, null, 2),
+    );
+  });
 
-    expect(nemoEvent).toBeInstanceOf(NemoEvent);
-    expect(nemoEvent.context).toBe(customContext);
-    expect(nemoEvent.sourcePage).toBe("/");
+  test("throws when initialized with invalid context", () => {
+    expect(() => {
+      new NemoEvent({
+        request: mockRequest as any,
+        sourcePage: "/test",
+        context: {
+          waitUntil: mockContext.waitUntil,
+        },
+        nemo: "invalid" as any,
+      });
+    }).toThrow("NemoEvent context must be a plain object or undefined");
   });
 
   test("from method preserves original context when no new context provided", () => {
@@ -214,31 +227,20 @@ describe("NemoEvent", () => {
       context: mockContext,
     });
     const nemoEvent = NemoEvent.from(nextEvent);
-    expect(nemoEvent.context).toBeInstanceOf(Map);
+    expect(nemoEvent.context).toBeInstanceOf(Object);
     expect(nemoEvent.context.size).toBe(0);
   });
 
   test("context manipulation", () => {
     const event = new NemoEvent({
       request: mockRequest as any,
-      page: "/test",
+      sourcePage: "/test",
       context: mockContext,
     });
     event.context.set("key", "value");
-    expect(event.context.get("key")).toBe("value");
+    expect(event.context.get<string>("key")).toBe("value");
     event.context.delete("key");
     expect(event.context.has("key")).toBe(false);
-  });
-
-  test("throws when initialized with invalid context", () => {
-    expect(() => {
-      new NemoEvent({
-        request: mockRequest as any,
-        page: "/test",
-        context: mockContext,
-        nemo: "invalid" as any,
-      });
-    }).toThrow("NemoEvent context must be an instance of Map or undefined");
   });
 
   test("handles undefined context in from method", () => {
@@ -248,13 +250,13 @@ describe("NemoEvent", () => {
       context: undefined,
     });
     const nemoEvent = NemoEvent.from(nextEvent);
-    expect(nemoEvent.context).toBeInstanceOf(Map);
+    expect(nemoEvent.context).toBeInstanceOf(Object);
   });
 
   test("preserves context waitUntil functionality", () => {
     const event = new NemoEvent({
       request: mockRequest as any,
-      page: "/test",
+      sourcePage: "/test",
       context: mockContext,
     });
     const promise = Promise.resolve();
@@ -263,17 +265,16 @@ describe("NemoEvent", () => {
   });
 
   test("handles complex context values", () => {
-    const complexContext = new Map([
-      ["array", [1, 2, 3]],
-      ["object", { key: "value" }],
-      ["null", null],
-      ["undefined", undefined],
-    ]);
     const event = new NemoEvent({
       request: mockRequest as any,
-      page: "/test",
+      sourcePage: "/test",
       context: mockContext,
-      nemo: complexContext,
+      nemo: {
+        array: [1, 2, 3],
+        object: { key: "value" },
+        null: null,
+        undefined: undefined,
+      },
     });
     expect(event.context.get("array")).toEqual([1, 2, 3]);
     expect(event.context.get("object")).toEqual({ key: "value" });

@@ -116,37 +116,90 @@ export class NextFetchEvent extends FetchEvent {
  * through the middleware chain.
  */
 export class NemoEvent extends NextFetchEvent {
-  public context: Map<string, unknown>;
+  private _context: Record<string, unknown>;
 
   constructor(params: {
     request: NextRequest;
-    page: string;
+    sourcePage: string;
     context?: {
-      waitUntil: (promise: Promise<any>) => void;
+      waitUntil: WaitUntil;
     };
-    nemo?: Map<string, unknown>;
+    nemo?: Record<string, unknown>;
   }) {
     super(params as never);
-    if (params.nemo !== undefined && !(params.nemo instanceof Map)) {
-      throw new Error(
-        "NemoEvent context must be an instance of Map or undefined",
-      );
+    if (params.nemo !== undefined && typeof params.nemo !== "object") {
+      throw new Error("NemoEvent context must be a plain object or undefined");
     }
-    this.context = params.nemo || new Map();
+    this._context = params.nemo || {};
+  }
+
+  get context() {
+    const entries = Object.entries(this._context);
+
+    return {
+      get: <T>(key: string): T | any => {
+        return this._context[key] as T;
+      },
+      set: <T>(key: string, value: T): void => {
+        this._context[key] = value;
+      },
+      has: (key: string): boolean => {
+        return key in this._context;
+      },
+      delete: (key: string): boolean => {
+        const exists = key in this._context;
+        delete this._context[key];
+        return exists;
+      },
+      clear: (): void => {
+        this._context = {};
+      },
+      forEach: (
+        callbackfn: (
+          value: unknown,
+          key: string,
+          map: Map<string, unknown>,
+        ) => void,
+      ): void => {
+        entries.forEach(([key, value]) =>
+          callbackfn(
+            value,
+            key,
+            this._context as unknown as Map<string, unknown>,
+          ),
+        );
+      },
+      entries: (): IterableIterator<[string, unknown]> => {
+        return entries[Symbol.iterator]();
+      },
+      keys: (): IterableIterator<string> => {
+        return Object.keys(this._context)[Symbol.iterator]();
+      },
+      values: (): IterableIterator<unknown> => {
+        return Object.values(this._context)[Symbol.iterator]();
+      },
+      size: Object.keys(this._context).length,
+      [Symbol.iterator](): IterableIterator<[string, unknown]> {
+        return entries[Symbol.iterator]();
+      },
+      toString: (): string => {
+        return JSON.stringify(this._context, null, 2);
+      },
+    };
   }
 
   static from(
     event: NextFetchEvent,
-    context: Map<string, unknown> = new Map(),
+    nemoContext: Record<string, unknown> = {},
   ): NemoEvent {
     // @ts-expect-error - accessing private property
     const original = event._raw || {};
 
     return new NemoEvent({
       request: original.request,
-      page: original.page || "/",
+      sourcePage: event.sourcePage,
       context: original.context,
-      nemo: context,
+      nemo: nemoContext,
     });
   }
 }

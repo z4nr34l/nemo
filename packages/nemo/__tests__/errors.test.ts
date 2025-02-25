@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import type { MiddlewareMetadata } from "../dist";
 import { NemoMiddlewareError } from "../src/errors";
+import type { MiddlewareMetadata } from "../src/types";
 
 describe("NemoMiddlewareError", () => {
   test("should create error with context", () => {

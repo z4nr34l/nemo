@@ -208,6 +208,7 @@ describe("NEMO", () => {
 
       try {
         await nemo.middleware(mockRequest(), mockEvent);
+        // @ts-expect-error -- Testing error handling
         fail("Expected error to be thrown");
       } catch (error) {
         expect(error).toBeInstanceOf(NemoMiddlewareError);
@@ -398,7 +399,7 @@ describe("NEMO", () => {
       const nemo = new NEMO({});
       (nemo as any).matchCache.set("test", new Map([["path", true]]));
 
-      nemo.clearContext();
+      nemo.clearCache();
 
       expect((nemo as any).matchCache.size).toBe(0);
     });

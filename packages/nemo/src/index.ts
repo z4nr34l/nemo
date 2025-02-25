@@ -21,7 +21,6 @@ export class NEMO {
   private config: NemoConfig;
   private middlewares: MiddlewareConfig;
   private globalMiddleware?: GlobalMiddlewareConfig;
-  private context: Map<string, unknown>;
   private logger: Logger;
   private matchCache: Map<string, Map<string, boolean>> = new Map();
 
@@ -44,7 +43,6 @@ export class NEMO {
     };
     this.middlewares = middlewares;
     this.globalMiddleware = globalMiddleware;
-    this.context = new Map();
     this.logger = new Logger(this.config.debug || false);
 
     // Log initialization
@@ -338,11 +336,8 @@ export class NEMO {
     request: NextRequest,
     event: NextFetchEvent,
   ): Promise<NextMiddlewareResult> => {
-    // Get fresh context for this request
-    const context = new Map(this.context);
-
-    // Ensure we have a valid NextFetchEvent
-    const nemoEvent = NemoEvent.from(event as never, context);
+    // Create NemoEvent with empty initial context
+    const nemoEvent = NemoEvent.from(event as never);
 
     const queue: NextMiddlewareWithMeta[] = this.propagateQueue(request);
 
@@ -350,10 +345,9 @@ export class NEMO {
   };
 
   /**
-   * Clear middleware context and cache
+   * Clear middleware cache
    */
-  clearContext() {
-    this.context.clear();
+  clearCache() {
     this.matchCache.clear();
   }
 }
