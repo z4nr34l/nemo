@@ -3,6 +3,8 @@ import { pathToRegexp } from "path-to-regexp";
 import { NemoMiddlewareError } from "./errors";
 import { NemoEvent } from "./event";
 import { Logger } from "./logger";
+import { StorageAdapter } from "./storage/adapter";
+import { MemoryStorageAdapter } from "./storage/adapters/memory";
 import {
   type GlobalMiddlewareConfig,
   type MiddlewareConfig,
@@ -23,6 +25,7 @@ export class NEMO {
   private globalMiddleware?: GlobalMiddlewareConfig;
   private logger: Logger;
   private matchCache: Map<string, Map<string, boolean>> = new Map();
+  private storage: StorageAdapter;
 
   /**
    * NEMO Middleware
@@ -45,6 +48,16 @@ export class NEMO {
     this.globalMiddleware = globalMiddleware;
     this.logger = new Logger(this.config.debug || false);
 
+    // Initialize storage
+    if (this.config.storage) {
+      this.storage =
+        typeof this.config.storage === "function"
+          ? this.config.storage()
+          : this.config.storage;
+    } else {
+      this.storage = new MemoryStorageAdapter();
+    }
+
     // Log initialization
     this.logger.log("Initialized with config:", {
       debug: this.config.debug,
@@ -52,6 +65,7 @@ export class NEMO {
       enableTiming: this.config.enableTiming,
       middlewareCount: Object.keys(middlewares).length,
       hasGlobalMiddleware: !!globalMiddleware,
+      storageAdapter: this.storage.constructor.name,
     });
   }
 
@@ -347,7 +361,7 @@ export class NEMO {
   /**
    * Clear middleware cache
    */
-  clearCache() {
+  async clearCache() {
     this.matchCache.clear();
   }
 }

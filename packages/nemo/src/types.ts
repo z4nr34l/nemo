@@ -1,5 +1,6 @@
 import type { NextRequest, NextResponse } from "next/server";
 import type { NemoEvent } from "./event";
+import type { StorageAdapter } from "./storage/adapter";
 
 export type NextMiddlewareResult =
   | NextResponse
@@ -31,11 +32,19 @@ export type GlobalMiddlewareConfig = Partial<
   Record<"before" | "after", MiddlewareChain>
 >;
 
+export interface Storage {
+  get(key: string): Promise<unknown>;
+  set(key: string, value: unknown): Promise<void>;
+  delete(key: string): Promise<void>;
+  clear(): Promise<void>;
+}
+
 export interface NemoConfig {
   debug?: boolean;
   silent?: boolean;
   errorHandler?: ErrorHandler;
   enableTiming?: boolean;
+  storage?: StorageAdapter | (() => StorageAdapter); // Updated storage type
 }
 
 export interface MiddlewareMetadata {
