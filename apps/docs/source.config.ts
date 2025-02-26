@@ -16,7 +16,7 @@ import { defineConfig, defineDocs } from "fumadocs-mdx/config";
 import { transformerTwoslash } from "fumadocs-twoslash";
 
 export const { docs, meta } = defineDocs({
-  dir: "content/docs",
+  dir: "content",
 });
 
 export default defineConfig({
