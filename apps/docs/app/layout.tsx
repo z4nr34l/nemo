@@ -1,6 +1,7 @@
 import { baseUrl, createMetadata } from "@/lib/metadata";
 import { cn } from "@/lib/utils";
 import { Analytics } from "@vercel/analytics/react";
+import { Banner } from "fumadocs-ui/components/banner";
 import { RootProvider } from "fumadocs-ui/provider";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
@@ -41,6 +42,10 @@ export default function Layout({ children }: { children: ReactNode }) {
       suppressHydrationWarning
     >
       <body>
+        <Banner variant="rainbow">
+          This is `canary` version of documentation. It&apos;s still under
+          construction and review.
+        </Banner>
         <RootProvider
           search={{
             options: {
