@@ -8,7 +8,7 @@
     "@commitlint/cli": "^19.7.1",
     "@commitlint/config-conventional": "^19.7.1",
     "husky": "^9.1.7",
-    "turbo": "^2.4.2"
+    "turbo": "^2.4.4"
   },
   "homepage": "https://nemo.rescale.build",
   "keywords": [
