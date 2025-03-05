@@ -3,6 +3,7 @@ import type { NextFetchEvent } from "next/server";
 import { NextRequest, NextResponse } from "next/server";
 import {
   createMiddleware,
+  createNEMO,
   NEMO,
   NemoMiddlewareError,
   type ErrorHandler,
@@ -322,16 +323,65 @@ describe("NEMO", () => {
       createMiddleware({ "/": middleware });
 
       expect(warnSpy).toHaveBeenCalledWith(
-        "[NEMO] `createMiddleware` is deprecated. Use `new NEMO()` instead.",
+        "[NEMO] `createMiddleware` is deprecated. Use `createNEMO` instead.",
       );
     });
 
     test("should return a working middleware instance", async () => {
       const testMiddleware = mock(() => NextResponse.next());
-      const { middleware } = createMiddleware({ "/test": testMiddleware });
+      const middleware = createMiddleware({ "/test": testMiddleware });
 
       await middleware(mockRequest("/test"), mockEvent);
       expect(testMiddleware).toHaveBeenCalled();
+    });
+  });
+
+  describe("createNEMO", () => {
+    test("should return a working middleware instance", async () => {
+      const testMiddleware = mock(() => NextResponse.next());
+      const middleware = createNEMO({ "/test": testMiddleware });
+
+      await middleware(mockRequest("/test"), mockEvent);
+      expect(testMiddleware).toHaveBeenCalled();
+    });
+
+    test("should properly pass configuration options", async () => {
+      const errorMiddleware: NextMiddleware = () => {
+        throw new Error("Test error");
+      };
+
+      const errorHandler: ErrorHandler = mock(() => {
+        return NextResponse.next();
+      });
+
+      const middleware = createNEMO({ "/test": errorMiddleware }, undefined, {
+        silent: true,
+        errorHandler,
+      });
+
+      await middleware(mockRequest("/test"), mockEvent);
+      expect(errorHandler).toHaveBeenCalled();
+    });
+
+    test("should support global middleware configuration", async () => {
+      const order: string[] = [];
+      const beforeMiddleware = mock(() => {
+        order.push("before");
+      });
+      const mainMiddleware = mock(() => {
+        order.push("main");
+        return NextResponse.next();
+      });
+
+      const middleware = createNEMO(
+        { "/test": mainMiddleware },
+        { before: beforeMiddleware },
+      );
+
+      await middleware(mockRequest("/test"), mockEvent);
+      expect(order).toEqual(["before", "main"]);
+      expect(beforeMiddleware).toHaveBeenCalled();
+      expect(mainMiddleware).toHaveBeenCalled();
     });
   });
 

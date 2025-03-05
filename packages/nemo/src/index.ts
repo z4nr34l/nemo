@@ -376,10 +376,27 @@ export class NEMO {
 export function createMiddleware(
   middlewares: MiddlewareConfig,
   globalMiddleware?: GlobalMiddlewareConfig,
+  config?: NemoConfig,
 ) {
   console.warn(
-    "[NEMO] `createMiddleware` is deprecated. Use `new NEMO()` instead.",
+    "[NEMO] `createMiddleware` is deprecated. Use `createNEMO` instead.",
   );
 
-  return new NEMO(middlewares, globalMiddleware);
+  return new NEMO(middlewares, globalMiddleware, config).middleware;
+}
+
+/**
+ * Creates a new NEMO instance with the given middlewares and optional configurations.
+ *
+ * @param middlewares - Middleware configuration
+ * @param globalMiddleware - Global middleware configuration
+ * @param config - Optional Nemo configuration
+ * @returns NextMiddleware
+ */
+export function createNEMO(
+  middlewares: MiddlewareConfig,
+  globalMiddleware?: GlobalMiddlewareConfig,
+  config?: NemoConfig,
+) {
+  return new NEMO(middlewares, globalMiddleware, config).middleware;
 }
