@@ -367,6 +367,7 @@ export class NEMO {
 }
 
 /**
+ * @deprecated Use `new NEMO()` instead. Example: `export const { middleware } = new NEMO(middlewares, globalMiddleware)`
  * Create middleware
  * @param middlewares - Middleware configuration
  * @param globalMiddleware - Global middleware configuration
@@ -375,7 +376,10 @@ export class NEMO {
 export function createMiddleware(
   middlewares: MiddlewareConfig,
   globalMiddleware?: GlobalMiddlewareConfig,
-  config?: NemoConfig,
 ) {
-  return new NEMO(middlewares, globalMiddleware, config).middleware;
+  console.warn(
+    "[NEMO] `createMiddleware` is deprecated. Use `new NEMO()` instead.",
+  );
+
+  return new NEMO(middlewares, globalMiddleware);
 }
