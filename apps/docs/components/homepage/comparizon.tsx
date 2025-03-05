@@ -101,7 +101,7 @@ export const config = {
   matcher: ['/((?!_next/|_static|_vercel|[\\\\w-]+\\\\.\\\\w+).*)'],
 };`;
 
-const codeAfter = `import { createMiddleware, type MiddlewareFunctionProps } from '@rescale/nemo';
+const codeAfter = `import { createNEMO, type MiddlewareFunctionProps } from '@rescale/nemo';
 import { auth } from '@/app/(auth)/auth/_middleware';
 import { team } from '@/app/(team)/team/_middleware';
 
@@ -113,7 +113,7 @@ const middlewares = {
   '/(team|t)/:slug': team, // OR: [team, ...]
 };
 
-export const { middleware } = new NEMO(middlewares, globalMiddlewares);
+export const middleware = createNEMO(middlewares, globalMiddlewares);
 
 export const config = {
   matcher: ['/((?!_next/|_static|_vercel|[\\\\w-]+\\\\.\\\\w+).*)'],

@@ -23,30 +23,30 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
     (or create it if you don't have one yet)
 
     ```typescript title="middleware.ts"
-    import { NEMO } from '@rescale/nemo';  // [!code ++]
+    import { createNEMO } from '@rescale/nemo';  // [!code ++]
 
     // [...]
     ```
 
   </Step>
   <Step>
-    ### Use the createMiddleware function to create a middleware helper.
+    ### Use the createNEMO function to create a middleware helper.
 
     ```typescript title="middleware.ts"
-    import { createMiddleware } from '@rescale/nemo';
+    import { createNEMO } from '@rescale/nemo';
 
-    export const { middleware } = new NEMO(); // [!code ++]
+    export const middleware = createNEMO(); // [!code ++]
 
     // [...]
     ```
 
   </Step>
   <Step>
-    ### Define your middlewares config and update the createMiddleware function parameters.
+    ### Define your middlewares config and update the createNEMO function parameters.
 
     ```typescript title="middleware.ts"
-    import { createMiddleware } from '@rescale/nemo'; // [!code --]
-    import { createMiddleware, type MiddlewareConfig } from '@rescale/nemo'; // [!code ++]
+    import { createNEMO } from '@rescale/nemo'; // [!code --]
+    import { createNEMO, type MiddlewareConfig } from '@rescale/nemo'; // [!code ++]
 
     const middlewares = { // [!code ++]
       '/': [ // [!code ++]
@@ -56,8 +56,8 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
       ], // [!code ++]
     } satisfies MiddlewareConfig; // [!code ++]
 
-    export const { middleware } = new NEMO(); // [!code --]
-    export const { middleware } = new NEMO(middlewares); // [!code ++]
+    export const middleware = createNEMO(); // [!code --]
+    export const middleware = createNEMO(middlewares); // [!code ++]
 
     // [...]
     ```
@@ -106,7 +106,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
       ],
     } satisfies MiddlewareConfig;
 
-    export const { middleware } = new NEMO(middlewares);
+    export const middleware = createNEMO(middlewares);
 
     export const config = {
       matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],

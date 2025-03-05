@@ -128,7 +128,7 @@ const nemoConfig = {
   },
 } satisfies NemoConfig;
 
-export const { middleware } = new NEMO(
+export const middleware = createNEMO(
   middlewares,
   globalMiddlewares,
   nemoConfig,

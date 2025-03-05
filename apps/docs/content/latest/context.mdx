@@ -107,7 +107,7 @@ After creating your storage adapter, you can use it by passing it to the `NEMO` 
     import { NEMO } from "@rescale/nemo";
     import { CustomStorageAdapter } from "./StorageAdapter";
 
-    export const { middleware } = new NEMO(middlewares, globalMiddleware, {
+    export const middleware = createNEMO(middlewares, globalMiddleware, {
       storage: new CustomStorageAdapter()
     });
     ```
@@ -117,7 +117,7 @@ After creating your storage adapter, you can use it by passing it to the `NEMO` 
     import { NEMO } from "@rescale/nemo";
     import { CustomStorageAdapter } from "./StorageAdapter";
 
-    export const { middleware } = new NEMO(middlewares, globalMiddleware, {
+    export const middleware = createNEMO(middlewares, globalMiddleware, {
       storage: () => new CustomStorageAdapter()
     });
     ```

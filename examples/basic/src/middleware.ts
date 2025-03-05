@@ -1,4 +1,4 @@
-import { NEMO, type MiddlewareConfig } from "@rescale/nemo";
+import { createNEMO, type MiddlewareConfig } from "@rescale/nemo";
 import { NextResponse, type NextRequest } from "next/server";
 
 const globlMiddleware = {
@@ -27,7 +27,7 @@ const middlewares = {
 } satisfies MiddlewareConfig;
 
 // Create middlewares helper
-export const { middleware } = new NEMO(middlewares, globlMiddleware, {
+export const middleware = createNEMO(middlewares, globlMiddleware, {
   debug: true,
   enableTiming: true
 });

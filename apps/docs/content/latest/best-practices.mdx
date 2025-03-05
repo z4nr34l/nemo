@@ -66,10 +66,10 @@ Build a custom adapter to cache data between requests using for example redis, V
 </Callout>
 
 ```ts title="middleware.ts"
-import { NEMO } from '@rescale/nemo';
+import { createNEMO } from '@rescale/nemo';
 import { RedisAdapter } from "@/lib/nemo/redis";
 
-export const { middleware } = new NEMO(middlewares, globalMiddleware, {
+export const middleware = createNEMO(middlewares, globalMiddleware, {
   storage: () => new RedisAdapter()
 });
 ```
