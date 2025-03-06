@@ -18,6 +18,7 @@ import {
 export { NemoMiddlewareError } from "./errors";
 export { NemoEvent } from "./event";
 export * from "./types";
+export * from "./utils";
 
 export class NEMO {
   private config: NemoConfig;
@@ -270,6 +271,7 @@ export class NEMO {
   ): Promise<NextMiddlewareResult> {
     let result: NextMiddlewareResult;
     const initialHeaders = new Headers(request.headers);
+    const defaultResponse = NextResponse.next();
 
     // Add timing tracking only when enabled
     const chainTiming = this.config.enableTiming
@@ -313,18 +315,33 @@ export class NEMO {
           );
         }
 
+        // Only return early if the result exists and is not equivalent to NextResponse.next()
         if (result) {
-          // Log final timing before early return
-          if (this.config.enableTiming && chainTiming) {
-            this.logger.log("Chain timing summary:", {
-              before: `${chainTiming.before.toFixed(2)}ms`,
-              main: `${chainTiming.main.toFixed(2)}ms`,
-              after: `${chainTiming.after.toFixed(2)}ms`,
-              total: `${(chainTiming.before + chainTiming.main + chainTiming.after).toFixed(2)}ms`,
-            });
+          // Import and use areResponsesEqual from utils
+          const { areResponsesEqual } = require("./utils");
+          const isDefaultResponse = areResponsesEqual(result, defaultResponse);
+
+          if (!isDefaultResponse) {
+            // Log final timing before early return
+            if (this.config.enableTiming && chainTiming) {
+              this.logger.log("Chain timing summary:", {
+                before: `${chainTiming.before.toFixed(2)}ms`,
+                main: `${chainTiming.main.toFixed(2)}ms`,
+                after: `${chainTiming.after.toFixed(2)}ms`,
+                total: `${(
+                  chainTiming.before +
+                  chainTiming.main +
+                  chainTiming.after
+                ).toFixed(2)}ms`,
+              });
+            }
+            this.logger.log("Middleware returned custom result, ending chain");
+            return result;
+          } else {
+            this.logger.log(
+              "Middleware returned default response, continuing chain",
+            );
           }
-          this.logger.log("Middleware returned result, ending chain");
-          return result;
         }
       } catch (error) {
         this.logger.error("Middleware execution failed:", {

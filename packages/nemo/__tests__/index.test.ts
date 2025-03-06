@@ -122,11 +122,27 @@ describe("NEMO", () => {
     });
 
     describe("Chain Breaking", () => {
-      test("should break chain on NextResponse.next()", async () => {
+      test("should not break chain on NextResponse.next()", async () => {
         const order: string[] = [];
         const middleware1: NextMiddleware = () => {
           order.push("first");
           return NextResponse.next();
+        };
+        const middleware2: NextMiddleware = () => {
+          order.push("second");
+        };
+
+        const nemo = new NEMO({ "/": [middleware1, middleware2] });
+        await nemo.middleware(mockRequest(), mockEvent);
+
+        expect(order).toEqual(["first", "second"]);
+      });
+
+      test("should break chain on NextResponse.json", async () => {
+        const order: string[] = [];
+        const middleware1: NextMiddleware = () => {
+          order.push("first");
+          return NextResponse.json({});
         };
         const middleware2: NextMiddleware = () => {
           order.push("second");
@@ -169,6 +185,26 @@ describe("NEMO", () => {
         await nemo.middleware(mockRequest(), mockEvent);
 
         expect(order).toEqual(["first"]);
+      });
+
+      test("should skip remaining code in middleware when NextResponse.next() is returned", async () => {
+        const order: string[] = [];
+        const shouldNeverRun = false;
+
+        const middleware1: NextMiddleware = () => {
+          order.push("first-start");
+          return NextResponse.next(); // Early return
+        };
+
+        const middleware2: NextMiddleware = () => {
+          order.push("second");
+        };
+
+        const nemo = new NEMO({ "/": [middleware1, middleware2] });
+        await nemo.middleware(mockRequest(), mockEvent);
+
+        expect(order).toEqual(["first-start", "second"]);
+        expect(shouldNeverRun).toBe(false);
       });
     });
   });
