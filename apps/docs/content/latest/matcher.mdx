@@ -32,6 +32,27 @@ Matches `/dashboard` route and returns no params.
   </Tab>
 </Tabs>
 
+### Grouped routes
+
+Matches `/v1` and `/v2` prefixed routes.
+
+<Tabs items={["Matcher", "Result"]}>
+  <Tab value="Matcher">
+  ```plaintext
+    /(v1|v2)/:path*
+  ```
+  </Tab>
+  <Tab value="Result">
+  ```ts
+    /
+    /home
+    /v1/anything [PASS] // [!code ++]
+    /v2/anything [PASS] // [!code ++]
+    /settings
+  ```
+  </Tab>
+</Tabs>
+
 ### Prams
 
 General structure of the params is `:paramName` where `paramName` is the name of the param that will be returned in the middleware function.
