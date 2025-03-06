@@ -217,7 +217,7 @@ describe("NEMO", () => {
         expect(nemoError.metadata.chain).toBe("before");
         expect(nemoError.metadata.index).toBe(0);
         expect(nemoError.metadata.pathname).toBe("/");
-        expect(nemoError.metadata.routeKey).toBe("/");
+        expect(nemoError.metadata.routeKey).toBe("global:before");
         expect(nemoError.originalError).toBeInstanceOf(Error);
       }
     });
@@ -239,7 +239,7 @@ describe("NEMO", () => {
         expect(nemoError.metadata.chain).toBe("after");
         expect(nemoError.metadata.index).toBe(0);
         expect(nemoError.metadata.pathname).toBe("/");
-        expect(nemoError.metadata.routeKey).toBe("/");
+        expect(nemoError.metadata.routeKey).toBe("global:after");
         expect(nemoError.originalError).toBeInstanceOf(Error);
       }
     });
