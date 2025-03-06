@@ -26,6 +26,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
     import { createNEMO } from '@rescale/nemo';  // [!code ++]
 
     // [...]
+    
     ```
 
   </Step>
@@ -38,6 +39,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
     export const middleware = createNEMO(); // [!code ++]
 
     // [...]
+
     ```
 
   </Step>
@@ -60,13 +62,14 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
     export const middleware = createNEMO(middlewares); // [!code ++]
 
     // [...]
+
     ```
 
     After that step, you should see an `There is NEMO` message in your console for every request made to your application.
 
     <Cards>
-      <Card href="/docs/configuration" title="Configuration" description="Learn more about middlewres configuration" icon={<WrenchIcon/>}/>
-      <Card href="/docs/functions" title="Functions" description="Learn more about middlewre functions" icon={<SquareFunctionIcon/>}/>
+      <Card href="/docs/latest/configuration" title="Configuration" description="Learn more about middlewres configuration" icon={<WrenchIcon/>}/>
+      <Card href="/docs/latest/functions" title="Functions" description="Learn more about middlewre functions" icon={<SquareFunctionIcon/>}/>
     </Cards>
 
   </Step>
@@ -79,6 +82,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
     export const config = { // [!code ++]
       matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'], // [!code ++]
     }; // [!code ++]
+
     ```
 
     That will prevent your middleware from executing on routes:
@@ -96,7 +100,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
     ### Finally, let's put it all together.
 
     ```typescript twoslash title="middleware.ts"
-    import { NEMO, type MiddlewareConfig } from '@rescale/nemo';
+    import { createNEMO, type MiddlewareConfig } from '@rescale/nemo';
 
     const middlewares = {
       '/': [
@@ -111,6 +115,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
     export const config = {
       matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
     };
+
     ```
 
     That's how should your `middleware.ts` file looks like after all steps.

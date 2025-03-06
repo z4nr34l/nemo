@@ -22,6 +22,7 @@ const middlewares = {
     console.log("There is NEMO", request.nextUrl.pathname);
   },
 } satisfies MiddlewareConfig;
+
 ```
 
 ## Global Middlewares
@@ -43,6 +44,7 @@ const globalMiddlewares = {
     console.log("After all middlewares");
   },
 } satisfies GlobalMiddlewareConfig;
+
 ```
 
 ## Config object
@@ -88,17 +90,18 @@ const config = {
     console.error(error, metadata);
   },
 } satisfies NemoConfig;
+
 ```
 
 ## Example
 
 Getting all of above informations together makes for us NEMO&apos;s full configuration representing all usable properites.
 
-The `new NEMO()` constructor is the entry point for the NEMO package. It allows you to create a middleware helper that can be used to define middleware functions for your Next.js application.
+The `createNEMO()` constructor is the entry point for the NEMO package. It allows you to create a middleware helper that can be used to define middleware functions for your Next.js application.
 
 ```ts twoslash title="middleware.ts"
 import {
-  NEMO,
+  createNEMO,
   type MiddlewareConfig,
   type GlobalMiddlewareConfig,
   type NemoConfig,
@@ -137,4 +140,5 @@ export const middleware = createNEMO(
 export const config = {
   matcher: ["/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)"],
 };
+
 ```

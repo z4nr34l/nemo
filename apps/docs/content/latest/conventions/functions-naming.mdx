@@ -14,18 +14,21 @@ Avoid using the default `middleware` name or prefix/suffix for your functions. I
 export const internal = async ({ request }: MiddlewareFunctionProps) => {
   // function body
 };
+
 ```
 
 ```ts title="/app/(team)/t/_middleware.ts" /team/
 export const team = async ({ request }: MiddlewareFunctionProps) => {
   // function body
 };
+
 ```
 
 ```ts title="/app/_middleware.ts" /analytics/
 export const analytics = async ({ request }: MiddlewareFunctionProps) => {
   // function body
 };
+
 ```
 
 ### Related topics
@@ -35,6 +38,6 @@ export const analytics = async ({ request }: MiddlewareFunctionProps) => {
     title="Project structure"
     icon={<FolderIcon />}
     description="How to organize middleware functions"
-    href="/docs/conventions/project-structure"
+    href="/docs/latest/conventions/project-structure"
   />
 </Cards>

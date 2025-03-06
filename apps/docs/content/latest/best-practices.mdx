@@ -27,6 +27,7 @@ export const auth: NextMiddleware = () => {
     return NextResponse.redirect('/login');
   }
 }
+
 ```
 
 ### Caching
@@ -55,6 +56,7 @@ export const auth: NextMiddleware = (request, { storage }) => { // [!code focus]
     return NextResponse.redirect('/login');
   }
 }
+
 ```
 
 #### Cross-requests caching
@@ -72,6 +74,7 @@ import { RedisAdapter } from "@/lib/nemo/redis";
 export const middleware = createNEMO(middlewares, globalMiddleware, {
   storage: () => new RedisAdapter()
 });
+
 ```
 
 ## Security

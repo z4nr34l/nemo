@@ -367,11 +367,22 @@ export class NEMO {
 }
 
 /**
- * @deprecated Use `new NEMO()` instead. Example: `export const middleware = createNEMO(middlewares, globalMiddleware)`
- * Create middleware
+ * @deprecated This function is going to be deprecated as it's named just like many other packages and can cause conflicts. Use `new NEMO()` instead. Example: `export const middleware = createNEMO(middlewares, globalMiddleware, config)`.
+ *
  * @param middlewares - Middleware configuration
  * @param globalMiddleware - Global middleware configuration
  * @returns NextMiddleware
+ *
+ * @example
+ * ```ts
+ * import { createNEMO } from "@rescale/nemo";
+ *
+ * const middleware = createNEMO({
+ *  "/api/:path*": (req, event) => {
+ *    console.log("API request:", req.nextUrl.pathname);
+ *  },
+ * });
+ * ```
  */
 export function createMiddleware(
   middlewares: MiddlewareConfig,
@@ -392,6 +403,17 @@ export function createMiddleware(
  * @param globalMiddleware - Global middleware configuration
  * @param config - Optional Nemo configuration
  * @returns NextMiddleware
+ *
+ * @example
+ * ```ts
+ * import { createNEMO } from "@rescale/nemo";
+ *
+ * const middleware = createNEMO({
+ *  "/api/:path*": (req, event) => {
+ *    console.log("API request:", req.nextUrl.pathname);
+ *  },
+ * });
+ * ```
  */
 export function createNEMO(
   middlewares: MiddlewareConfig,

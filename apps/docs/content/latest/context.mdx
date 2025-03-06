@@ -14,7 +14,7 @@ By default it operates using in-memory storage, but you can extend it with your 
 
   **Recommendation**: Use KV databases/solutions like Redis, Vercel EdgeConfig etc.
 
-  [Read more about good practices](/docs/best-practices)
+  [Read more about good practices](/docs/latest/best-practices)
 </Callout>
 
 ## Usage example
@@ -42,6 +42,7 @@ const example: NextMiddleware = async (req, { storage }) => {// [!code focus]
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 }
+
 ```
 
 ## Custom Storage adapter
@@ -97,6 +98,7 @@ export class CustomStorageAdapter extends StorageAdapter {
     return 0;
   }
 }
+
 ```
 
 After creating your storage adapter, you can use it by passing it to the `NEMO` constructor.
@@ -110,6 +112,7 @@ After creating your storage adapter, you can use it by passing it to the `NEMO` 
     export const middleware = createNEMO(middlewares, globalMiddleware, {
       storage: new CustomStorageAdapter()
     });
+
     ```
   </Tab>
   <Tab value="Factory function">
@@ -120,6 +123,7 @@ After creating your storage adapter, you can use it by passing it to the `NEMO` 
     export const middleware = createNEMO(middlewares, globalMiddleware, {
       storage: () => new CustomStorageAdapter()
     });
+
     ```
   </Tab>
 </Tabs>
