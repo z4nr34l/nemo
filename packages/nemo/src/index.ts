@@ -159,18 +159,10 @@ export class NEMO {
     const pathname = request.nextUrl.pathname;
     this.logger.log("Processing request for path:", pathname);
 
-    let routeKey = "/";
+    const queue: NextMiddlewareWithMeta[] = [];
+    const processedRoutes: string[] = [];
 
-    const _middlewares = Object.entries(this.middlewares).filter(([key]) => {
-      const matches = this.matchesPath(key, pathname);
-
-      if (matches) {
-        routeKey = key;
-      }
-
-      return matches;
-    });
-
+    // Add before middlewares
     const beforeMiddlewares = (
       this.globalMiddleware?.before
         ? Array.isArray(this.globalMiddleware.before)
@@ -182,24 +174,61 @@ export class NEMO {
         chain: "before",
         index,
         pathname,
-        routeKey,
+        routeKey: "global:before",
       }),
     );
+    queue.push(...beforeMiddlewares);
 
-    const mainMiddlewares = _middlewares.flatMap(([_, middlewares]) => {
-      const middlewareArray = Array.isArray(middlewares)
-        ? middlewares
-        : [middlewares];
-      return middlewareArray.map((middleware, index) =>
-        this.attachMetadata(middleware, {
-          chain: "main",
-          index,
-          pathname,
-          routeKey,
-        }),
-      );
-    });
+    // Recursively process middleware entries
+    const processMiddlewares = (
+      middlewares: Record<string, any>,
+      basePath = "",
+      nestLevel = 0,
+    ) => {
+      Object.entries(middlewares).forEach(([key, value]) => {
+        // Combine base path with current key for nested routes
+        const fullPattern = basePath ? `${basePath}${key}` : key;
 
+        if (this.matchesPath(fullPattern, pathname)) {
+          processedRoutes.push(fullPattern);
+
+          // Handle different value types
+          if (typeof value === "function") {
+            // Single middleware function
+            queue.push(
+              this.attachMetadata(value, {
+                chain: "main",
+                index: queue.length - beforeMiddlewares.length,
+                pathname,
+                routeKey: fullPattern,
+                nestLevel,
+              }),
+            );
+          } else if (Array.isArray(value)) {
+            // Array of middleware functions
+            value.forEach((middleware, index) => {
+              queue.push(
+                this.attachMetadata(middleware, {
+                  chain: "main",
+                  index,
+                  pathname,
+                  routeKey: fullPattern,
+                  nestLevel,
+                }),
+              );
+            });
+          } else if (typeof value === "object" && value !== null) {
+            // Nested middleware configuration
+            processMiddlewares(value, fullPattern, nestLevel + 1);
+          }
+        }
+      });
+    };
+
+    // Process all middlewares
+    processMiddlewares(this.middlewares);
+
+    // Add after middlewares
     const afterMiddlewares = (
       this.globalMiddleware?.after
         ? Array.isArray(this.globalMiddleware.after)
@@ -211,20 +240,17 @@ export class NEMO {
         chain: "after",
         index,
         pathname,
-        routeKey,
+        routeKey: "global:after",
       }),
     );
+    queue.push(...afterMiddlewares);
 
-    const queue = [
-      ...beforeMiddlewares,
-      ...mainMiddlewares,
-      ...afterMiddlewares,
-    ];
     this.logger.log("Generated middleware queue:", {
       total: queue.length,
       before: beforeMiddlewares.length,
-      main: mainMiddlewares.length,
+      main: queue.length - beforeMiddlewares.length - afterMiddlewares.length,
       after: afterMiddlewares.length,
+      processedRoutes,
     });
 
     return queue;
@@ -264,6 +290,8 @@ export class NEMO {
           chain: middleware.__nemo?.chain,
           index: middleware.__nemo?.index,
           pathname: middleware.__nemo?.pathname,
+          routeKey: middleware.__nemo?.routeKey,
+          nestLevel: middleware.__nemo?.nestLevel,
         });
 
         result = await middleware(request, event);

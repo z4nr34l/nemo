@@ -26,7 +26,12 @@ export type ErrorHandler = (
 
 export type MiddlewareChain = NextMiddleware | NextMiddleware[];
 
-export type MiddlewareConfig = Record<string, MiddlewareChain>;
+export type MiddlewareConfig = Record<
+  string,
+  | NextMiddleware
+  | NextMiddleware[]
+  | Record<string, NextMiddleware | NextMiddleware[] | Record<string, any>>
+>;
 
 export type GlobalMiddlewareConfig = Partial<
   Record<"before" | "after", MiddlewareChain>
@@ -52,6 +57,7 @@ export interface MiddlewareMetadata {
   index: number;
   pathname: string;
   routeKey: string;
+  nestLevel?: number;
 }
 
 export type NextMiddlewareWithMeta = NextMiddleware & {

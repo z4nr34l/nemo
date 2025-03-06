@@ -222,6 +222,28 @@ describe("NEMO", () => {
       }
     });
 
+    test("should provide metadata for errors in after middleware", async () => {
+      const errorMiddleware: NextMiddleware = () => {
+        throw new Error("Test error");
+      };
+
+      const nemo = new NEMO({ "/": () => {} }, { after: errorMiddleware });
+
+      try {
+        await nemo.middleware(mockRequest(), mockEvent);
+        // @ts-expect-error -- Testing error handling
+        fail("Expected error to be thrown");
+      } catch (error) {
+        expect(error).toBeInstanceOf(NemoMiddlewareError);
+        const nemoError = error as NemoMiddlewareError;
+        expect(nemoError.metadata.chain).toBe("after");
+        expect(nemoError.metadata.index).toBe(0);
+        expect(nemoError.metadata.pathname).toBe("/");
+        expect(nemoError.metadata.routeKey).toBe("/");
+        expect(nemoError.originalError).toBeInstanceOf(Error);
+      }
+    });
+
     test("should use custom error handler when provided", async () => {
       const errorMiddleware: NextMiddleware = () => {
         throw new Error("Custom error");
