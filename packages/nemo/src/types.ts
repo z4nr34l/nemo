@@ -26,12 +26,16 @@ export type ErrorHandler = (
 
 export type MiddlewareChain = NextMiddleware | NextMiddleware[];
 
-export type MiddlewareConfig = Record<
-  string,
+export type MiddlewareConfigValue =
   | NextMiddleware
   | NextMiddleware[]
-  | Record<string, NextMiddleware | NextMiddleware[] | Record<string, any>>
->;
+  | { [key: string]: MiddlewareConfigValue }
+  | {
+      middleware: NextMiddleware | NextMiddleware[];
+      [key: string]: MiddlewareConfigValue;
+    };
+
+export type MiddlewareConfig = Record<string, MiddlewareConfigValue>;
 
 export type GlobalMiddlewareConfig = Partial<
   Record<"before" | "after", MiddlewareChain>
