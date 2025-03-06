@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, mock, test } from "bun:test";
 import type { WaitUntil } from "next/dist/server/after/builtin-request-context";
 import type { NextRequest } from "next/server";
+import type { MiddlewareMetadata } from "../src";
 import {
   FetchEvent,
   NemoEvent,
@@ -180,5 +181,194 @@ describe("NemoEvent", () => {
     const promise = Promise.resolve();
     event.waitUntil(promise);
     expect(mockContext.waitUntil).toHaveBeenCalledWith(promise);
+  });
+
+  describe("getParams", () => {
+    test("extracts simple parameters from URL path", () => {
+      const event = new NemoEvent({
+        request: new Request("https://example.com/users/123") as any,
+        sourcePage: "/users/[id]",
+        context: mockContext,
+      });
+
+      const params = event.getParams({
+        chain: "main",
+        index: 0,
+        pathname: "/users/123",
+        routeKey: "/users/:id",
+        nestLevel: 0,
+      });
+
+      expect(params).toEqual({ id: "123" });
+    });
+
+    test("extracts multiple parameters from URL path", () => {
+      const event = new NemoEvent({
+        request: new Request("https://example.com/users/123/posts/456") as any,
+        sourcePage: "/users/[userId]/posts/[postId]",
+        context: mockContext,
+      });
+
+      const params = event.getParams({
+        chain: "main",
+        index: 0,
+        pathname: "/users/123/posts/456",
+        routeKey: "/users/:userId/posts/:postId",
+        nestLevel: 0,
+      });
+
+      expect(params).toEqual({ userId: "123", postId: "456" });
+    });
+
+    test("handles wildcard patterns", () => {
+      const event = new NemoEvent({
+        request: new Request(
+          "https://example.com/api/products/category/electronics",
+        ) as any,
+        sourcePage: "/api/products/[...slug]",
+        context: mockContext,
+      });
+
+      const params = event.getParams({
+        chain: "main",
+        index: 0,
+        pathname: "/api/products/category/electronics",
+        routeKey: "/api/products/:slug*",
+        nestLevel: 0,
+      });
+
+      expect(params).toHaveProperty("slug");
+      expect(
+        Array.isArray(params.slug) || typeof params.slug === "string",
+      ).toBe(true);
+    });
+
+    test("returns empty object when no metadata provided", () => {
+      const event = new NemoEvent({
+        request: new Request("https://example.com/users/123") as any,
+        sourcePage: "/users/[id]",
+        context: mockContext,
+      });
+
+      const params = event.getParams(undefined as any);
+      expect(params).toEqual({});
+    });
+
+    test("returns empty object when no routeKey in metadata", () => {
+      const event = new NemoEvent({
+        request: new Request("https://example.com/users/123") as any,
+        sourcePage: "/users/[id]",
+        context: mockContext,
+      });
+
+      const params = event.getParams({
+        chain: "main",
+        index: 0,
+        pathname: "/users/123",
+        routeKey: "/users",
+        nestLevel: 0,
+      });
+
+      expect(params).toEqual({});
+    });
+
+    test("handles URL encoded parameters", () => {
+      const event = new NemoEvent({
+        request: new Request("https://example.com/search/some%20query") as any,
+        sourcePage: "/search/[query]",
+        context: mockContext,
+      });
+
+      const params = event.getParams({
+        chain: "main",
+        index: 0,
+        pathname: "/search/some%20query",
+        routeKey: "/search/:query",
+        nestLevel: 0,
+      });
+
+      expect(params).toEqual({ query: "some query" });
+    });
+
+    test("uses current middleware metadata when no metadata is provided", () => {
+      const event = new NemoEvent({
+        request: new Request("https://example.com/users/123") as any,
+        sourcePage: "/users/[id]",
+        context: mockContext,
+      });
+
+      const metadata: MiddlewareMetadata = {
+        chain: "main",
+        index: 0,
+        pathname: "/users/123",
+        routeKey: "/users/:id",
+        nestLevel: 0,
+      };
+
+      event.setCurrentMetadata(metadata);
+      const params = event.getParams();
+
+      expect(params).toEqual({ id: "123" });
+    });
+
+    test("provided metadata overrides current metadata", () => {
+      const event = new NemoEvent({
+        request: new Request("https://example.com/users/123") as any,
+        sourcePage: "/users/[id]",
+        context: mockContext,
+      });
+
+      // Set current metadata
+      event.setCurrentMetadata({
+        chain: "main",
+        index: 0,
+        pathname: "/users/123",
+        routeKey: "/users/:id",
+        nestLevel: 0,
+      });
+
+      // Provide different metadata
+      const params = event.getParams({
+        chain: "main",
+        index: 1,
+        pathname: "/users/456/posts/789",
+        routeKey: "/users/:userId/posts/:postId",
+        nestLevel: 0,
+      });
+
+      expect(params).toEqual({ userId: "456", postId: "789" });
+    });
+
+    test("current metadata updates with each middleware execution", () => {
+      const event = new NemoEvent({
+        request: new Request("https://example.com/users/123/posts/456") as any,
+        sourcePage: "/users/[userId]/posts/[postId]",
+        context: mockContext,
+      });
+
+      // Set first middleware metadata
+      event.setCurrentMetadata({
+        chain: "main",
+        index: 0,
+        pathname: "/users/123/posts/456",
+        routeKey: "/users/:userId",
+        nestLevel: 0,
+      });
+
+      const firstParams = event.getParams();
+      expect(firstParams).not.toEqual({ userId: "123", postId: "456" });
+
+      // Update with second middleware metadata
+      event.setCurrentMetadata({
+        chain: "main",
+        index: 1,
+        pathname: "/users/123/posts/456",
+        routeKey: "/users/:userId/posts/:postId",
+        nestLevel: 0,
+      });
+
+      const secondParams = event.getParams();
+      expect(secondParams).toEqual({ userId: "123", postId: "456" });
+    });
   });
 });

@@ -51,14 +51,14 @@ describe("NEMO Nesting", () => {
       );
       expect(rootMiddleware).not.toHaveBeenCalled();
       expect(adminMiddleware).toHaveBeenCalled();
-      expect(adminResponse.headers.get("x-section")).toBe("admin");
+      expect(adminResponse?.headers.get("x-section")).toBe("admin");
 
       const userProfileResponse = await nemo.middleware(
         mockRequest("/user/profile"),
         mockEvent,
       );
       expect(userMiddleware).not.toHaveBeenCalled();
-      expect(userProfileResponse.headers.get("x-user-profile")).toBe("true");
+      expect(userProfileResponse?.headers.get("x-user-profile")).toBe("true");
     });
 
     test("should inherit parent middleware", async () => {
@@ -91,9 +91,9 @@ describe("NEMO Nesting", () => {
       );
 
       expect(parentExecutionOrder).toEqual(["parent", "child", "grandchild"]);
-      expect(response.headers.get("x-api-accessed")).toBe("true");
-      expect(response.headers.get("x-users")).toBe("accessed");
-      expect(response.headers.get("x-user-id")).toBe("123");
+      expect(response?.headers.get("x-api-accessed")).toBe("true");
+      expect(response?.headers.get("x-users")).toBe("accessed");
+      expect(response?.headers.get("x-user-id")).toBe("123");
     });
   });
 
@@ -116,8 +116,8 @@ describe("NEMO Nesting", () => {
       );
 
       expect(childMiddleware).not.toHaveBeenCalled();
-      expect(response.status).toBe(307);
-      expect(response.headers.get("Location")).toBe("http://localhost/login");
+      expect(response?.status).toBe(307);
+      expect(response?.headers.get("Location")).toBe("http://localhost/login");
     });
   });
 
@@ -151,9 +151,9 @@ describe("NEMO Nesting", () => {
         mockRequest("/api/users/123"),
         mockEvent,
       );
-      expect(response.status).toBe(500);
+      expect(response?.status).toBe(500);
 
-      const body = await response.json();
+      const body = await response?.json();
       expect(body).toEqual({ error: "Handled error" });
     });
   });
@@ -172,10 +172,12 @@ describe("NEMO Nesting", () => {
               return NextResponse.next();
             },
             "/:categoryId": {
-              middleware: (req) => {
+              middleware: (req, event) => {
                 // Now using typed params instead of casting to any
-                const params = req.params || {};
-                req.headers.set("x-category-id", params.categoryId);
+                const params = event.getParams();
+                if (params.categoryId) {
+                  req.headers.set("x-category-id", params.categoryId);
+                }
                 return NextResponse.next();
               },
               "/products": {
@@ -183,12 +185,12 @@ describe("NEMO Nesting", () => {
                   req.headers.set("x-products", "true");
                   return NextResponse.next();
                 },
-                "/:productId": (req) => {
+                "/:productId": (req, event) => {
                   // Now using typed params instead of casting to any
-                  const params = req.params || {};
+                  const params = event.getParams();
                   return NextResponse.next({
                     headers: {
-                      "x-product-id": params.productId,
+                      "x-product-id": String(params.productId),
                       "x-full-path": `category-${params.categoryId}/product-${params.productId}`,
                     },
                   });
@@ -204,12 +206,12 @@ describe("NEMO Nesting", () => {
         mockEvent,
       );
 
-      expect(response.headers.get("x-shop")).toBe("true");
-      expect(response.headers.get("x-categories")).toBe("true");
-      expect(response.headers.get("x-category-id")).toBe("electronics");
-      expect(response.headers.get("x-products")).toBe("true");
-      expect(response.headers.get("x-product-id")).toBe("laptop");
-      expect(response.headers.get("x-full-path")).toBe(
+      expect(response?.headers.get("x-shop")).toBe("true");
+      expect(response?.headers.get("x-categories")).toBe("true");
+      expect(response?.headers.get("x-category-id")).toBe("electronics");
+      expect(response?.headers.get("x-products")).toBe("true");
+      expect(response?.headers.get("x-product-id")).toBe("laptop");
+      expect(response?.headers.get("x-full-path")).toBe(
         "category-electronics/product-laptop",
       );
     });

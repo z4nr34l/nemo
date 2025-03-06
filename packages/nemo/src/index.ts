@@ -294,6 +294,11 @@ export class NEMO {
           nestLevel: middleware.__nemo?.nestLevel,
         });
 
+        // Set current middleware metadata before execution
+        if (middleware.__nemo) {
+          event.setCurrentMetadata(middleware.__nemo);
+        }
+
         result = await middleware(request, event);
 
         if (

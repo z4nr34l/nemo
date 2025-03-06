@@ -15,10 +15,6 @@ export type NextMiddleware = (
 
 export type MiddlewareContext = Map<string, unknown>;
 
-export interface NemoRequest extends NextRequest {
-  context: MiddlewareContext;
-}
-
 export type ErrorHandler = (
   error: Error,
   metadata: MiddlewareMetadata,

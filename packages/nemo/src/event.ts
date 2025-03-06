@@ -1,7 +1,9 @@
 import type { WaitUntil } from "next/dist/server/after/builtin-request-context";
 import type { NextRequest } from "next/server";
+import { match } from "path-to-regexp";
 import type { StorageAdapter } from "./storage/adapter";
 import { MemoryStorageAdapter } from "./storage/adapters/memory";
+import type { MiddlewareMetadata } from "./types";
 
 // Change from private symbols to Symbol.for()
 const responseSymbol = Symbol.for("response");
@@ -119,6 +121,7 @@ export class NextFetchEvent extends FetchEvent {
  */
 export class NemoEvent extends NextFetchEvent {
   storage: StorageAdapter;
+  private currentMetadata?: MiddlewareMetadata;
 
   constructor(params: {
     request: NextRequest;
@@ -131,6 +134,46 @@ export class NemoEvent extends NextFetchEvent {
   }) {
     super(params as never);
     this.storage = params.storage || new MemoryStorageAdapter(params.nemo);
+  }
+
+  /**
+   * Updates the current middleware metadata
+   * @param metadata - The metadata from the middleware that's currently being processed
+   */
+  setCurrentMetadata(metadata: MiddlewareMetadata): void {
+    this.currentMetadata = metadata;
+  }
+
+  /**
+   * Extract URL parameters from the current request path using the middleware's route pattern
+   * @param metadata - The metadata from the middleware that processed this request (optional if already set via setCurrentMetadata)
+   * @returns An object containing the extracted parameters
+   */
+  getParams(metadata?: MiddlewareMetadata): Record<string, string> {
+    // Use provided metadata or fall back to current metadata
+    const metadataToUse = metadata || this.currentMetadata;
+
+    if (!metadataToUse || !metadataToUse.routeKey) {
+      return {};
+    }
+
+    try {
+      // Use the full routeKey as the pattern for parameter extraction
+      const matchFn = match(metadataToUse.routeKey, {
+        decode: decodeURIComponent,
+      });
+
+      // Apply the match function to the current pathname
+      const result = matchFn(metadataToUse.pathname);
+
+      if (result) {
+        return result.params as Record<string, string>;
+      }
+    } catch (error) {
+      console.error("Failed to extract parameters from path:", error);
+    }
+
+    return {};
   }
 
   static from(
