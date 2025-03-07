@@ -101,14 +101,19 @@ describe("NEMO Nesting", () => {
 
   describe("Middleware Chain Breaking in Nested Routes", () => {
     test("should break chain when parent returns response", async () => {
-      const childMiddleware = mock(() => {});
+      const childMiddleware = mock((req, event) => {
+        // Child middleware should never be called
+        return NextResponse.next();
+      });
 
       const nemo = new NEMO({
         "/protected": {
-          middleware: () => {
+          middleware: (req, event) => {
             return NextResponse.redirect("http://localhost/login");
           },
-          "/dashboard": childMiddleware,
+          "/dashboard": {
+            middleware: childMiddleware,
+          },
         },
       });
 
