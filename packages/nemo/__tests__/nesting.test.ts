@@ -50,6 +50,7 @@ describe("NEMO Nesting", () => {
         mockEvent,
       );
       expect(rootMiddleware).toHaveBeenCalled();
+      expect(userMiddleware).not.toHaveBeenCalled();
       expect(adminMiddleware).toHaveBeenCalled();
       expect(adminResponse?.headers.get("x-section")).toBe("admin");
 
@@ -58,6 +59,7 @@ describe("NEMO Nesting", () => {
         mockEvent,
       );
       expect(userMiddleware).toHaveBeenCalled();
+      expect(adminMiddleware).not.toHaveBeenCalled();
       expect(userProfileResponse?.headers.get("x-user-profile")).toBe("true");
     });
   });
