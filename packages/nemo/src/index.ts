@@ -14,6 +14,7 @@ import {
   type NextMiddlewareResult,
   type NextMiddlewareWithMeta,
 } from "./types";
+import { areResponsesEqual } from "./utils";
 
 export { NemoMiddlewareError } from "./errors";
 export { NemoEvent } from "./event";
@@ -318,7 +319,6 @@ export class NEMO {
         // Only return early if the result exists and is not equivalent to NextResponse.next()
         if (result) {
           // Import and use areResponsesEqual from utils
-          const { areResponsesEqual } = require("./utils");
           const isDefaultResponse = areResponsesEqual(result, defaultResponse);
 
           if (!isDefaultResponse) {

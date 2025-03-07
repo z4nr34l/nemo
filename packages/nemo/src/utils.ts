@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import type { NextMiddlewareResult } from "./types";
 
 /**
  * Compares two NextResponse instances for deep equality
@@ -8,8 +8,8 @@ import { NextResponse } from "next/server";
  * @returns boolean indicating if the responses are equivalent
  */
 export function areResponsesEqual(
-  response1: NextResponse | null | undefined,
-  response2: NextResponse | null | undefined,
+  response1: NextMiddlewareResult,
+  response2: NextMiddlewareResult,
 ): boolean {
   // If both are null/undefined or references to the same object, they're equal
   if (response1 === response2) return true;
