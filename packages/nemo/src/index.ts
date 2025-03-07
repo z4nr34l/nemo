@@ -8,6 +8,7 @@ import { MemoryStorageAdapter } from "./storage/adapters/memory";
 import {
   type GlobalMiddlewareConfig,
   type MiddlewareConfig,
+  type MiddlewareConfigValue,
   type MiddlewareMetadata,
   type NemoConfig,
   type NextMiddleware,
@@ -182,7 +183,7 @@ export class NEMO {
 
     // Recursively process middleware entries
     const processMiddlewares = (
-      middlewares: Record<string, any>,
+      middlewares: Record<string, MiddlewareConfigValue>,
       basePath = "",
       nestLevel = 0,
     ) => {
@@ -195,46 +196,13 @@ export class NEMO {
               ? `${basePath}${key}`
               : key;
 
-        // Special case for nested routes when key is '/'
+        // Check if the current path matches the route pattern
         const isMatch = this.matchesPath(fullPattern, pathname);
 
-        // For nested objects with middleware property
-        if (
-          typeof value === "object" &&
-          value !== null &&
-          !Array.isArray(value)
-        ) {
-          if (isMatch) {
-            // Process middleware property if it exists
-            if (value.middleware) {
-              queue.push(
-                this.attachMetadata(value.middleware, {
-                  chain: "main",
-                  index: queue.length - beforeMiddlewares.length,
-                  pathname,
-                  routeKey: fullPattern,
-                  nestLevel,
-                }),
-              );
-            }
-          }
-
-          // Important: Always check nested routes, even if parent didn't match
-          // This ensures /user/profile works even if we're not matching just /user
-          const nestedEntries = { ...value };
-
-          // Remove middleware to avoid processing it twice
-          delete nestedEntries.middleware;
-
-          // Process nested routes
-          if (Object.keys(nestedEntries).length > 0) {
-            processMiddlewares(nestedEntries, fullPattern, nestLevel + 1);
-          }
-        }
-        // Handle direct function or array values
-        else if (isMatch) {
+        // If it matches, immediately add middleware to queue
+        if (isMatch) {
+          // Handle direct function
           if (typeof value === "function") {
-            // Single middleware function
             queue.push(
               this.attachMetadata(value, {
                 chain: "main",
@@ -244,9 +212,10 @@ export class NEMO {
                 nestLevel,
               }),
             );
-          } else if (Array.isArray(value)) {
-            // Array of middleware functions
-            value.forEach((middleware, index) => {
+          }
+          // Handle array of middleware functions
+          else if (Array.isArray(value)) {
+            value.forEach((middleware: NextMiddleware, index) => {
               queue.push(
                 this.attachMetadata(middleware, {
                   chain: "main",
@@ -257,6 +226,59 @@ export class NEMO {
                 }),
               );
             });
+          }
+          // Handle object with middleware property
+          else if (
+            typeof value === "object" &&
+            value !== null &&
+            !Array.isArray(value) &&
+            "middleware" in value
+          ) {
+            const middlewareValue = value.middleware;
+
+            // Support both single function and array of functions in middleware property
+            if (Array.isArray(middlewareValue)) {
+              middlewareValue.forEach((middleware: NextMiddleware, index) => {
+                queue.push(
+                  this.attachMetadata(middleware, {
+                    chain: "main",
+                    index,
+                    pathname,
+                    routeKey: fullPattern,
+                    nestLevel,
+                  }),
+                );
+              });
+            } else if (typeof middlewareValue === "function") {
+              queue.push(
+                this.attachMetadata(middlewareValue, {
+                  chain: "main",
+                  index: queue.length - beforeMiddlewares.length,
+                  pathname,
+                  routeKey: fullPattern,
+                  nestLevel,
+                }),
+              );
+            }
+          }
+        }
+
+        // Process nested routes regardless of whether parent matched
+        if (
+          typeof value === "object" &&
+          value !== null &&
+          !Array.isArray(value)
+        ) {
+          const nestedEntries = { ...value };
+
+          // Remove middleware to avoid processing it twice
+          if ("middleware" in nestedEntries) {
+            delete (nestedEntries as Record<string, any>)["middleware"];
+          }
+
+          // Continue processing nested routes
+          if (Object.keys(nestedEntries).length > 0) {
+            processMiddlewares(nestedEntries, fullPattern, nestLevel + 1);
           }
         }
       });

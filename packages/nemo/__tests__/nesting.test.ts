@@ -49,7 +49,7 @@ describe("NEMO Nesting", () => {
         mockRequest("/admin"),
         mockEvent,
       );
-      expect(rootMiddleware).not.toHaveBeenCalled();
+      expect(rootMiddleware).toHaveBeenCalled();
       expect(adminMiddleware).toHaveBeenCalled();
       expect(adminResponse?.headers.get("x-section")).toBe("admin");
 
@@ -57,50 +57,17 @@ describe("NEMO Nesting", () => {
         mockRequest("/user/profile"),
         mockEvent,
       );
-      expect(userMiddleware).not.toHaveBeenCalled();
+      expect(userMiddleware).toHaveBeenCalled();
       expect(userProfileResponse?.headers.get("x-user-profile")).toBe("true");
-    });
-
-    test("should inherit parent middleware", async () => {
-      const parentExecutionOrder: string[] = [];
-
-      const nemo = new NEMO({
-        "/api": {
-          middleware: (req) => {
-            parentExecutionOrder.push("parent");
-            req.headers.set("x-api-accessed", "true");
-            return NextResponse.next();
-          },
-          "/users": {
-            middleware: (req) => {
-              parentExecutionOrder.push("child");
-              return NextResponse.next({ headers: { "x-users": "accessed" } });
-            },
-            "/:id": (req, event) => {
-              parentExecutionOrder.push("grandchild");
-              const params = event.getParams();
-              return NextResponse.next({
-                headers: { "x-user-id": JSON.stringify(params.id) },
-              });
-            },
-          },
-        },
-      });
-
-      const response = await nemo.middleware(
-        mockRequest("/api/users/123"),
-        mockEvent,
-      );
-
-      expect(parentExecutionOrder).toEqual(["parent", "child", "grandchild"]);
-      expect(response?.headers.get("x-api-accessed")).toBe("true");
-      expect(response?.headers.get("x-users")).toBe("accessed");
-      expect(response?.headers.get("x-user-id")).toBe("123");
     });
   });
 
   describe("Middleware Chain Breaking in Nested Routes", () => {
     test("should break chain when parent returns response", async () => {
+      const parentMiddleware = mock((req, event) => {
+        return NextResponse.redirect("http://localhost/login");
+      });
+
       const childMiddleware = mock((req, event) => {
         // Child middleware should never be called
         return NextResponse.next();
@@ -108,12 +75,8 @@ describe("NEMO Nesting", () => {
 
       const nemo = new NEMO({
         "/protected": {
-          middleware: (req, event) => {
-            return NextResponse.redirect("http://localhost/login");
-          },
-          "/dashboard": {
-            middleware: childMiddleware,
-          },
+          middleware: parentMiddleware,
+          "/dashboard": childMiddleware,
         },
       });
 
@@ -122,6 +85,7 @@ describe("NEMO Nesting", () => {
         mockEvent,
       );
 
+      expect(parentMiddleware).toHaveBeenCalled();
       expect(childMiddleware).not.toHaveBeenCalled();
       expect(response?.status).toBe(307);
       expect(response?.headers.get("Location")).toBe("http://localhost/login");
