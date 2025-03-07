@@ -181,8 +181,17 @@ export class NEMO {
     );
     queue.push(...beforeMiddlewares);
 
-    // Recursively process middleware entries
-    const processMiddlewares = (
+    // Collection of matched routes with their metadata to be processed in order
+    type MatchedRoute = {
+      pattern: string;
+      value: MiddlewareConfigValue;
+      nestLevel: number;
+    };
+
+    const matchedRoutes: MatchedRoute[] = [];
+
+    // First pass: collect all matching routes
+    const collectMatchingRoutes = (
       middlewares: Record<string, MiddlewareConfigValue>,
       basePath = "",
       nestLevel = 0,
@@ -196,74 +205,23 @@ export class NEMO {
               ? `${basePath}${key}`
               : key;
 
-        // Check if the current path matches the route pattern
-        const isMatch = this.matchesPath(fullPattern, pathname);
+        // Check if this route should be included in the middleware chain
+        // For root path ("/"), it should match any pathname
+        // For other paths, check if the pathname starts with or exactly matches the pattern
+        const shouldInclude =
+          key === "/" ||
+          this.matchesPath(fullPattern, pathname) ||
+          (pathname.startsWith(fullPattern) && fullPattern !== "/");
 
-        // If it matches, immediately add middleware to queue
-        if (isMatch) {
-          // Handle direct function
-          if (typeof value === "function") {
-            queue.push(
-              this.attachMetadata(value, {
-                chain: "main",
-                index: queue.length - beforeMiddlewares.length,
-                pathname,
-                routeKey: fullPattern,
-                nestLevel,
-              }),
-            );
-          }
-          // Handle array of middleware functions
-          else if (Array.isArray(value)) {
-            value.forEach((middleware: NextMiddleware, index) => {
-              queue.push(
-                this.attachMetadata(middleware, {
-                  chain: "main",
-                  index,
-                  pathname,
-                  routeKey: fullPattern,
-                  nestLevel,
-                }),
-              );
-            });
-          }
-          // Handle object with middleware property
-          else if (
-            typeof value === "object" &&
-            value !== null &&
-            !Array.isArray(value) &&
-            "middleware" in value
-          ) {
-            const middlewareValue = value.middleware;
-
-            // Support both single function and array of functions in middleware property
-            if (Array.isArray(middlewareValue)) {
-              middlewareValue.forEach((middleware: NextMiddleware, index) => {
-                queue.push(
-                  this.attachMetadata(middleware, {
-                    chain: "main",
-                    index,
-                    pathname,
-                    routeKey: fullPattern,
-                    nestLevel,
-                  }),
-                );
-              });
-            } else if (typeof middlewareValue === "function") {
-              queue.push(
-                this.attachMetadata(middlewareValue, {
-                  chain: "main",
-                  index: queue.length - beforeMiddlewares.length,
-                  pathname,
-                  routeKey: fullPattern,
-                  nestLevel,
-                }),
-              );
-            }
-          }
+        if (shouldInclude) {
+          matchedRoutes.push({
+            pattern: fullPattern,
+            value,
+            nestLevel,
+          });
         }
 
-        // Process nested routes regardless of whether parent matched
+        // Continue collecting nested routes
         if (
           typeof value === "object" &&
           value !== null &&
@@ -278,14 +236,93 @@ export class NEMO {
 
           // Continue processing nested routes
           if (Object.keys(nestedEntries).length > 0) {
-            processMiddlewares(nestedEntries, fullPattern, nestLevel + 1);
+            collectMatchingRoutes(nestedEntries, fullPattern, nestLevel + 1);
           }
         }
       });
     };
 
-    // Process all middlewares
-    processMiddlewares(this.middlewares);
+    // Collect all matching routes
+    collectMatchingRoutes(this.middlewares);
+
+    // Sort routes: first by nest level, then by pattern specificity (most generic first)
+    matchedRoutes.sort((a, b) => {
+      // First by nest level
+      if (a.nestLevel !== b.nestLevel) {
+        return a.nestLevel - b.nestLevel;
+      }
+
+      // Special case for root path
+      if (a.pattern === "/") return -1;
+      if (b.pattern === "/") return 1;
+
+      // Otherwise by pattern length (shorter patterns are more generic)
+      return a.pattern.length - b.pattern.length;
+    });
+
+    // Second pass: process the sorted matching routes
+    matchedRoutes.forEach(({ pattern, value, nestLevel }) => {
+      // Process middleware based on its type
+      if (typeof value === "function") {
+        queue.push(
+          this.attachMetadata(value, {
+            chain: "main",
+            index: queue.length - beforeMiddlewares.length,
+            pathname,
+            routeKey: pattern,
+            nestLevel,
+          }),
+        );
+      }
+      // Handle array of middleware functions
+      else if (Array.isArray(value)) {
+        value.forEach((middleware: NextMiddleware, index) => {
+          queue.push(
+            this.attachMetadata(middleware, {
+              chain: "main",
+              index,
+              pathname,
+              routeKey: pattern,
+              nestLevel,
+            }),
+          );
+        });
+      }
+      // Handle object with middleware property
+      else if (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value) &&
+        "middleware" in value
+      ) {
+        const middlewareValue = value.middleware;
+
+        // Support both single function and array of functions in middleware property
+        if (Array.isArray(middlewareValue)) {
+          middlewareValue.forEach((middleware: NextMiddleware, index) => {
+            queue.push(
+              this.attachMetadata(middleware, {
+                chain: "main",
+                index,
+                pathname,
+                routeKey: pattern,
+                nestLevel,
+              }),
+            );
+          });
+        } else if (typeof middlewareValue === "function") {
+          queue.push(
+            this.attachMetadata(middlewareValue, {
+              chain: "main",
+              index: queue.length - beforeMiddlewares.length,
+              pathname,
+              routeKey: pattern,
+              nestLevel,
+            }),
+          );
+        }
+      }
+    });
 
     // Add after middlewares
     const afterMiddlewares = (
