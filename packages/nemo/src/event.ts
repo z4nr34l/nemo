@@ -149,7 +149,7 @@ export class NemoEvent extends NextFetchEvent {
    * @param metadata - The metadata from the middleware that processed this request (optional if already set via setCurrentMetadata)
    * @returns An object containing the extracted parameters
    */
-  getParams(metadata?: MiddlewareMetadata): Record<string, string> {
+  getParams(metadata?: MiddlewareMetadata): Record<string, string | string[]> {
     // Use provided metadata or fall back to current metadata
     const metadataToUse = metadata || this.currentMetadata;
 
@@ -166,8 +166,8 @@ export class NemoEvent extends NextFetchEvent {
       // Apply the match function to the current pathname
       const result = matchFn(metadataToUse.pathname);
 
-      if (result) {
-        return result.params as Record<string, string>;
+      if (result && result.params) {
+        return result.params as Record<string, string | string[]>;
       }
     } catch (error) {
       console.error("Failed to extract parameters from path:", error);

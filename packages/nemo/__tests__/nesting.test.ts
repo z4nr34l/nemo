@@ -39,7 +39,7 @@ describe("NEMO Nesting", () => {
             NextResponse.next({ headers: { "x-admin-users": "true" } }),
         },
         "/user": {
-          "/": userMiddleware,
+          middleware: userMiddleware,
           "/profile": () =>
             NextResponse.next({ headers: { "x-user-profile": "true" } }),
         },

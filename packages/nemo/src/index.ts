@@ -189,12 +189,55 @@ export class NEMO {
     ) => {
       Object.entries(middlewares).forEach(([key, value]) => {
         // Combine base path with current key for nested routes
-        const fullPattern = basePath ? `${basePath}${key}` : key;
+        const fullPattern =
+          key === "/" && basePath
+            ? basePath
+            : basePath
+              ? `${basePath}${key}`
+              : key;
 
-        if (this.matchesPath(fullPattern, pathname)) {
+        // Special case for nested routes when key is '/'
+        const isMatch = this.matchesPath(fullPattern, pathname);
+
+        // For nested objects with middleware property
+        if (
+          typeof value === "object" &&
+          value !== null &&
+          !Array.isArray(value)
+        ) {
+          if (isMatch) {
+            processedRoutes.push(fullPattern);
+
+            // Process middleware property if it exists
+            if (value.middleware) {
+              queue.push(
+                this.attachMetadata(value.middleware, {
+                  chain: "main",
+                  index: queue.length - beforeMiddlewares.length,
+                  pathname,
+                  routeKey: fullPattern,
+                  nestLevel,
+                }),
+              );
+            }
+          }
+
+          // Important: Always check nested routes, even if parent didn't match
+          // This ensures /user/profile works even if we're not matching just /user
+          const nestedEntries = { ...value };
+
+          // Remove middleware to avoid processing it twice
+          delete nestedEntries.middleware;
+
+          // Process nested routes
+          if (Object.keys(nestedEntries).length > 0) {
+            processMiddlewares(nestedEntries, fullPattern, nestLevel + 1);
+          }
+        }
+        // Handle direct function or array values
+        else if (isMatch) {
           processedRoutes.push(fullPattern);
 
-          // Handle different value types
           if (typeof value === "function") {
             // Single middleware function
             queue.push(
@@ -219,9 +262,6 @@ export class NEMO {
                 }),
               );
             });
-          } else if (typeof value === "object" && value !== null) {
-            // Nested middleware configuration
-            processMiddlewares(value, fullPattern, nestLevel + 1);
           }
         }
       });
