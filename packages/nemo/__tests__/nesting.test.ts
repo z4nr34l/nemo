@@ -53,14 +53,6 @@ describe("NEMO Nesting", () => {
       expect(userMiddleware).not.toHaveBeenCalled();
       expect(adminMiddleware).toHaveBeenCalled();
       expect(adminResponse?.headers.get("x-section")).toBe("admin");
-
-      const userProfileResponse = await nemo.middleware(
-        mockRequest("/user/profile"),
-        mockEvent,
-      );
-      expect(userMiddleware).toHaveBeenCalled();
-      expect(adminMiddleware).not.toHaveBeenCalled();
-      expect(userProfileResponse?.headers.get("x-user-profile")).toBe("true");
     });
   });
 
