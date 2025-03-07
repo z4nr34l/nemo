@@ -568,4 +568,77 @@ describe("NEMO", () => {
       expect(order).toEqual(["main", "after1", "after2"]);
     });
   });
+
+  describe("Middleware Object Configuration", () => {
+    test("should handle object with middleware function property", async () => {
+      const middleware = mock(() => NextResponse.next());
+      const nemo = new NEMO({
+        "/test": {
+          middleware: middleware,
+        },
+      });
+
+      await nemo.middleware(mockRequest("/test"), mockEvent);
+      expect(middleware).toHaveBeenCalled();
+    });
+
+    test("should handle object with middleware array property", async () => {
+      const order: string[] = [];
+      const middleware1 = mock(() => {
+        order.push("first");
+      });
+      const middleware2 = mock(() => {
+        order.push("second");
+        return NextResponse.next();
+      });
+
+      const nemo = new NEMO({
+        "/test": {
+          middleware: [middleware1, middleware2],
+        },
+      });
+
+      await nemo.middleware(mockRequest("/test"), mockEvent);
+      expect(middleware1).toHaveBeenCalled();
+      expect(middleware2).toHaveBeenCalled();
+      expect(order).toEqual(["first", "second"]);
+    });
+
+    test("should handle nested routes with middleware object", async () => {
+      const middleware = mock(() => NextResponse.next());
+      const nemo = new NEMO({
+        "/api": {
+          middleware: mock(() => {}),
+          "/users": {
+            middleware: middleware,
+          },
+        },
+      });
+
+      await nemo.middleware(mockRequest("/api/users"), mockEvent);
+      expect(middleware).toHaveBeenCalled();
+    });
+
+    test("should properly attach metadata to middleware from object", async () => {
+      let capturedMetadata: any = null;
+
+      const middleware: NextMiddleware = (req, event) => {
+        capturedMetadata = (event as any).currentMetadata;
+        return NextResponse.next();
+      };
+
+      const nemo = new NEMO({
+        "/test": {
+          middleware: middleware,
+        },
+      });
+
+      await nemo.middleware(mockRequest("/test"), mockEvent);
+
+      expect(capturedMetadata).not.toBeNull();
+      expect(capturedMetadata.chain).toBe("main");
+      expect(capturedMetadata.routeKey).toBe("/test");
+      expect(capturedMetadata.pathname).toBe("/test");
+    });
+  });
 });
