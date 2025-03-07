@@ -76,10 +76,12 @@ describe("NEMO Nesting", () => {
               parentExecutionOrder.push("child");
               return NextResponse.next({ headers: { "x-users": "accessed" } });
             },
-            "/:id": (req) => {
+            "/:id": (req, event) => {
               parentExecutionOrder.push("grandchild");
-              const params = (req as any).params || {};
-              return NextResponse.next({ headers: { "x-user-id": params.id } });
+              const params = event.getParams();
+              return NextResponse.next({
+                headers: { "x-user-id": JSON.stringify(params.id) },
+              });
             },
           },
         },
@@ -176,7 +178,10 @@ describe("NEMO Nesting", () => {
                 // Now using typed params instead of casting to any
                 const params = event.getParams();
                 if (params.categoryId) {
-                  req.headers.set("x-category-id", params.categoryId);
+                  req.headers.set(
+                    "x-category-id",
+                    JSON.stringify(params.categoryId),
+                  );
                 }
                 return NextResponse.next();
               },
