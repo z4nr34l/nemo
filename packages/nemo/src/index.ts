@@ -162,7 +162,6 @@ export class NEMO {
     this.logger.log("Processing request for path:", pathname);
 
     const queue: NextMiddlewareWithMeta[] = [];
-    const processedRoutes: string[] = [];
 
     // Add before middlewares
     const beforeMiddlewares = (
@@ -206,8 +205,6 @@ export class NEMO {
           !Array.isArray(value)
         ) {
           if (isMatch) {
-            processedRoutes.push(fullPattern);
-
             // Process middleware property if it exists
             if (value.middleware) {
               queue.push(
@@ -236,8 +233,6 @@ export class NEMO {
         }
         // Handle direct function or array values
         else if (isMatch) {
-          processedRoutes.push(fullPattern);
-
           if (typeof value === "function") {
             // Single middleware function
             queue.push(
@@ -292,7 +287,6 @@ export class NEMO {
       before: beforeMiddlewares.length,
       main: queue.length - beforeMiddlewares.length - afterMiddlewares.length,
       after: afterMiddlewares.length,
-      processedRoutes,
     });
 
     return queue;
