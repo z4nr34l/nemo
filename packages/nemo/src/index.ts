@@ -15,7 +15,6 @@ import {
   type NextMiddlewareResult,
   type NextMiddlewareWithMeta,
 } from "./types";
-import { areResponsesEqual } from "./utils";
 
 export { NemoMiddlewareError } from "./errors";
 export { NemoEvent } from "./event";
@@ -409,12 +408,16 @@ export class NEMO {
           );
         }
 
-        // Only return early if the result exists and is not equivalent to NextResponse.next()
+        // Only return early if the result exists and is not a "next" response
         if (result) {
-          // Import and use areResponsesEqual from utils
-          const isDefaultResponse = areResponsesEqual(result, defaultResponse);
+          // Check if the result is specifically a "next" response, not just equality
+          const isNextResponse =
+            result instanceof NextResponse &&
+            !result.headers.has("x-middleware-rewrite") &&
+            !result.headers.has("Location") &&
+            !result.headers.get("content-type")?.includes("application/json");
 
-          if (!isDefaultResponse) {
+          if (!isNextResponse) {
             // Log final timing before early return
             if (this.config.enableTiming && chainTiming) {
               this.logger.log("Chain timing summary:", {
@@ -432,7 +435,7 @@ export class NEMO {
             return result;
           } else {
             this.logger.log(
-              "Middleware returned default response, continuing chain",
+              "Middleware returned next response, continuing chain",
             );
           }
         }
