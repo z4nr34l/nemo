@@ -182,8 +182,9 @@ export class NemoEvent extends NextFetchEvent {
     }
 
     try {
-      // Use path-to-regexp's match function to extract parameters directly
-      const matchRoute = match(routePattern);
+      // Use path-to-regexp's match function with end:false to allow matching partial paths
+      // This ensures parameters can be extracted even when the actual path extends beyond the route pattern
+      const matchRoute = match(routePattern, { end: false });
       const result = matchRoute(pathname);
 
       if (!result) {
