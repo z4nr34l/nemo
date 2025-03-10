@@ -641,4 +641,212 @@ describe("NEMO", () => {
       expect(capturedMetadata.pathname).toBe("/test");
     });
   });
+
+  describe("Response Types", () => {
+    test("should handle NextResponse.next() correctly", async () => {
+      const middlewares: NextMiddleware[] = [];
+      const order: string[] = [];
+
+      // Create three middlewares to test chain continuation
+      for (let i = 0; i < 3; i++) {
+        middlewares.push((req) => {
+          order.push(`middleware-${i}`);
+          if (i === 1) {
+            // Add a header in the middle middleware
+            req.headers.set(`x-test-${i}`, `value-${i}`);
+            // Return NextResponse.next() explicitly
+            return NextResponse.next();
+          }
+        });
+      }
+
+      const nemo = new NEMO({ "/test": middlewares });
+      const response = await nemo.middleware(mockRequest("/test"), mockEvent);
+
+      // Check that all middlewares executed (chain continued)
+      expect(order).toEqual(["middleware-0", "middleware-1", "middleware-2"]);
+      // Check that headers from req were propagated
+      expect(response?.headers.get("x-test-1")).toBe("value-1");
+    });
+
+    test("should handle NextResponse.redirect() correctly", async () => {
+      const order: string[] = [];
+      const redirectUrl = "https://example.com/login";
+
+      const middleware1: NextMiddleware = () => {
+        order.push("before-redirect");
+        return NextResponse.redirect(redirectUrl);
+      };
+
+      const middleware2: NextMiddleware = () => {
+        order.push("after-redirect");
+      };
+
+      const nemo = new NEMO({ "/test": [middleware1, middleware2] });
+      const response = await nemo.middleware(mockRequest("/test"), mockEvent);
+
+      // Chain should break
+      expect(order).toEqual(["before-redirect"]);
+      expect(order).not.toContain("after-redirect");
+
+      // Check response properties
+      expect(response?.status).toBe(307); // Default redirect status
+      expect(response?.headers.get("Location")).toBe(redirectUrl);
+    });
+
+    test("should handle NextResponse.redirect() with custom status", async () => {
+      const redirectUrl = "https://example.com/moved";
+
+      const middleware: NextMiddleware = () => {
+        return NextResponse.redirect(redirectUrl, 301); // Permanent redirect
+      };
+
+      const nemo = new NEMO({ "/test": middleware });
+      const response = await nemo.middleware(mockRequest("/test"), mockEvent);
+
+      expect(response?.status).toBe(301);
+      expect(response?.headers.get("Location")).toBe(redirectUrl);
+    });
+
+    test("should handle NextResponse.rewrite() correctly", async () => {
+      const order: string[] = [];
+      const rewriteUrl = "https://example.com/internal";
+
+      const middleware1: NextMiddleware = () => {
+        order.push("before-rewrite");
+        return NextResponse.rewrite(rewriteUrl);
+      };
+
+      const middleware2: NextMiddleware = () => {
+        order.push("after-rewrite");
+      };
+
+      const nemo = new NEMO({ "/test": [middleware1, middleware2] });
+      const response = await nemo.middleware(mockRequest("/test"), mockEvent);
+
+      // Chain should break
+      expect(order).toEqual(["before-rewrite"]);
+      expect(order).not.toContain("after-rewrite");
+
+      // Check the URL was rewritten
+      expect(response?.headers.get("x-middleware-rewrite")).toBe(rewriteUrl);
+    });
+
+    test("should handle NextResponse.json() correctly", async () => {
+      const order: string[] = [];
+      const jsonData = { message: "Hello, world!" };
+
+      const middleware1: NextMiddleware = () => {
+        order.push("before-json");
+        return NextResponse.json(jsonData);
+      };
+
+      const middleware2: NextMiddleware = () => {
+        order.push("after-json");
+      };
+
+      const nemo = new NEMO({ "/test": [middleware1, middleware2] });
+      const response = await nemo.middleware(mockRequest("/test"), mockEvent);
+
+      // Chain should break
+      expect(order).toEqual(["before-json"]);
+      expect(order).not.toContain("after-json");
+
+      // Check response properties
+      expect(response?.headers.get("content-type")).toBe("application/json");
+      const responseBody = await response?.json();
+      expect(responseBody).toEqual(jsonData);
+    });
+
+    test("should handle NextResponse.json() with custom status", async () => {
+      const jsonData = { error: "Not found" };
+
+      const middleware: NextMiddleware = () => {
+        return NextResponse.json(jsonData, { status: 404 });
+      };
+
+      const nemo = new NEMO({ "/test": middleware });
+      const response = await nemo.middleware(mockRequest("/test"), mockEvent);
+
+      expect(response?.status).toBe(404);
+      expect(response?.headers.get("content-type")).toBe("application/json");
+      const responseBody = await response?.json();
+      expect(responseBody).toEqual(jsonData);
+    });
+
+    test("should handle new Response() correctly", async () => {
+      const order: string[] = [];
+      const responseText = "Plain text response";
+
+      const middleware1: NextMiddleware = () => {
+        order.push("before-response");
+        return new Response(responseText, {
+          headers: { "content-type": "text/plain" },
+          status: 200,
+        });
+      };
+
+      const middleware2: NextMiddleware = () => {
+        order.push("after-response");
+      };
+
+      const nemo = new NEMO({ "/test": [middleware1, middleware2] });
+      const response = await nemo.middleware(mockRequest("/test"), mockEvent);
+
+      // Chain should break
+      expect(order).toEqual(["before-response"]);
+      expect(order).not.toContain("after-response");
+
+      // Check response properties
+      expect(response?.headers.get("content-type")).toBe("text/plain");
+      expect(await response?.text()).toBe(responseText);
+    });
+
+    test("should handle Response with custom status code", async () => {
+      const middleware: NextMiddleware = () => {
+        return new Response("Not found", {
+          status: 404,
+          headers: { "x-custom": "custom-value" },
+        });
+      };
+
+      const nemo = new NEMO({ "/test": middleware });
+      const response = await nemo.middleware(mockRequest("/test"), mockEvent);
+
+      expect(response?.status).toBe(404);
+      expect(response?.headers.get("x-custom")).toBe("custom-value");
+      expect(await response?.text()).toBe("Not found");
+    });
+
+    test("should handle Empty Response (204 No Content)", async () => {
+      const middleware: NextMiddleware = () => {
+        return new Response(null, { status: 204 });
+      };
+
+      const nemo = new NEMO({ "/test": middleware });
+      const response = await nemo.middleware(mockRequest("/test"), mockEvent);
+
+      expect(response?.status).toBe(204);
+      expect(await response?.text()).toBe("");
+    });
+
+    test("should handle Response with binary data", async () => {
+      const binaryData = new Uint8Array([72, 101, 108, 108, 111]); // "Hello" in ASCII
+
+      const middleware: NextMiddleware = () => {
+        return new Response(binaryData, {
+          headers: { "content-type": "application/octet-stream" },
+        });
+      };
+
+      const nemo = new NEMO({ "/test": middleware });
+      const response = await nemo.middleware(mockRequest("/test"), mockEvent);
+
+      expect(response?.headers.get("content-type")).toBe(
+        "application/octet-stream",
+      );
+      const buffer = await response?.arrayBuffer();
+      expect(new Uint8Array(buffer!)).toEqual(binaryData);
+    });
+  });
 });
