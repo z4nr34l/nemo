@@ -25,10 +25,10 @@ export type MiddlewareChain = NextMiddleware | NextMiddleware[];
 export type MiddlewareConfigValue =
   | NextMiddleware
   | NextMiddleware[]
-  | { [key: string]: MiddlewareConfigValue }
+  | { [key: `/${string}`]: MiddlewareConfigValue }
   | {
       middleware: NextMiddleware | NextMiddleware[];
-      [key: string]: MiddlewareConfigValue;
+      [key: `/${string}`]: MiddlewareConfigValue;
     };
 
 export type MiddlewareConfig = Record<string, MiddlewareConfigValue>;

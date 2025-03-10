@@ -125,43 +125,48 @@ describe("NEMO Nesting", () => {
 
   describe("Complex Nested Patterns", () => {
     test("should handle deeply nested routes with parameters", async () => {
+      // Add mock functions to track execution
+      const shopMiddleware = mock((req) => {
+        req.headers.set("x-shop", "true");
+        return NextResponse.next();
+      });
+
+      const categoriesMiddleware = mock((req) => {
+        req.headers.set("x-categories", "true");
+        return NextResponse.next();
+      });
+
+      const categoryIdMiddleware = mock((req, event) => {
+        const params = event.getParams();
+        req.headers.set("x-category-id", String(params.categoryId));
+        return NextResponse.next();
+      });
+
+      const productsMiddleware = mock((req) => {
+        req.headers.set("x-products", "true");
+        return NextResponse.next();
+      });
+
+      const productIdMiddleware = mock((req, event) => {
+        const params = event.getParams();
+        return NextResponse.next({
+          headers: {
+            "x-product-id": String(params.productId),
+            "x-full-path": `category-${params.categoryId}/product-${params.productId}`,
+          },
+        });
+      });
+
       const nemo = new NEMO({
         "/shop": {
-          middleware: (req) => {
-            req.headers.set("x-shop", "true");
-            return NextResponse.next();
-          },
+          middleware: shopMiddleware,
           "/categories": {
-            middleware: (req) => {
-              req.headers.set("x-categories", "true");
-              return NextResponse.next();
-            },
+            middleware: categoriesMiddleware,
             "/:categoryId": {
-              middleware: (req, event) => {
-                // Now using typed params instead of casting to any
-                const params = event.getParams();
-
-                if (params.categoryId) {
-                  req.headers.set("x-category-id", String(params.categoryId));
-                }
-                return NextResponse.next();
-              },
+              middleware: categoryIdMiddleware,
               "/products": {
-                middleware: (req) => {
-                  req.headers.set("x-products", "true");
-                  return NextResponse.next();
-                },
-                "/:productId": (req, event) => {
-                  // Now using typed params instead of casting to any
-                  const params = event.getParams();
-
-                  return NextResponse.next({
-                    headers: {
-                      "x-product-id": String(params.productId),
-                      "x-full-path": `category-${params.categoryId}/product-${params.productId}`,
-                    },
-                  });
-                },
+                middleware: productsMiddleware,
+                "/:productId": productIdMiddleware,
               },
             },
           },
@@ -173,6 +178,14 @@ describe("NEMO Nesting", () => {
         mockEvent,
       );
 
+      // Verify that all middleware was executed
+      expect(shopMiddleware).toHaveBeenCalled();
+      expect(categoriesMiddleware).toHaveBeenCalled();
+      expect(categoryIdMiddleware).toHaveBeenCalled();
+      expect(productsMiddleware).toHaveBeenCalled();
+      expect(productIdMiddleware).toHaveBeenCalled();
+
+      // Check that all expected headers are present
       expect(response?.headers.get("x-shop")).toBe("true");
       expect(response?.headers.get("x-categories")).toBe("true");
       expect(response?.headers.get("x-category-id")).toBe("electronics");

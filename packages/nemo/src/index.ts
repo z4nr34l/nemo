@@ -102,6 +102,21 @@ export class NEMO {
     // Decode URI components to handle Unicode characters
     const decodedPath = decodeURIComponent(path);
     const decodedPattern = decodeURIComponent(pattern);
+
+    // Special handling for parameter patterns
+    if (decodedPattern.includes(":")) {
+      try {
+        const regex = pathToRegexp(decodedPattern);
+        return regex.test(decodedPath);
+      } catch (error) {
+        this.logger.error(
+          `Error in path matching for ${decodedPattern}:`,
+          error,
+        );
+        return false;
+      }
+    }
+
     return this.getCachedMatch(decodedPattern, decodedPath);
   }
 
@@ -195,6 +210,7 @@ export class NEMO {
       middlewares: Record<string, MiddlewareConfigValue>,
       basePath = "",
       nestLevel = 0,
+      paramSegments: string[] = [],
     ) => {
       Object.entries(middlewares).forEach(([key, value]) => {
         // Combine base path with current key for nested routes
@@ -205,13 +221,59 @@ export class NEMO {
               ? `${basePath}${key}`
               : key;
 
-        // Check if this route should be included in the middleware chain
-        // For root path ("/"), it should match any pathname
-        // For other paths, check if the pathname starts with or exactly matches the pattern
-        const shouldInclude =
-          key === "/" ||
-          this.matchesPath(fullPattern, pathname) ||
-          (pathname.startsWith(fullPattern) && fullPattern !== "/");
+        // Check if segment contains a parameter
+        const hasParams = key.includes(":");
+        if (hasParams) {
+          // Extract the base path before the parameter
+          const baseSegment = key.split(":")[0];
+          paramSegments.push(String(baseSegment));
+        }
+
+        // For the path with parameters, check each path segment
+        const pathParts = pathname.split("/").filter(Boolean);
+
+        let shouldInclude = false;
+
+        if (key === "/") {
+          shouldInclude = true;
+        } else if (hasParams) {
+          // For paths with parameters, check if the pattern matches the path
+          shouldInclude = this.matchesPath(fullPattern, pathname);
+          this.logger.log(
+            `Parameter path check: ${fullPattern} against ${pathname} => ${shouldInclude}`,
+          );
+        } else {
+          // For exact match or parent path
+          shouldInclude =
+            pathname === fullPattern || pathname.startsWith(fullPattern + "/");
+        }
+
+        // Special handling for paths where a parent segment has parameters
+        if (!shouldInclude && paramSegments.length > 0) {
+          // Check if the current path could be nested under a parameterized parent
+          for (const segment of paramSegments) {
+            if (fullPattern.includes(segment)) {
+              // Try matching with the parameter part replaced with the actual segment value
+              const actualPathSegment = pathParts.find((p) =>
+                pathname.includes(`/${p}/`),
+              );
+              if (actualPathSegment) {
+                const testPattern = fullPattern.replace(
+                  /:([^/]+)/,
+                  actualPathSegment,
+                );
+                shouldInclude = pathname.includes(testPattern);
+
+                if (shouldInclude) {
+                  this.logger.log(
+                    `Parameter parent match: ${fullPattern} via ${testPattern}`,
+                  );
+                  break;
+                }
+              }
+            }
+          }
+        }
 
         if (shouldInclude) {
           matchedRoutes.push({
@@ -219,9 +281,12 @@ export class NEMO {
             value,
             nestLevel,
           });
+          this.logger.log(
+            `Added route to matched: ${fullPattern}, nestLevel: ${nestLevel}`,
+          );
         }
 
-        // Continue collecting nested routes
+        // Always process nested routes for objects, especially important for parameter paths
         if (
           typeof value === "object" &&
           value !== null &&
@@ -229,16 +294,16 @@ export class NEMO {
         ) {
           const nestedEntries = { ...value };
 
-          // Remove middleware to avoid processing it twice
-          // Only if the current route matches to prevent removing middlewares
-          // that should be processed for matched nested routes
+          // Only remove middleware if we're going to include this route
           if (shouldInclude && "middleware" in nestedEntries) {
             delete (nestedEntries as Record<string, any>)["middleware"];
           }
 
-          // Continue processing nested routes
+          // Continue processing nested routes if there are any entries left
           if (Object.keys(nestedEntries).length > 0) {
-            collectMatchingRoutes(nestedEntries, fullPattern, nestLevel + 1);
+            collectMatchingRoutes(nestedEntries, fullPattern, nestLevel + 1, [
+              ...paramSegments,
+            ]);
           }
         }
       });

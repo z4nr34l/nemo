@@ -547,6 +547,49 @@ describe("NEMO", () => {
       await nemo.middleware(mockRequest("/test/123"), mockEvent);
       expect(middleware).toHaveBeenCalledTimes(2);
     });
+
+    test("should cache path matching results for both patterns and paths", async () => {
+      const nemo = new NEMO({});
+
+      // Access the matchCache directly
+      const matchCache = (nemo as any).matchCache;
+      expect(matchCache.size).toBe(0);
+
+      // Access getCachedMatch via the class instance to test it
+      const getCachedMatch = (nemo as any).getCachedMatch.bind(nemo);
+
+      // First call with new pattern and path should create new cache entries
+      const result1 = getCachedMatch("/test", "/test");
+      expect(result1).toBe(true);
+
+      // Verify cache now contains the pattern/path
+      expect(matchCache.has("/test")).toBe(true);
+      expect(matchCache.get("/test").has("/test")).toBe(true);
+      expect(matchCache.get("/test").get("/test")).toBe(true);
+
+      // Second call with same pattern/path should return cached result without computing
+      const result2 = getCachedMatch("/test", "/test");
+      expect(result2).toBe(true);
+
+      // Call with different path but same pattern - should cache the new path
+      const result3 = getCachedMatch("/test", "/other");
+      expect(result3).toBe(false);
+
+      // Verify new path was cached
+      expect(matchCache.get("/test").has("/other")).toBe(true);
+      expect(matchCache.get("/test").get("/other")).toBe(false);
+
+      // Call with new pattern - should create a new pattern cache
+      const result4 = getCachedMatch("/new", "/path");
+
+      // Verify new pattern was cached
+      expect(matchCache.has("/new")).toBe(true);
+      expect(matchCache.get("/new").has("/path")).toBe(true);
+
+      // Clear cache and verify it's empty
+      await nemo.clearCache();
+      expect(matchCache.size).toBe(0);
+    });
   });
 
   describe("Global Middleware Arrays", () => {

@@ -1,0 +1,85 @@
+import { describe, expect, mock, test } from "bun:test";
+import type { NextFetchEvent } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { NEMO } from "../src";
+
+describe("NEMO Path Matching", () => {
+  const mockRequest = (path: string = "/") =>
+    new NextRequest(`http://localhost${path}`);
+
+  const mockEvent: NextFetchEvent = {
+    waitUntil: mock(() => {}),
+  } as never as NextFetchEvent;
+
+  test("should handle invalid regex patterns gracefully", async () => {
+    // Test error handling in matchesPath method
+    // Use a pattern that would cause pathToRegexp to throw an error
+    // For example, unbalanced parentheses or invalid regex syntax
+    const invalidPattern = "/(test(/:id";
+    const middleware = mock(() => NextResponse.next());
+
+    // Access private methods for testing
+    const nemo = new NEMO({ [invalidPattern]: middleware });
+
+    // This should not throw, even with the invalid pattern
+    await expect(
+      nemo.middleware(mockRequest("/test/123"), mockEvent),
+    ).resolves.not.toThrow();
+
+    // Middleware should not be called since pattern is invalid
+    expect(middleware).not.toHaveBeenCalled();
+  });
+
+  test("should handle URL-encoded characters in paths", async () => {
+    const middleware = mock(() => NextResponse.next());
+    const nemo = new NEMO({ "/test/:name": middleware });
+
+    await nemo.middleware(mockRequest("/test/john%20doe"), mockEvent);
+    expect(middleware).toHaveBeenCalled();
+  });
+
+  test("should handle cache hits and misses correctly", async () => {
+    const middleware = mock(() => NextResponse.next());
+    const nemo = new NEMO({ "/cached/:id": middleware });
+
+    // First call - cache miss
+    await nemo.middleware(mockRequest("/cached/123"), mockEvent);
+    expect(middleware).toHaveBeenCalledTimes(1);
+
+    // Same path - should use cache
+    await nemo.middleware(mockRequest("/cached/123"), mockEvent);
+    expect(middleware).toHaveBeenCalledTimes(2);
+
+    // Different path but same pattern - should cache separately
+    await nemo.middleware(mockRequest("/cached/456"), mockEvent);
+    expect(middleware).toHaveBeenCalledTimes(3);
+
+    // Clear cache and try again
+    await nemo.clearCache();
+    await nemo.middleware(mockRequest("/cached/123"), mockEvent);
+    expect(middleware).toHaveBeenCalledTimes(4);
+  });
+
+  test("should handle malformed URI components", async () => {
+    const middleware = mock(() => NextResponse.next());
+    const nemo = new NEMO({ "/user/:name": middleware });
+
+    // Use a path with malformed percent encoding
+    // This would normally cause decodeURIComponent to throw
+    const badPath = "/user/bad%2-encoding";
+
+    // This should not throw
+    await expect(
+      nemo.middleware(new NextRequest(`http://localhost${badPath}`), mockEvent),
+    ).resolves.not.toThrow();
+  });
+
+  test("should handle unicode path patterns correctly", async () => {
+    const middleware = mock(() => NextResponse.next());
+    // Use a pattern with unicode characters
+    const nemo = new NEMO({ "/café/:item": middleware });
+
+    await nemo.middleware(mockRequest("/café/croissant"), mockEvent);
+    expect(middleware).toHaveBeenCalled();
+  });
+});
