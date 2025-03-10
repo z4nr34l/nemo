@@ -22,63 +22,108 @@ bun add @rescale/nemo
 
 - Path-based middleware routing
 - Global middleware support (before/after)
-- Context sharing between middleware
-- Support for both legacy and modern middleware patterns
+- Context sharing between middleware via shared storage
+- Support for Next.js native middleware patterns
 - Request/Response header and cookie forwarding
+- Middleware nesting and composition
+
+## Middleware Composition
+
+NEMO supports nested middleware functions, allowing you to compose complex request handling logic:
+
+### Nested Functions
+
+```typescript
+import { createNEMO } from '@rescale/nemo';
+
+export default createNEMO({
+  '/api': [
+    // First middleware in the chain
+    async (request, { storage }) => {
+      storage.set('timestamp', Date.now());
+      // Continues to the next middleware
+    },
+    // Second middleware accesses shared storage
+    async (request, { storage }) => {
+      const timestamp = storage.get('timestamp');
+      console.log(`Request started at: ${timestamp}`);
+      // Continues to the next middleware or returns response
+    }
+  ],
+  // Multiple paths can have their own middleware chains
+  '/auth': [
+    checkAuth,
+    validateSession,
+    trackActivity
+  ]
+});
+```
+
+Each middleware in a chain is executed in sequence until one returns a response or all are completed.
 
 ## API Reference
 
 ### Types
 
-#### `MiddlewareFunction`
+#### `NextMiddleware`
 
-Can be either a legacy Next.js middleware (`NextMiddleware`) or the new middleware format (`NewMiddleware`).
+```typescript
+type NextMiddleware = (
+  request: NextRequest,
+  event: NemoEvent
+) => NextMiddlewareResult | Promise<NextMiddlewareResult>;
+```
+
+The standard middleware function signature used in NEMO, compatible with Next.js native middleware.
 
 #### `MiddlewareConfig`
 
 ```typescript
-Record<string, MiddlewareFunction | MiddlewareFunction[]>
+type MiddlewareConfig = Record<string, MiddlewareConfigValue>;
 ```
 
-#### `MiddlewareFunctionProps`
+A configuration object that maps route patterns to middleware functions or arrays of middleware functions.
+
+#### `GlobalMiddlewareConfig`
 
 ```typescript
-interface MiddlewareFunctionProps {
-  request: NextRequest;
-  context: MiddlewareContext;
-  event: NextFetchEvent;
-  forward: (response: MiddlewareReturn) => void;
-}
+type GlobalMiddlewareConfig = Partial<
+  Record<"before" | "after", NextMiddleware | NextMiddleware[]>
+>;
 ```
+
+Configuration for global middleware that runs before or after route-specific middleware.
 
 ### Main Functions
 
-#### `createMiddleware`
+#### `createNEMO`
 
 ```typescript
-function createMiddleware(
-  pathMiddlewareMap: MiddlewareConfig,
-  globalMiddleware?: {
-    before?: MiddlewareFunction | MiddlewareFunction[];
-    after?: MiddlewareFunction | MiddlewareFunction[];
-  }
+function createNEMO(
+  middlewares: MiddlewareConfig,
+  globalMiddleware?: GlobalMiddlewareConfig,
+  config?: NemoConfig
 ): NextMiddleware
 ```
 
-Creates a composed middleware function that:
+Creates a composed middleware function with enhanced features:
 
-- Executes global "before" middleware first
-- Matches URL patterns and executes corresponding middleware
-- Executes global "after" middleware last
-- Forwards headers and cookies between middleware functions
+- Executes middleware in order (global before → path-matched middleware → global after)
+- Provides shared storage context between middleware functions
+- Handles errors with custom error handlers
+- Supports custom storage adapters
 
-#### `forward`
+#### `NemoConfig` options
 
 ```typescript
-function forward(response: MiddlewareReturn): void
+interface NemoConfig {
+  debug?: boolean;
+  silent?: boolean;
+  errorHandler?: ErrorHandler;
+  enableTiming?: boolean;
+  storage?: StorageAdapter | (() => StorageAdapter);
+}
 ```
-
-Function that allows passing response from legacy middleware functions to the next middleware in the chain. This enables compatibility between legacy Next.js middleware and the new middleware format.
 
 ## Matchers
 
@@ -92,13 +137,13 @@ Matches `/dashboard` route and returns no params.
 /dashboard
 ```
 
-### Prams
+### Params
 
 General structure of the params is `:paramName` where `paramName` is the name of the param that will be returned in the middleware function.
 
 #### Single
 
-Matches `/dashboard/anything` route and returns `team` param with `anything value`.
+Matches `/dashboard/anything` route and returns `team` param with `anything` value.
 
 ```plaintext title="Single"
 /dashboard/:team
@@ -141,13 +186,13 @@ To debug your matchers and params parsing you can use the following tool:
 ### Basic Path-Based Middleware
 
 ```typescript
-import { createMiddleware } from '@rescale/nemo';
+import { createNEMO } from '@rescale/nemo';
 
-export default createMiddleware({
-  '/api{/*path}': async ({ request }) => {
+export default createNEMO({
+  '/api{/*path}': async (request) => {
     // Handle API routes
   },
-  '/protected{/*path}': async ({ request, context }) => {
+  '/protected{/*path}': async (request, { storage }) => {
     // Handle protected routes
   }
 });
@@ -158,9 +203,9 @@ You can test your's matchers [using this tool](https://www.rescale.build/tools/p
 ### Using Global Middleware
 
 ```typescript
-import { createMiddleware } from '@rescale/nemo';
+import { createNEMO } from '@rescale/nemo';
 
-export default createMiddleware({
+export default createNEMO({
   '/api{/*path}': apiMiddleware,
 },
 {
@@ -169,27 +214,9 @@ export default createMiddleware({
 });
 ```
 
-### Context Sharing
-
-```typescript
-import { createNEMO } from '@rescale/nemo';
-
-export default createNEMO({
-  '/*path': [
-    async (req, { storage }) => {
-      storage.set('user', { id: 1 });
-    },
-    async (req, { storage }) => {
-      const user = storage.get('user');
-      // Use the user data
-    }
-  ]
-});
-```
-
 ### Storage API
 
-The Storage API allows you to persist data between middleware executions:
+The Storage API allows you to share data between middleware executions:
 
 ```typescript
 import { createNEMO } from '@rescale/nemo';
@@ -217,12 +244,27 @@ export default createNEMO({
 });
 ```
 
+### URL Parameters
+
+Access URL parameters through the event's params property:
+
+```typescript
+import { createNEMO } from '@rescale/nemo';
+
+export default createNEMO({
+  '/users/:userId': async (request, event) => {
+    const { userId } = event.params;
+    console.log(`Processing request for user: ${userId}`);
+  }
+});
+```
+
 ## Notes
 
 - Middleware functions are executed in order until a Response is returned
-- The `context` Map is shared between all middleware functions in the chain
+- The storage is shared between all middleware functions in the chain
 - Headers and cookies are automatically forwarded between middleware functions
-- Supports both Next.js legacy middleware pattern and the new props-based pattern
+- Supports Next.js native middleware pattern
 
 ## Motivation
 
