@@ -1,6 +1,6 @@
-import { describe, expect, mock, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import { NextRequest, NextResponse, type NextFetchEvent } from "next/server";
-import { NEMO, createNEMO } from "../src";
+import { NEMO, createMiddleware, createNEMO } from "../src";
 
 describe("Usage and DX Tests", () => {
   const mockRequest = (path: string = "/") =>
@@ -122,7 +122,7 @@ describe("Usage and DX Tests", () => {
       const response = await middleware(mockRequest("/api"), mockEvent);
       expect(response instanceof Response).toBe(true);
       expect(testMiddleware).toHaveBeenCalled();
-      expect(response.headers.get("x-test-header")).toBe("test-value");
+      expect(response?.headers.get("x-test-header")).toBe("test-value");
     });
 
     test("should work with global middleware", async () => {
@@ -189,6 +189,94 @@ describe("Usage and DX Tests", () => {
 
       const response = await middleware(mockRequest(), mockEvent);
       expect(response instanceof Response).toBe(true);
+    });
+  });
+
+  describe("createMiddleware function (deprecated)", () => {
+    const originalConsoleWarn = console.warn;
+    let consoleWarnMock: ReturnType<typeof mock>;
+
+    beforeEach(() => {
+      consoleWarnMock = mock(() => {});
+      console.warn = consoleWarnMock;
+    });
+
+    afterEach(() => {
+      console.warn = originalConsoleWarn;
+    });
+
+    test("should log deprecation warning", async () => {
+      const middleware = createMiddleware({ "/": () => {} });
+      expect(consoleWarnMock).toHaveBeenCalledWith(
+        expect.stringContaining("deprecated"),
+      );
+    });
+
+    test("should work with basic middleware configuration", async () => {
+      const testMiddleware = mock((req) => {
+        req.headers.set("x-test-header", "deprecated-value");
+        return NextResponse.next();
+      });
+
+      const middleware = createMiddleware({
+        "/api": testMiddleware,
+      });
+
+      const response = await middleware(mockRequest("/api"), mockEvent);
+      expect(response instanceof Response).toBe(true);
+      expect(testMiddleware).toHaveBeenCalled();
+      expect(response?.headers.get("x-test-header")).toBe("deprecated-value");
+    });
+
+    test("should work with global middleware", async () => {
+      const order: string[] = [];
+      const beforeMiddleware = mock(() => {
+        order.push("before-deprecated");
+        return NextResponse.next();
+      });
+      const mainMiddleware = mock(() => {
+        order.push("main-deprecated");
+        return NextResponse.next();
+      });
+      const afterMiddleware = mock(() => {
+        order.push("after-deprecated");
+        return NextResponse.next();
+      });
+
+      const middleware = createMiddleware(
+        { "/": mainMiddleware },
+        {
+          before: beforeMiddleware,
+          after: afterMiddleware,
+        },
+      );
+
+      await middleware(mockRequest(), mockEvent);
+      expect(order).toEqual([
+        "before-deprecated",
+        "main-deprecated",
+        "after-deprecated",
+      ]);
+    });
+
+    test("should work with NEMO configuration", async () => {
+      const errorHandler = mock(() => NextResponse.next());
+
+      const middleware = createMiddleware(
+        {
+          "/": () => {
+            throw new Error("Test error in deprecated middleware");
+          },
+        },
+        undefined,
+        {
+          silent: true,
+          errorHandler,
+        },
+      );
+
+      await middleware(mockRequest(), mockEvent);
+      expect(errorHandler).toHaveBeenCalled();
     });
   });
 });
