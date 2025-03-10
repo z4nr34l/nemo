@@ -1,6 +1,6 @@
 import type { WaitUntil } from "next/dist/server/after/builtin-request-context";
 import type { NextRequest } from "next/server";
-import { pathToRegexp, type Key } from "path-to-regexp";
+import { match } from "path-to-regexp";
 import type { StorageAdapter } from "./storage/adapter";
 import { MemoryStorageAdapter } from "./storage/adapters/memory";
 import type { MiddlewareMetadata } from "./types";
@@ -166,28 +166,17 @@ export class NemoEvent extends NextFetchEvent {
       }
 
       // Create regex with named capture groups from the pattern
-      const keys: Key[] = [];
-      const regex = pathToRegexp(routePattern, keys);
+      // Use path-to-regexp's match function to extract parameters directly
+      const matchRoute = match(routePattern);
 
-      // Execute regex against the actual pathname
-      const match = regex.exec(pathname);
+      // Execute against the pathname to get params
+      const result = matchRoute(pathname);
 
-      if (!match) {
+      if (!result) {
         return {};
       }
 
-      // Extract named parameters
-      const params: Record<string, string | string[]> = {};
-      keys.forEach((key, index) => {
-        const value = match[index + 1];
-        if (value !== undefined) {
-          const name =
-            typeof key.name === "string" ? key.name : String(key.name);
-          params[name] = value;
-        }
-      });
-
-      return params;
+      return (result.params as Record<string, string | string[]>) || {};
     } catch (error) {
       console.error("Error extracting URL parameters:", error);
       return {};

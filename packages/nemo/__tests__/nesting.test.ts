@@ -141,6 +141,8 @@ describe("NEMO Nesting", () => {
                 // Now using typed params instead of casting to any
                 const params = event.getParams();
 
+                console.log(params);
+
                 if (params.categoryId) {
                   req.headers.set("x-category-id", String(params.categoryId));
                 }
@@ -154,6 +156,7 @@ describe("NEMO Nesting", () => {
                 "/:productId": (req, event) => {
                   // Now using typed params instead of casting to any
                   const params = event.getParams();
+                  console.log(params);
                   return NextResponse.next({
                     headers: {
                       "x-product-id": String(params.productId),
@@ -180,6 +183,37 @@ describe("NEMO Nesting", () => {
       expect(response?.headers.get("x-full-path")).toBe(
         "category-electronics/product-laptop",
       );
+    });
+  });
+
+  describe("Middleware Execution in Nested Routes", () => {
+    test("should execute parent middleware when nested middleware is matched", async () => {
+      const parentMiddleware = mock((req, event) => {
+        req.headers.set("x-parent-executed", "true");
+        return NextResponse.next();
+      });
+
+      const childMiddleware = mock((req, event) => {
+        req.headers.set("x-child-executed", "true");
+        return NextResponse.next();
+      });
+
+      const nemo = new NEMO({
+        "/parent": {
+          middleware: parentMiddleware,
+          "/child": childMiddleware,
+        },
+      });
+
+      const response = await nemo.middleware(
+        mockRequest("/parent/child"),
+        mockEvent,
+      );
+
+      expect(parentMiddleware).toHaveBeenCalled();
+      expect(childMiddleware).toHaveBeenCalled();
+      expect(response?.headers.get("x-parent-executed")).toBe("true");
+      expect(response?.headers.get("x-child-executed")).toBe("true");
     });
   });
 });
