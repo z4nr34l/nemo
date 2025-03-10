@@ -88,9 +88,15 @@ export class NEMO {
       return cached;
     }
 
-    const result = pathToRegexp(pattern).test(path);
-    patternCache.set(path, result);
-    return result;
+    try {
+      const result = pathToRegexp(pattern).test(path);
+      patternCache.set(path, result);
+      return result;
+    } catch (error) {
+      this.logger.error(`Error in path matching for ${pattern}:`, error);
+      patternCache.set(path, false);
+      return false;
+    }
   }
 
   /**
@@ -100,8 +106,22 @@ export class NEMO {
    */
   private matchesPath(pattern: string, path: string): boolean {
     // Decode URI components to handle Unicode characters
-    const decodedPath = decodeURIComponent(path);
-    const decodedPattern = decodeURIComponent(pattern);
+    let decodedPath;
+    let decodedPattern;
+
+    try {
+      decodedPath = decodeURIComponent(path);
+    } catch (error) {
+      this.logger.error(`Error decoding path ${path}:`, error);
+      decodedPath = path; // Fall back to raw path
+    }
+
+    try {
+      decodedPattern = decodeURIComponent(pattern);
+    } catch (error) {
+      this.logger.error(`Error decoding pattern ${pattern}:`, error);
+      decodedPattern = pattern; // Fall back to raw pattern
+    }
 
     // Special handling for parameter patterns
     if (decodedPattern.includes(":")) {
