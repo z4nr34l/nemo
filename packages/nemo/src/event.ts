@@ -145,31 +145,23 @@ export class NemoEvent extends NextFetchEvent {
   }
 
   /**
-   * Extract URL parameters from the current request path using the middleware's route pattern
-   * @param metadata - The metadata from the middleware that processed this request (optional if already set via setCurrentMetadata)
+   * Extract URL parameters from a path using a route pattern
+   * @private
+   * @param routePattern - The route pattern with parameter placeholders
+   * @param pathname - The actual pathname to extract parameters from
    * @returns An object containing the extracted parameters
    */
-  getParams(metadata?: MiddlewareMetadata): Record<string, string | string[]> {
-    const meta = metadata || this.currentMetadata;
-
-    if (!meta) {
+  private extractParamsFromPath(
+    routePattern: string,
+    pathname: string,
+  ): Record<string, string | string[]> {
+    if (!routePattern || !pathname) {
       return {};
     }
 
     try {
-      // Ensure we're working with the full pattern including any parent paths
-      const routePattern = meta.routeKey;
-      const pathname = meta.pathname;
-
-      if (!routePattern || !pathname) {
-        return {};
-      }
-
-      // Create regex with named capture groups from the pattern
       // Use path-to-regexp's match function to extract parameters directly
       const matchRoute = match(routePattern);
-
-      // Execute against the pathname to get params
       const result = matchRoute(pathname);
 
       if (!result) {
@@ -181,6 +173,66 @@ export class NemoEvent extends NextFetchEvent {
       console.error("Error extracting URL parameters:", error);
       return {};
     }
+  }
+
+  /**
+   * Extract URL parameters from a path using a route pattern
+   * @param options - Options for parameter extraction
+   * @param options.metadata - The metadata from the middleware (optional if currentMetadata is set)
+   * @param options.routePattern - The route pattern with parameter placeholders (optional)
+   * @param options.pathname - The actual pathname to extract parameters from (optional)
+   * @returns An object containing the extracted parameters
+   */
+  getParams(
+    options?:
+      | MiddlewareMetadata
+      | {
+          metadata?: MiddlewareMetadata;
+          routePattern?: string;
+          pathname?: string;
+        },
+  ): Record<string, string | string[]> {
+    // Handle backward compatibility with just metadata parameter
+    if (options && "chain" in options) {
+      // It's the old-style metadata parameter
+      const meta = options || this.currentMetadata;
+
+      if (!meta) {
+        return {};
+      }
+
+      return this.extractParamsFromPath(meta.routeKey, meta.pathname);
+    }
+
+    // Handle new options object
+    if (options && typeof options === "object") {
+      // If direct pattern and path are provided, use those
+      if (options.routePattern && options.pathname) {
+        return this.extractParamsFromPath(
+          options.routePattern,
+          options.pathname,
+        );
+      }
+
+      // Use provided metadata or fall back to current metadata
+      const meta = options.metadata || this.currentMetadata;
+
+      if (!meta) {
+        return {};
+      }
+
+      return this.extractParamsFromPath(meta.routeKey, meta.pathname);
+    }
+
+    // No options provided, use current metadata
+    if (!this.currentMetadata) {
+      return {};
+    }
+
+    return this.extractParamsFromPath(
+      this.currentMetadata.routeKey,
+      this.currentMetadata.pathname,
+    );
   }
 
   static from(
