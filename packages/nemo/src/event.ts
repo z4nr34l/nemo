@@ -1,6 +1,6 @@
 import type { WaitUntil } from "next/dist/server/after/builtin-request-context";
 import type { NextRequest } from "next/server";
-import { match } from "path-to-regexp";
+import { pathToRegexp, type Key } from "path-to-regexp";
 import type { StorageAdapter } from "./storage/adapter";
 import { MemoryStorageAdapter } from "./storage/adapters/memory";
 import type { MiddlewareMetadata } from "./types";
@@ -150,30 +150,48 @@ export class NemoEvent extends NextFetchEvent {
    * @returns An object containing the extracted parameters
    */
   getParams(metadata?: MiddlewareMetadata): Record<string, string | string[]> {
-    // Use provided metadata or fall back to current metadata
-    const metadataToUse = metadata || this.currentMetadata;
+    const meta = metadata || this.currentMetadata;
 
-    if (!metadataToUse || !metadataToUse.routeKey) {
+    if (!meta) {
       return {};
     }
 
     try {
-      // Use the full routeKey as the pattern for parameter extraction
-      const matchFn = match(metadataToUse.routeKey, {
-        decode: decodeURIComponent,
+      // Ensure we're working with the full pattern including any parent paths
+      const routePattern = meta.routeKey;
+      const pathname = meta.pathname;
+
+      if (!routePattern || !pathname) {
+        return {};
+      }
+
+      // Create regex with named capture groups from the pattern
+      const keys: Key[] = [];
+      const regex = pathToRegexp(routePattern, keys);
+
+      // Execute regex against the actual pathname
+      const match = regex.exec(pathname);
+
+      if (!match) {
+        return {};
+      }
+
+      // Extract named parameters
+      const params: Record<string, string | string[]> = {};
+      keys.forEach((key, index) => {
+        const value = match[index + 1];
+        if (value !== undefined) {
+          const name =
+            typeof key.name === "string" ? key.name : String(key.name);
+          params[name] = value;
+        }
       });
 
-      // Apply the match function to the current pathname
-      const result = matchFn(metadataToUse.pathname);
-
-      if (result && result.params) {
-        return result.params as Record<string, string | string[]>;
-      }
+      return params;
     } catch (error) {
-      console.error("Failed to extract parameters from path:", error);
+      console.error("Error extracting URL parameters:", error);
+      return {};
     }
-
-    return {};
   }
 
   static from(

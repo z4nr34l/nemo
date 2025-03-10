@@ -149,6 +149,7 @@ export class NEMO {
   ): NextMiddlewareWithMeta {
     const middlewareWithMeta = middleware as NextMiddlewareWithMeta;
     middlewareWithMeta.__nemo = metadata;
+
     return middlewareWithMeta;
   }
 

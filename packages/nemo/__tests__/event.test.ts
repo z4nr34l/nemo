@@ -287,7 +287,7 @@ describe("NemoEvent", () => {
         nestLevel: 0,
       });
 
-      expect(params).toEqual({ query: "some query" });
+      expect(params).toEqual({ query: "some%20query" });
     });
 
     test("uses current middleware metadata when no metadata is provided", () => {
