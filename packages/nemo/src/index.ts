@@ -254,24 +254,59 @@ export class NEMO {
           for (const segment of paramSegments) {
             if (fullPattern.includes(segment)) {
               // Try matching with the parameter part replaced with the actual segment value
-              const actualPathSegment = pathParts.find((p) =>
-                pathname.includes(`/${p}/`),
+              const actualPathSegments = pathParts.filter(
+                (p) =>
+                  pathname.includes(`/${p}/`) || pathname.endsWith(`/${p}`),
               );
-              if (actualPathSegment) {
-                const testPattern = fullPattern.replace(
-                  /:([^/]+)/,
-                  actualPathSegment,
-                );
-                shouldInclude = pathname.includes(testPattern);
 
-                if (shouldInclude) {
-                  this.logger.log(
-                    `Parameter parent match: ${fullPattern} via ${testPattern}`,
+              for (const actualSegment of actualPathSegments) {
+                // Try replacing each parameter with actual values
+                let testPattern = fullPattern;
+                const regex = /:([^/]+)/g;
+                let match;
+                let replaced = false;
+
+                while ((match = regex.exec(testPattern)) !== null) {
+                  testPattern = testPattern.replace(
+                    `:${match[1]}`,
+                    actualSegment,
                   );
-                  break;
+                  replaced = true;
+                  break; // Just replace the first occurrence for this attempt
+                }
+
+                if (replaced) {
+                  if (pathname.includes(testPattern)) {
+                    shouldInclude = true;
+                    this.logger.log(
+                      `Parameter parent match: ${fullPattern} via ${testPattern}`,
+                    );
+                    break;
+                  }
                 }
               }
+
+              if (shouldInclude) break;
             }
+          }
+        }
+
+        // Try direct path-to-regexp matching as a fallback for complex nested patterns
+        if (!shouldInclude && (hasParams || fullPattern.includes(":"))) {
+          try {
+            // For complex nested paths with parameters, try full regex matching
+            const regex = pathToRegexp(fullPattern);
+            shouldInclude = regex.test(pathname);
+            if (shouldInclude) {
+              this.logger.log(
+                `Complex parameter match: ${fullPattern} against ${pathname} => ${shouldInclude}`,
+              );
+            }
+          } catch (error) {
+            this.logger.error(
+              `Error in nested path matching for ${fullPattern}:`,
+              error,
+            );
           }
         }
 
