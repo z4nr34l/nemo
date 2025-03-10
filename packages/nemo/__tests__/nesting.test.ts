@@ -140,6 +140,7 @@ describe("NEMO Nesting", () => {
               middleware: (req, event) => {
                 // Now using typed params instead of casting to any
                 const params = event.getParams();
+
                 if (params.categoryId) {
                   req.headers.set("x-category-id", String(params.categoryId));
                 }

@@ -121,6 +121,26 @@ describe("NEMO", () => {
       expect(response?.headers.get("x-test-2")).toBe("value2");
     });
 
+    test("should add headers from NextResponse.next() to request", async () => {
+      const headerName = "x-forwarded-header";
+      const headerValue = "test-value";
+
+      const middleware1: NextMiddleware = () => {
+        return NextResponse.next({
+          headers: { [headerName]: headerValue },
+        });
+      };
+
+      const middleware2: NextMiddleware = (req) => {
+        return NextResponse.next();
+      };
+
+      const nemo = new NEMO({ "/": [middleware1, middleware2] });
+      const response = await nemo.middleware(mockRequest(), mockEvent);
+
+      expect(response?.headers.get(headerName)).toBe(headerValue); // Check final response also has the header
+    });
+
     describe("Chain Breaking", () => {
       test("should not break chain on NextResponse.next()", async () => {
         const order: string[] = [];
