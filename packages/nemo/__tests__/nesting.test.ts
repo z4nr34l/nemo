@@ -137,7 +137,7 @@ describe("NEMO Nesting", () => {
       });
 
       const categoryIdMiddleware = mock((req, event) => {
-        const params = event.getParams();
+        const params = event.params;
         req.headers.set("x-category-id", String(params.categoryId));
         return NextResponse.next();
       });
@@ -148,7 +148,7 @@ describe("NEMO Nesting", () => {
       });
 
       const productIdMiddleware = mock((req, event) => {
-        const params = event.getParams();
+        const params = event.params;
         return NextResponse.next({
           headers: {
             "x-product-id": String(params.productId),

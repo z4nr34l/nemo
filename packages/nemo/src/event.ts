@@ -145,6 +145,28 @@ export class NemoEvent extends NextFetchEvent {
   }
 
   /**
+   * Getter for route parameters from the current request path
+   * @returns An object containing the extracted parameters from the current route
+   *
+   * @example
+   * ```ts
+   * // For route defined as "/users/:userId"
+   * // When accessing "/users/123"
+   * const { userId } = event.params; // "123"
+   * ```
+   */
+  get params(): Record<string, string | string[]> {
+    if (!this.currentMetadata) {
+      return {};
+    }
+
+    return this.extractParamsFromPath(
+      this.currentMetadata.routeKey,
+      this.currentMetadata.pathname,
+    );
+  }
+
+  /**
    * Extract URL parameters from a path using a route pattern
    * @private
    * @param routePattern - The route pattern with parameter placeholders
