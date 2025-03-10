@@ -117,7 +117,7 @@ describe("NEMO", () => {
       const nemo = new NEMO({ "/": [middleware1, middleware2] });
       const response = await nemo.middleware(mockRequest(), mockEvent);
 
-      expect(response?.headers.get("x-test-1")).not.toBe("value1");
+      expect(response?.headers.get("x-test-1")).toBe("value1");
       expect(response?.headers.get("x-test-2")).toBe("value2");
     });
 
