@@ -21,10 +21,10 @@ describe("NEMO Path Matching", () => {
     // Access private methods for testing
     const nemo = new NEMO({ [invalidPattern]: middleware });
 
-    // This should not throw, even with the invalid pattern
+    // This should throw
     await expect(
       nemo.middleware(mockRequest("/test/123"), mockEvent),
-    ).resolves.not.toThrow();
+    ).resolves.toThrow();
 
     // Middleware should not be called since pattern is invalid
     expect(middleware).not.toHaveBeenCalled();
@@ -68,10 +68,10 @@ describe("NEMO Path Matching", () => {
     // This would normally cause decodeURIComponent to throw
     const badPath = "/user/bad%2-encoding";
 
-    // This should not throw
+    // This should throw
     await expect(
       nemo.middleware(new NextRequest(`http://localhost${badPath}`), mockEvent),
-    ).resolves.not.toThrow();
+    ).resolves.toThrow();
   });
 
   test("should handle unicode path patterns correctly", async () => {
