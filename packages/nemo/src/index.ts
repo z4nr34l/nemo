@@ -437,7 +437,7 @@ export class NEMO {
             if (result instanceof NextResponse) {
               // Apply headers to the request for subsequent middleware
               result.headers.forEach((value, key) => {
-                if (key !== "x-middleware-next") {
+                if (!key.startsWith("x-middleware-")) {
                   request.headers.set(key, value);
                 }
               });
