@@ -141,8 +141,6 @@ describe("NEMO Nesting", () => {
                 // Now using typed params instead of casting to any
                 const params = event.getParams();
 
-                console.log(params);
-
                 if (params.categoryId) {
                   req.headers.set("x-category-id", String(params.categoryId));
                 }
@@ -156,7 +154,7 @@ describe("NEMO Nesting", () => {
                 "/:productId": (req, event) => {
                   // Now using typed params instead of casting to any
                   const params = event.getParams();
-                  console.log(params);
+
                   return NextResponse.next({
                     headers: {
                       "x-product-id": String(params.productId),
