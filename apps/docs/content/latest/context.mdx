@@ -45,6 +45,33 @@ const example: NextMiddleware = async (req, { storage }) => {// [!code focus]
 
 ```
 
+### Type Safety
+
+The storage API preserves type information when you use TypeScript generics:
+
+```typescript
+interface UserData {
+  id: number;
+  name: string;
+  roles: string[];
+}
+
+// Store data with type
+storage.set<UserData>('user', {
+  id: 1,
+  name: 'John',
+  roles: ['admin', 'editor']
+});
+
+// Retrieve with correct type
+const user = storage.get<UserData>('user');
+if (user) {
+  // TypeScript knows the shape of user
+  console.log(user.name);
+  console.log(user.roles.join(', '));
+}
+```
+
 ## Custom Storage adapter
 
 You can extend the default in-memory storage with your own storage adapter. To do this, you need to create a class that implements the `StorageAdapter` interface.

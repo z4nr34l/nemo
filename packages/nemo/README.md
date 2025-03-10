@@ -172,16 +172,46 @@ export default createMiddleware({
 ### Context Sharing
 
 ```typescript
-import { createMiddleware } from '@rescale/nemo';
+import { createNEMO } from '@rescale/nemo';
 
-export default createMiddleware({
+export default createNEMO({
   '/*path': [
-    async ({ context }) => {
-      context.set('user', { id: 1 });
+    async (req, { storage }) => {
+      storage.set('user', { id: 1 });
     },
-    async ({ context }) => {
-      const user = context.get('user');
+    async (req, { storage }) => {
+      const user = storage.get('user');
       // Use the user data
+    }
+  ]
+});
+```
+
+### Storage API
+
+The Storage API allows you to persist data between middleware executions:
+
+```typescript
+import { createNEMO } from '@rescale/nemo';
+
+export default createNEMO({
+  '/': [
+    async (req, { storage }) => {
+      // Set values
+      storage.set('counter', 1);
+      storage.set('items', ['a', 'b']);
+      storage.set('user', { id: 1, name: 'John' });
+      
+      // Check if key exists
+      if (storage.has('counter')) {
+        // Get values (with type safety)
+        const count = storage.get<number>('counter');
+        const items = storage.get<string[]>('items');
+        const user = storage.get<{id: number, name: string}>('user');
+        
+        // Delete a key
+        storage.delete('counter');
+      }
     }
   ]
 });

@@ -36,7 +36,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
     ```typescript title="middleware.ts"
     import { createNEMO } from '@rescale/nemo';
 
-    export const middleware = createNEMO(); // [!code ++]
+    export const middleware = createNEMO(/* your functions will go here */); // [!code ++]
 
     // [...]
 
@@ -47,18 +47,17 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
     ### Define your middlewares config and update the createNEMO function parameters.
 
     ```typescript title="middleware.ts"
-    import { createNEMO } from '@rescale/nemo'; // [!code --]
     import { createNEMO, type MiddlewareConfig } from '@rescale/nemo'; // [!code ++]
 
-    const middlewares = { // [!code ++]
+    const middlewares: MiddlewareConfig = { // [!code ++]
       '/': [ // [!code ++]
         async (request) => { // [!code ++]
           console.log('There is NEMO', request.nextUrl.pathname); // [!code ++]
         }, // [!code ++]
       ], // [!code ++]
-    } satisfies MiddlewareConfig; // [!code ++]
+    }; // [!code ++]
 
-    export const middleware = createNEMO(); // [!code --]
+    export const middleware = createNEMO(/* your functions will go here */); // [!code --]
     export const middleware = createNEMO(middlewares); // [!code ++]
 
     // [...]
