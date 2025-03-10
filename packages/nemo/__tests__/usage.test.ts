@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from "bun:test";
-import { NextRequest, type NextFetchEvent } from "next/server";
-import { NEMO } from "../src";
+import { NextRequest, NextResponse, type NextFetchEvent } from "next/server";
+import { NEMO, createNEMO } from "../src";
 
 describe("Usage and DX Tests", () => {
   const mockRequest = (path: string = "/") =>
@@ -105,6 +105,90 @@ describe("Usage and DX Tests", () => {
       const response = await nemo.middleware(mockRequest(), mockEvent);
       expect(response instanceof Response).toBe(true);
       expect(order).toEqual(["before", "main", "after"]);
+    });
+  });
+
+  describe("createNEMO function", () => {
+    test("should work with basic middleware configuration", async () => {
+      const testMiddleware = mock((req) => {
+        req.headers.set("x-test-header", "test-value");
+        return NextResponse.next();
+      });
+
+      const middleware = createNEMO({
+        "/api": testMiddleware,
+      });
+
+      const response = await middleware(mockRequest("/api"), mockEvent);
+      expect(response instanceof Response).toBe(true);
+      expect(testMiddleware).toHaveBeenCalled();
+      expect(response.headers.get("x-test-header")).toBe("test-value");
+    });
+
+    test("should work with global middleware", async () => {
+      const order: string[] = [];
+      const beforeMiddleware = mock(() => {
+        order.push("before");
+        return NextResponse.next();
+      });
+      const mainMiddleware = mock(() => {
+        order.push("main");
+        return NextResponse.next();
+      });
+      const afterMiddleware = mock(() => {
+        order.push("after");
+        return NextResponse.next();
+      });
+
+      const middleware = createNEMO(
+        { "/": mainMiddleware },
+        {
+          before: beforeMiddleware,
+          after: afterMiddleware,
+        },
+      );
+
+      await middleware(mockRequest(), mockEvent);
+      expect(order).toEqual(["before", "main", "after"]);
+    });
+
+    test("should work with NEMO configuration", async () => {
+      const errorHandler = mock(() => NextResponse.next());
+
+      const middleware = createNEMO(
+        {
+          "/": () => {
+            throw new Error("Test error");
+          },
+        },
+        undefined,
+        {
+          silent: true,
+          errorHandler,
+        },
+      );
+
+      await middleware(mockRequest(), mockEvent);
+      expect(errorHandler).toHaveBeenCalled();
+    });
+
+    test("should share storage between middleware functions", async () => {
+      const middleware = createNEMO({
+        "/": [
+          async (req, { storage }) => {
+            storage.set("testKey", "createNEMO-value");
+            return NextResponse.next();
+          },
+          async (req, { storage }) => {
+            const value = storage.get<string>("testKey");
+            expect(value).toBe("createNEMO-value");
+            return NextResponse.next();
+          },
+        ],
+      });
+
+      const response = await middleware(mockRequest(), mockEvent);
+      expect(response instanceof Response).toBe(true);
     });
   });
 });
