@@ -752,8 +752,9 @@ describe("NEMO", () => {
       expect(order).toEqual(["before-json"]);
       expect(order).not.toContain("after-json");
 
-      // Check response properties
-      expect(response?.headers.get("content-type")).toBe("application/json");
+      // Check response properties - content-type may include charset
+      const contentType = response?.headers.get("content-type");
+      expect(contentType?.startsWith("application/json")).toBe(true);
       const responseBody = await response?.json();
       expect(responseBody).toEqual(jsonData);
     });
@@ -769,7 +770,9 @@ describe("NEMO", () => {
       const response = await nemo.middleware(mockRequest("/test"), mockEvent);
 
       expect(response?.status).toBe(404);
-      expect(response?.headers.get("content-type")).toBe("application/json");
+      // Check response properties - content-type may include charset
+      const contentType = response?.headers.get("content-type");
+      expect(contentType?.startsWith("application/json")).toBe(true);
       const responseBody = await response?.json();
       expect(responseBody).toEqual(jsonData);
     });
