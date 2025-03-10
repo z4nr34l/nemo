@@ -229,7 +229,9 @@ export class NEMO {
           const nestedEntries = { ...value };
 
           // Remove middleware to avoid processing it twice
-          if ("middleware" in nestedEntries) {
+          // Only if the current route matches to prevent removing middlewares
+          // that should be processed for matched nested routes
+          if (shouldInclude && "middleware" in nestedEntries) {
             delete (nestedEntries as Record<string, any>)["middleware"];
           }
 
