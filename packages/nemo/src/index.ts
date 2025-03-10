@@ -125,14 +125,28 @@ export class NEMO {
 
     // Special handling for parameter patterns
     if (decodedPattern.includes(":")) {
+      let patternCache = this.matchCache.get(decodedPattern);
+      if (!patternCache) {
+        patternCache = new Map();
+        this.matchCache.set(decodedPattern, patternCache);
+      }
+
+      const cached = patternCache.get(decodedPath);
+      if (cached !== undefined) {
+        return cached;
+      }
+
       try {
         const regex = pathToRegexp(decodedPattern);
-        return regex.test(decodedPath);
+        const result = regex.test(decodedPath);
+        patternCache.set(decodedPath, result);
+        return result;
       } catch (error) {
         this.logger.error(
           `Error in path matching for ${decodedPattern}:`,
           error,
         );
+        patternCache.set(decodedPath, false);
         return false;
       }
     }
