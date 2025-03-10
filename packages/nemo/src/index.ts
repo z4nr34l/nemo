@@ -364,7 +364,6 @@ export class NEMO {
   ): Promise<NextMiddlewareResult> {
     let result: NextMiddlewareResult;
     const initialHeaders = new Headers(request.headers);
-    const defaultResponse = NextResponse.next();
 
     // Add timing tracking only when enabled
     const chainTiming = this.config.enableTiming
@@ -434,6 +433,16 @@ export class NEMO {
             this.logger.log("Middleware returned custom result, ending chain");
             return result;
           } else {
+            // Simplified header handling - just add to request headers
+            if (result instanceof NextResponse) {
+              // Apply headers to the request for subsequent middleware
+              result.headers.forEach((value, key) => {
+                if (key !== "x-middleware-next") {
+                  request.headers.set(key, value);
+                }
+              });
+            }
+
             this.logger.log(
               "Middleware returned next response, continuing chain",
             );
