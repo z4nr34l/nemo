@@ -110,6 +110,7 @@ const globalMiddlewares = {
 };
 
 const middlewares = {
+  '/auth/:path*': auth,
   '/(team|t)/:slug/:path*': team, // OR: [team, ...]
 };
 
