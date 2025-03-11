@@ -42,5 +42,9 @@
   ],
   "dependencies": {
     "@fumadocs/mdx-remote": "^1.2.0"
-  }
+  },
+  "trustedDependencies": [
+    "@swc/core",
+    "docs"
+  ]
 }

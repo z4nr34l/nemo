@@ -34,7 +34,7 @@ Type: [NextResponse](https://nextjs.org/docs/app/api-reference/functions/next-re
 
 This property contains (optional) resposne object that were forwarded in prev middleware function using `forward()` function.
 
-<Card href="/docs/1.4.0/forward-functions" title="Forward functions" description="Learn more about Forward functions in middleware" icon={<ArrowRightIcon/>}/>
+<Card href="/docs/1.4/forward-functions" title="Forward functions" description="Learn more about Forward functions in middleware" icon={<ArrowRightIcon/>}/>
 
 It can be used for example for checking custom headers from external packages middlewares output that was forwarded in chain.
 
@@ -56,7 +56,7 @@ Type: [Map\<string, unknown\>](https://developer.mozilla.org/en-US/docs/Web/Java
 
 This property contains context shared across whole execution chain for every function.
 
-<Card href="/docs/1.4.0/context" title="Shared context" description="Learn more about Shared Context in middleware" icon={<WaypointsIcon/>}/>
+<Card href="/docs/1.4/context" title="Shared context" description="Learn more about Shared Context in middleware" icon={<WaypointsIcon/>}/>
 
 <Callout>
   If you want to know more about Map interface usage please refer to these [docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map).
@@ -80,7 +80,7 @@ Type: `(response: MiddlewareReturn) => void`
 
 The `forward` function allows you to forward the response from one middleware function to another. This can be useful for chaining middleware functions together and creating more complex middleware logic.
 
-<Card href="/docs/1.4.0/forward-functions" title="Forward functions" description="Learn more about Forward functions in middleware" icon={<ArrowRightIcon/>}/>
+<Card href="/docs/1.4/forward-functions" title="Forward functions" description="Learn more about Forward functions in middleware" icon={<ArrowRightIcon/>}/>
 
 ### Prop:&nbsp;&nbsp;`params`
 
@@ -96,6 +96,7 @@ async ({ params }: MiddlewareFunctionProps) => {
   console.log(params().slug); // Output: 123
 }
 ```import { WaypointsIcon, ArrowRightIcon } from "lucide-react";
+import { WaypointsIcon, ArrowRightIcon } from "lucide-react";
 import { WaypointsIcon, ArrowRightIcon } from "lucide-react";
 import { WaypointsIcon, ArrowRightIcon } from "lucide-react";
 import { WaypointsIcon, ArrowRightIcon } from "lucide-react";
