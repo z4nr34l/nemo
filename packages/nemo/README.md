@@ -29,14 +29,13 @@ bun add @rescale/nemo
 
 ## Middleware Composition
 
-NEMO supports nested middleware functions, allowing you to compose complex request handling logic:
-
-### Nested Functions
+This example shows all possible options of NEMO usage and middlewares compositions, including nested routes:
 
 ```typescript
 import { createNEMO } from '@rescale/nemo';
 
 export default createNEMO({
+  // Simple route with middleware chain
   '/api': [
     // First middleware in the chain
     async (request, { storage }) => {
@@ -47,19 +46,43 @@ export default createNEMO({
     async (request, { storage }) => {
       const timestamp = storage.get('timestamp');
       console.log(`Request started at: ${timestamp}`);
-      // Continues to the next middleware or returns response
     }
   ],
-  // Multiple paths can have their own middleware chains
-  '/auth': [
-    checkAuth,
-    validateSession,
-    trackActivity
-  ]
+  
+  // Nested routes using object notation
+  '/dashboard': {
+    // This middleware runs on /dashboard
+    middleware: async (request) => {
+      console.log('Dashboard root');
+    },
+    
+    // Nested route with parameter
+    '/:teamId': {
+      // This middleware runs on /dashboard/:teamId
+      middleware: async (request, { params }) => {
+        console.log(`Team dashboard: ${params.teamId}`);
+      },
+      
+      // Further nesting with additional parameter
+      '/users/:userId': async (request, { params }) => {
+        console.log(`Team user: ${params.teamId}, User: ${params.userId}`);
+      }
+    },
+    
+    // Another nested route under /dashboard
+    '/settings': async (request) => {
+      console.log('Dashboard settings');
+    }
+  },
+  
+  // Pattern matching multiple routes
+  '/(auth|login)': async (request) => {
+    console.log('Auth page');
+  }
 });
 ```
 
-Each middleware in a chain is executed in sequence until one returns a response or all are completed.
+Each middleware in a chain is executed in sequence until one returns a response or all are completed. Nested routes allow you to organize your middleware hierarchically, matching more specific paths while maintaining a clean structure.
 
 ## API Reference
 
