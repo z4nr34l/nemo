@@ -154,7 +154,7 @@ To make it easier to understand, you can check the below examples:
 
 ### Simple route
 
-Matches `/dashboard` route and returns no params.
+Matches `/dashboard` route exactly.
 
 ```plaintext title="Simple route"
 /dashboard
@@ -162,45 +162,109 @@ Matches `/dashboard` route and returns no params.
 
 ### Params
 
-General structure of the params is `:paramName` where `paramName` is the name of the param that will be returned in the middleware function.
+Path parameters allow you to capture parts of the URL path. The general pattern is `:paramName` where `paramName` is the name of the parameter that will be available in the middleware function's `event.params` object.
 
-#### Single
+#### Named parameters
 
-Matches `/dashboard/anything` route and returns `team` param with `anything` value.
+Named parameters are defined by prefixing a colon to the parameter name (:paramName).
 
-```plaintext title="Single"
+```plaintext title="Named parameter"
 /dashboard/:team
 ```
 
-You can also define segments in the middle of URL with is matching `/team/anything/dashboard` and returns `team` param with `anything` value.
+This matches `/dashboard/team1` and provides `team` param with value `team1`.
 
-```plaintext title="Single with suffix"
-/dashboard/:team/delete
+You can also place parameters in the middle of a path pattern:
+
+```plaintext title="Parameter in the middle"
+/team/:teamId/dashboard
 ```
 
-#### Optional
+This matches `/team/123/dashboard` and provides `teamId` param with value `123`.
 
-Matches `/dashboard` and `/dashboard/anything` routes and returns `team` param with `anything` value if there is value provided in url.
+#### Multiple parameters
 
-```plaintext title="Optional"
-/dashboard{/:team}
+You can include multiple parameters in a single pattern:
+
+```plaintext title="Multiple parameters"
+/users/:userId/posts/:postId
 ```
 
-```plaintext title="Optional wildcard"
-/dashboard{/*team}
+This matches `/users/123/posts/456` and provides parameters `userId: "123", postId: "456"`.
+
+#### Custom matching parameters
+
+Parameters can have a custom regexp pattern in parentheses, which overrides the default match:
+
+```plaintext title="Custom parameter matching"
+/icon-:size(\\d+).png
 ```
 
-#### Wildcard
+This matches `/icon-123.png` but not `/icon-abc.png` and provides `size` param with value `123`.
 
-Matches `/dashboard` and `/dashboard/anything/test` routes and returns `team` param with `[anything, test]` value if there is value provided in url.
+#### Optional parameters
 
-```plaintext title="Wildcard"
-/dashboard/*team
+Parameters can be suffixed with a question mark (`?`) to make them optional:
+
+```plaintext title="Optional parameter"
+/users/:userId?
 ```
+
+This matches both `/users` and `/users/123`.
+
+#### Custom prefix and suffix
+
+Parameters can be wrapped in curly braces `{}` to create custom prefixes or suffixes:
+
+```plaintext title="Custom prefix/suffix"
+/product{-:version}?
+```
+
+This matches both `/product` and `/product-v1` and provides `version` param with value `v1` when present.
+
+#### Zero or more segments
+
+Parameters can be suffixed with an asterisk (`*`) to match zero or more segments:
+
+```plaintext title="Zero or more segments"
+/files/:path*
+```
+
+This matches `/files`, `/files/documents`, `/files/documents/work`, etc.
+
+#### One or more segments
+
+Parameters can be suffixed with a plus sign (`+`) to match one or more segments:
+
+```plaintext title="One or more segments"
+/files/:path+
+```
+
+This matches `/files/documents`, `/files/documents/work`, etc., but not `/files`.
+
+#### OR patterns
+
+You can match multiple pattern alternatives by using parentheses and the pipe character:
+
+```plaintext title="OR pattern"
+/(auth|login)
+```
+
+This matches both `/auth` and `/login`.
+
+#### Unicode support
+
+The matcher fully supports Unicode characters in both patterns and paths:
+
+```plaintext title="Unicode support"
+/café/:item
+```
+
+This matches `/café/croissant` and provides `item` param with value `croissant`.
 
 ## Debugging tool
 
-To debug your matchers and params parsing you can use the following tool:
+To debug your matchers and see how parameters are extracted, you can use this tool:
 
 [Rescale path-to-regexp debugger](https://www.rescale.build/tools/path-to-regexp)
 
@@ -211,17 +275,34 @@ To debug your matchers and params parsing you can use the following tool:
 ```typescript
 import { createNEMO } from '@rescale/nemo';
 
-export default createNEMO({
-  '/api{/*path}': async (request) => {
+export const middleware = createNEMO({
+  // Simple route
+  '/api': async (request) => {
     // Handle API routes
   },
-  '/protected{/*path}': async (request, { storage }) => {
-    // Handle protected routes
+  
+  // With parameter
+  '/users/:userId': async (request, event) => {
+    // Access parameter
+    console.log(`User ID: ${event.params.userId}`);
+  },
+  
+  // Optional pattern with custom prefix
+  '/product{-:version}?': async (request, event) => {
+    // event.params.version will be undefined for '/product'
+    // or the version value for '/product-v1'
+    console.log(`Version: ${event.params.version || 'latest'}`);
+  },
+  
+  // Pattern with custom matching
+  '/files/:filename(.*\\.pdf)': async (request, event) => {
+    // Only matches PDF files
+    console.log(`Processing PDF: ${event.params.filename}`);
   }
 });
 ```
 
-You can test your's matchers [using this tool](https://www.rescale.build/tools/path-to-regexp).
+Test your patterns using the [path-to-regexp debugger](https://www.rescale.build/tools/path-to-regexp).
 
 ### Using Global Middleware
 
