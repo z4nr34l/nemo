@@ -110,7 +110,7 @@ const globalMiddlewares = {
 };
 
 const middlewares = {
-  '/(team|t)/:slug': team, // OR: [team, ...]
+  '/(team|t)/:slug/:path*': team, // OR: [team, ...]
 };
 
 export const middleware = createNEMO(middlewares, globalMiddlewares);
