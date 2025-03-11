@@ -26,6 +26,7 @@ bun add @rescale/nemo
 - Support for Next.js native middleware patterns
 - Request/Response header and cookie forwarding
 - Middleware nesting and composition
+- Built-in logging system accessible in all middleware functions
 
 ## Middleware Composition
 
@@ -362,6 +363,39 @@ export default createNEMO({
   }
 });
 ```
+
+### Using the Logger
+
+NEMO provides built-in logging capabilities through the event object that maintains consistent formatting and respects the debug configuration:
+
+```typescript
+import { createNEMO } from '@rescale/nemo';
+
+export default createNEMO({
+  '/api': async (request, event) => {
+    // Debug logs (only shown when debug: true in config)
+    event.log('Processing API request', request.nextUrl.pathname);
+    
+    try {
+      // Your API logic
+      const result = await processRequest(request);
+      
+      event.log('Request processed successfully', result);
+      return NextResponse.json(result);
+    } catch (error) {
+      // Error logs (always shown)
+      event.error('Failed to process request', error);
+      
+      // Warning logs (always shown)
+      event.warn('This endpoint will be deprecated soon');
+      
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+  }
+}, undefined, { debug: true });
+```
+
+All logs maintain the "[NEMO]" prefix for consistency with internal framework logs.
 
 ## Notes
 

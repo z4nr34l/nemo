@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, mock, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import type { WaitUntil } from "next/dist/server/after/builtin-request-context";
 import type { NextRequest } from "next/server";
 import type { MiddlewareMetadata } from "../src";
@@ -370,5 +370,111 @@ describe("NemoEvent", () => {
       const secondParams = event.getParams();
       expect(secondParams).toEqual({ userId: "123", postId: "456" });
     });
+  });
+});
+
+describe("NemoEvent Logger", () => {
+  let mockRequest: Request;
+  let mockContext: { waitUntil: WaitUntil };
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+  const originalConsoleWarn = console.warn;
+  let consoleLogSpy: typeof console.log;
+  let consoleErrorSpy: typeof console.error;
+  let consoleWarnSpy: typeof console.warn;
+
+  beforeEach(() => {
+    mockRequest = new Request("https://example.com");
+    mockContext = { waitUntil: mock(() => {}) };
+    consoleLogSpy = mock((...args: any[]) => {});
+    consoleErrorSpy = mock((...args: any[]) => {});
+    consoleWarnSpy = mock((...args: any[]) => {});
+    console.log = consoleLogSpy;
+    console.error = consoleErrorSpy;
+    console.warn = consoleWarnSpy;
+  });
+
+  afterEach(() => {
+    console.log = originalConsoleLog;
+    console.error = originalConsoleError;
+    console.warn = originalConsoleWarn;
+  });
+
+  test("log method only shows output when debug is enabled", () => {
+    // Create event with debug disabled
+    const normalEvent = new NemoEvent({
+      request: mockRequest as any,
+      sourcePage: "/test",
+      context: mockContext,
+      debug: false,
+    });
+
+    normalEvent.log("test message");
+    expect(consoleLogSpy).not.toHaveBeenCalled();
+
+    // Create event with debug enabled
+    const debugEvent = new NemoEvent({
+      request: mockRequest as any,
+      sourcePage: "/test",
+      context: mockContext,
+      debug: true,
+    });
+
+    debugEvent.log("test message");
+    expect(consoleLogSpy).toHaveBeenCalledWith("[NEMO]", "test message");
+  });
+
+  test("error method always shows output regardless of debug mode", () => {
+    const event = new NemoEvent({
+      request: mockRequest as any,
+      sourcePage: "/test",
+      context: mockContext,
+      debug: false,
+    });
+
+    event.error("error message");
+    expect(consoleErrorSpy).toHaveBeenCalledWith("[NEMO]", "error message");
+  });
+
+  test("warn method always shows output regardless of debug mode", () => {
+    const event = new NemoEvent({
+      request: mockRequest as any,
+      sourcePage: "/test",
+      context: mockContext,
+      debug: false,
+    });
+
+    event.warn("warning message");
+    expect(consoleWarnSpy).toHaveBeenCalledWith("[NEMO]", "warning message");
+  });
+
+  test("logs multiple arguments with proper formatting", () => {
+    const event = new NemoEvent({
+      request: mockRequest as any,
+      sourcePage: "/test",
+      context: mockContext,
+      debug: true,
+    });
+
+    const data = { user: "test", id: 123 };
+    event.log("message with data", data);
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      "[NEMO]",
+      "message with data",
+      data,
+    );
+  });
+
+  test("passes debug parameter from from() static method", () => {
+    const originalEvent = new NextFetchEvent({
+      request: mockRequest as any,
+      page: "/test",
+      context: mockContext,
+    });
+
+    const nemoEvent = NemoEvent.from(originalEvent as any, {}, undefined, true);
+
+    nemoEvent.log("test message");
+    expect(consoleLogSpy).toHaveBeenCalledWith("[NEMO]", "test message");
   });
 });

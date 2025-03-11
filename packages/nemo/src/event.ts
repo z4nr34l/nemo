@@ -1,6 +1,7 @@
 import type { WaitUntil } from "next/dist/server/after/builtin-request-context";
 import type { NextRequest } from "next/server";
 import { match } from "path-to-regexp";
+import { Logger } from "./logger";
 import type { StorageAdapter } from "./storage/adapter";
 import { MemoryStorageAdapter } from "./storage/adapters/memory";
 import type { MiddlewareMetadata } from "./types";
@@ -122,6 +123,7 @@ export class NextFetchEvent extends FetchEvent {
 export class NemoEvent extends NextFetchEvent {
   storage: StorageAdapter;
   private currentMetadata?: MiddlewareMetadata;
+  private logger: Logger;
 
   constructor(params: {
     request: NextRequest;
@@ -131,9 +133,35 @@ export class NemoEvent extends NextFetchEvent {
     };
     nemo?: Record<string, unknown>;
     storage?: StorageAdapter;
+    debug?: boolean;
   }) {
     super(params as never);
     this.storage = params.storage || new MemoryStorageAdapter(params.nemo);
+    this.logger = new Logger(params.debug || false);
+  }
+
+  /**
+   * Log a debug message (only displayed when debug is enabled)
+   * @param args - Arguments to log
+   */
+  log(...args: any[]): void {
+    this.logger.log(...args);
+  }
+
+  /**
+   * Log an error message (always displayed)
+   * @param args - Arguments to log
+   */
+  error(...args: any[]): void {
+    this.logger.error(...args);
+  }
+
+  /**
+   * Log a warning message (always displayed)
+   * @param args - Arguments to log
+   */
+  warn(...args: any[]): void {
+    this.logger.warn(...args);
   }
 
   /**
@@ -262,6 +290,7 @@ export class NemoEvent extends NextFetchEvent {
     event: NextFetchEvent,
     nemoContext: Record<string, unknown> = {},
     storage?: StorageAdapter,
+    debug?: boolean,
   ): NemoEvent {
     // @ts-expect-error - accessing private property
     const original = event._raw || {};
@@ -272,6 +301,7 @@ export class NemoEvent extends NextFetchEvent {
       context: original.context,
       nemo: nemoContext,
       storage: storage || new MemoryStorageAdapter(nemoContext),
+      debug,
     });
   }
 }

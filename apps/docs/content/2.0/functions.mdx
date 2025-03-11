@@ -49,3 +49,20 @@ This property contains event object for serverless functions execution extended 
   description="Learn more about Shared Context in middleware"
   icon={<WaypointsIcon />}
 />
+
+#### Logger methods
+
+The event object includes built-in logging capabilities that use the same logger as NEMO internally:
+
+```ts
+// Debug logging (only displayed when debug is enabled in config)
+event.log("Processing user request", userId);
+
+// Error logging (always displayed)
+event.error("Failed to process request", error);
+
+// Warning logging (always displayed)
+event.warn("Deprecated feature used", featureName);
+```
+
+These logger methods maintain the "[NEMO]" prefix for consistent logging throughout your middleware chain.
