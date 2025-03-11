@@ -64,7 +64,7 @@ export const auth: NextMiddleware = (request, { storage }) => { // [!code focus]
 Build a custom adapter to cache data between requests using for example redis, Vercel Edge Config or other KV storage.
 
 <Callout type="warn">
-**Waring!** Keep this as fast as possible, as longer the middleware executes the longer the TTFB will be.
+**Warning!** Keep this as fast as possible, as longer the middleware executes the longer the TTFB will be.
 </Callout>
 
 ```ts title="middleware.ts"
@@ -81,14 +81,191 @@ export const middleware = createNEMO(middlewares, globalMiddleware, {
 
 ### Rate limiting
 
+Implement rate limiting in your middleware to protect your application from abuse and potential DoS attacks. Rate limiting can be applied globally or to specific routes.
+
+```ts title="middleware.ts"
+import { createNEMO, NextMiddleware } from '@rescale/nemo';
+import { RateLimiter } from '@/lib/rate-limiter';
+
+const rateLimiter: NextMiddleware = async (request, { storage }) => {
+  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const limiter = new RateLimiter();
+  
+  const { success, limit, remaining, reset } = await limiter.check(ip);
+  
+  if (!success) {
+    return new Response('Too Many Requests', {
+      status: 429,
+      headers: {
+        'X-RateLimit-Limit': limit.toString(),
+        'X-RateLimit-Remaining': remaining.toString(),
+        'X-RateLimit-Reset': reset.toString()
+      }
+    });
+  }
+};
+
+export const middleware = createNEMO([rateLimiter, ...otherMiddlewares]);
+```
+
 ### Authentication
 
+Implement authentication checks early in your middleware chain to protect routes. Use storage to avoid redundant authentication checks in subsequent middleware functions.
+
+```ts title="/app/auth/_middleware.ts"
+import { NextMiddleware, NextResponse } from '@rescale/nemo';
+import { verifyToken } from '@/lib/auth';
+
+export const auth: NextMiddleware = async (request, { storage }) => {
+  const token = request.cookies.get('auth-token')?.value;
+  
+  if (!token) {
+    return NextResponse.redirect('/login');
+  }
+  
+  try {
+    // Verify token and get user
+    const user = await verifyToken(token);
+    
+    // Store user in storage for other middleware to use
+    storage.set('user', user);
+  } catch (error) {
+    // Delete invalid token
+    const response = NextResponse.redirect('/login');
+    response.cookies.delete('auth-token');
+    return response;
+  }
+};
+```
+
 ### Authorization
+
+Run authorization checks in middleware to control access to protected resources based on user roles and permissions.
+
+```ts title="/app/admin/_middleware.ts"
+import { NextMiddleware, NextResponse } from '@rescale/nemo';
+
+export const adminOnly: NextMiddleware = (request, { storage }) => {
+  const user = storage.get('user');
+  
+  if (!user || !user.roles.includes('admin')) {
+    return NextResponse.redirect('/unauthorized');
+  }
+};
+```
 
 ## Reliability
 
 ### Monitoring
 
+NEMO provides built-in performance monitoring that you can easily enable through configuration options:
+
+```ts title="middleware.ts"
+import { createNEMO } from '@rescale/nemo';
+
+export const middleware = createNEMO(middlewares, globalMiddleware, {
+  debug: true,        // Enable detailed logs
+  enableTiming: true  // Enable performance measurements
+});
+```
+
+When `enableTiming` is enabled, NEMO will automatically:
+- Track execution time for each middleware function
+- Measure performance across different middleware chains (before, main, after)
+- Log detailed timing information in the console
+
 ### Logging
 
+Implement structured logging in your middleware for better debugging and traceability.
+
+```ts title="middleware.ts"
+import { createNEMO, NextMiddleware } from '@rescale/nemo';
+import { logger } from '@/lib/logger';
+
+const loggingMiddleware: NextMiddleware = async (request, { next, storage }) => {
+  const requestId = crypto.randomUUID();
+  const start = Date.now();
+  
+  // Add request ID to storage for cross-middleware correlation
+  storage.set('requestId', requestId);
+  
+  logger.info({
+    message: 'Request received',
+    requestId,
+    method: request.method,
+    path: request.nextUrl.pathname,
+    userAgent: request.headers.get('user-agent')
+  });
+  
+  try {
+    const response = await next();
+    
+    logger.info({
+      message: 'Request completed',
+      requestId,
+      status: response.status,
+      duration: Date.now() - start
+    });
+    
+    return response;
+  } catch (error) {
+    logger.error({
+      message: 'Request failed',
+      requestId,
+      error: error.message,
+      stack: error.stack,
+      duration: Date.now() - start
+    });
+    
+    throw error;
+  }
+};
+
+export const middleware = createNEMO([loggingMiddleware, ...otherMiddlewares]);
+```
+
 ### Testing
+
+Write comprehensive tests for your middleware to ensure reliability and catch regressions.
+
+```ts title="middleware.test.ts"
+import { NextRequest } from 'next/server';
+import { auth } from './app/auth/_middleware';
+import { createMockStorage } from '@/lib/test-utils';
+
+describe('Auth middleware', () => {
+  it('should redirect to login when no token is present', async () => {
+    // Arrange
+    const request = new NextRequest('https://example.com/dashboard');
+    const storage = createMockStorage();
+    
+    // Act
+    const response = await auth(request, { storage, next: async () => new Response() });
+    
+    // Assert
+    expect(response.status).toBe(307);
+    expect(response.headers.get('Location')).toBe('/login');
+  });
+  
+  it('should proceed and store user when token is valid', async () => {
+    // Arrange
+    const request = new NextRequest('https://example.com/dashboard');
+    request.cookies.set('auth-token', 'valid-token');
+    
+    const storage = createMockStorage();
+    const mockUser = { id: '123', name: 'Test User' };
+    
+    // Mock verifyToken function
+    jest.mock('@/lib/auth', () => ({
+      verifyToken: jest.fn().mockResolvedValue(mockUser)
+    }));
+    
+    // Act
+    const response = await auth(request, { storage, next: async () => new Response() });
+    
+    // Assert
+    expect(response).toBeUndefined(); // No response means middleware passes through
+    expect(storage.get('user')).toEqual(mockUser);
+  });
+});
+````
