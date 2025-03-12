@@ -8,6 +8,7 @@ export type NextMiddlewareResult =
   | null
   | undefined
   | void;
+
 export type NextMiddleware = (
   request: NextRequest,
   event: NemoEvent,

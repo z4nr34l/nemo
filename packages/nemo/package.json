@@ -57,7 +57,7 @@
     "typescript-eslint": "^8.24.0"
   },
   "peerDependencies": {
-    "next": ">=13.1.0 | 15.2.0-canary.56"
+    "next": ">=13.1.0 | 15.3.0-canary.1"
   },
   "publishConfig": {
     "provenance": true
