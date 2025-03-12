@@ -1,4 +1,9 @@
-import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
+import {
+  NextFetchEvent,
+  NextMiddleware as NextMiddlewareFunction,
+  NextRequest,
+  NextResponse,
+} from "next/server";
 import { pathToRegexp } from "path-to-regexp";
 import { NemoMiddlewareError } from "./errors";
 import { NemoEvent } from "./event";
@@ -12,7 +17,6 @@ import {
   type MiddlewareMetadata,
   type NemoConfig,
   type NextMiddleware,
-  type NextMiddlewareFunction,
   type NextMiddlewareResult,
   type NextMiddlewareWithMeta,
 } from "./types";
