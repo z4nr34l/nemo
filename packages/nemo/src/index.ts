@@ -31,7 +31,7 @@ export class NEMO {
   private middlewares: MiddlewareConfig;
   private globalMiddleware?: GlobalMiddlewareConfig;
   private logger: Logger;
-  private matchCache: Map<string, Map<string, boolean>> = new Map();
+  private regexpCache: Map<string, RegExp> = new Map();
   private storage: StorageAdapter;
 
   /**
@@ -77,86 +77,57 @@ export class NEMO {
   }
 
   /**
-   * Gets cached match result or computes and caches new result
-   * @param pattern - The pattern to match
-   * @param path - The path to check
+   * Matches a path against a pattern using path-to-regexp
+   * @param pattern - The route pattern
+   * @param path - The actual path
+   * @param exact - Whether to require an exact match
+   * @returns Whether the path matches the pattern
    */
-  private getCachedMatch(pattern: string, path: string): boolean {
-    let patternCache = this.matchCache.get(pattern);
-    if (!patternCache) {
-      patternCache = new Map();
-      this.matchCache.set(pattern, patternCache);
+  private matchPath(
+    pattern: string,
+    path: string,
+    exact: boolean = false,
+  ): boolean {
+    // Special case for root path
+    if (pattern === "/") {
+      return exact ? path === "/" || path === "" : true;
     }
 
-    const cached = patternCache.get(path);
-    if (cached !== undefined) {
-      return cached;
-    }
+    // Create a cache key that includes the exact flag
+    const cacheKey = `${pattern}:${exact ? "exact" : "prefix"}`;
 
-    try {
-      const result = pathToRegexp(pattern).test(path);
-      patternCache.set(path, result);
-      return result;
-    } catch (error) {
-      this.logger.error(`Error in path matching for ${pattern}:`, error);
-      patternCache.set(path, false);
-      return false;
-    }
-  }
+    // Try to get the cached regexp
+    let regexp = this.regexpCache.get(cacheKey);
 
-  /**
-   * Checks if the given path matches the given pattern.
-   * @param pattern - The pattern to match.
-   * @param path - The path to check.
-   */
-  private matchesPath(pattern: string, path: string): boolean {
-    // Decode URI components to handle Unicode characters
-    let decodedPath;
-    let decodedPattern;
-
-    try {
-      decodedPath = decodeURIComponent(path);
-    } catch (error) {
-      this.logger.error(`Error decoding path ${path}:`, error);
-      decodedPath = path; // Fall back to raw path
-    }
-
-    try {
-      decodedPattern = decodeURIComponent(pattern);
-    } catch (error) {
-      this.logger.error(`Error decoding pattern ${pattern}:`, error);
-      decodedPattern = pattern; // Fall back to raw pattern
-    }
-
-    // Special handling for parameter patterns
-    if (decodedPattern.includes(":")) {
-      let patternCache = this.matchCache.get(decodedPattern);
-      if (!patternCache) {
-        patternCache = new Map();
-        this.matchCache.set(decodedPattern, patternCache);
-      }
-
-      const cached = patternCache.get(decodedPath);
-      if (cached !== undefined) {
-        return cached;
-      }
-
+    // If no cached regexp, create and cache it
+    if (!regexp) {
       try {
-        const regex = pathToRegexp(decodedPattern);
-        const result = regex.test(decodedPath);
-        patternCache.set(decodedPath, result);
-        return result;
+        // Use path-to-regexp with the appropriate options
+        regexp = pathToRegexp(pattern, [], {
+          end: exact, // Whether to match the end of the path
+          strict: false, // Whether to be strict about trailing slashes
+          sensitive: false, // Whether to be case sensitive
+        });
+        this.regexpCache.set(cacheKey, regexp);
       } catch (error) {
         this.logger.error(
-          `Error in path matching for ${decodedPattern}:`,
+          `Error creating regexp for pattern ${pattern}:`,
           error,
         );
-        patternCache.set(decodedPath, false);
         return false;
       }
     }
 
-    return this.getCachedMatch(decodedPattern, decodedPath);
+    // Test the path against the regexp
+    try {
+      return regexp.test(path);
+    } catch (error) {
+      this.logger.error(
+        `Error testing path ${path} against pattern ${pattern}:`,
+        error,
+      );
+      return false;
+    }
   }
 
   /**
@@ -240,16 +211,16 @@ export class NEMO {
       pattern: string;
       value: MiddlewareConfigValue;
       nestLevel: number;
+      isExactMatch: boolean;
     };
 
     const matchedRoutes: MatchedRoute[] = [];
 
-    // First pass: collect all matching routes
+    // Collect all matching routes
     const collectMatchingRoutes = (
       middlewares: Record<string, MiddlewareConfigValue>,
       basePath = "",
       nestLevel = 0,
-      paramSegments: string[] = [],
     ) => {
       Object.entries(middlewares).forEach(([key, value]) => {
         // Combine base path with current key for nested routes
@@ -260,107 +231,23 @@ export class NEMO {
               ? `${basePath}${key}`
               : key;
 
-        // Check if segment contains a parameter
-        const hasParams = key.includes(":");
-        if (hasParams) {
-          // Extract the base path before the parameter
-          const baseSegment = key.split(":")[0];
-          paramSegments.push(String(baseSegment));
-        }
+        // Use path-to-regexp directly - check both prefix match and exact match
+        const isPrefixMatch = this.matchPath(fullPattern, pathname, false);
+        const isExactMatch = this.matchPath(fullPattern, pathname, true);
 
-        // For the path with parameters, check each path segment
-        const pathParts = pathname.split("/").filter(Boolean);
-
-        let shouldInclude = false;
-
-        if (key === "/") {
-          shouldInclude = true;
-        } else if (hasParams) {
-          // For paths with parameters, check if the pattern matches the path
-          shouldInclude = this.matchesPath(fullPattern, pathname);
-          this.logger.log(
-            `Parameter path check: ${fullPattern} against ${pathname} => ${shouldInclude}`,
-          );
-        } else {
-          // For exact match or parent path
-          shouldInclude =
-            pathname === fullPattern || pathname.startsWith(fullPattern + "/");
-        }
-
-        // Special handling for paths where a parent segment has parameters
-        if (!shouldInclude && paramSegments.length > 0) {
-          // Check if the current path could be nested under a parameterized parent
-          for (const segment of paramSegments) {
-            if (fullPattern.includes(segment)) {
-              // Try matching with the parameter part replaced with the actual segment value
-              const actualPathSegments = pathParts.filter(
-                (p) =>
-                  pathname.includes(`/${p}/`) || pathname.endsWith(`/${p}`),
-              );
-
-              for (const actualSegment of actualPathSegments) {
-                // Try replacing each parameter with actual values
-                let testPattern = fullPattern;
-                const regex = /:([^/]+)/g;
-                let match;
-                let replaced = false;
-
-                while ((match = regex.exec(testPattern)) !== null) {
-                  testPattern = testPattern.replace(
-                    `:${match[1]}`,
-                    actualSegment,
-                  );
-                  replaced = true;
-                  break; // Just replace the first occurrence for this attempt
-                }
-
-                if (replaced) {
-                  if (pathname.includes(testPattern)) {
-                    shouldInclude = true;
-                    this.logger.log(
-                      `Parameter parent match: ${fullPattern} via ${testPattern}`,
-                    );
-                    break;
-                  }
-                }
-              }
-
-              if (shouldInclude) break;
-            }
-          }
-        }
-
-        // Try direct path-to-regexp matching as a fallback for complex nested patterns
-        if (!shouldInclude && (hasParams || fullPattern.includes(":"))) {
-          try {
-            // For complex nested paths with parameters, try full regex matching
-            const regex = pathToRegexp(fullPattern);
-            shouldInclude = regex.test(pathname);
-            if (shouldInclude) {
-              this.logger.log(
-                `Complex parameter match: ${fullPattern} against ${pathname} => ${shouldInclude}`,
-              );
-            }
-          } catch (error) {
-            this.logger.error(
-              `Error in nested path matching for ${fullPattern}:`,
-              error,
-            );
-          }
-        }
-
-        if (shouldInclude) {
+        if (isPrefixMatch) {
           matchedRoutes.push({
             pattern: fullPattern,
             value,
             nestLevel,
+            isExactMatch,
           });
           this.logger.log(
-            `Added route to matched: ${fullPattern}, nestLevel: ${nestLevel}`,
+            `Added route to matched: ${fullPattern}, nestLevel: ${nestLevel}, exactMatch: ${isExactMatch}`,
           );
         }
 
-        // Always process nested routes for objects, especially important for parameter paths
+        // Always process nested routes for objects
         if (
           typeof value === "object" &&
           value !== null &&
@@ -369,15 +256,13 @@ export class NEMO {
           const nestedEntries = { ...value };
 
           // Only remove middleware if we're going to include this route
-          if (shouldInclude && "middleware" in nestedEntries) {
+          if (isPrefixMatch && "middleware" in nestedEntries) {
             delete (nestedEntries as Record<string, any>)["middleware"];
           }
 
           // Continue processing nested routes if there are any entries left
           if (Object.keys(nestedEntries).length > 0) {
-            collectMatchingRoutes(nestedEntries, fullPattern, nestLevel + 1, [
-              ...paramSegments,
-            ]);
+            collectMatchingRoutes(nestedEntries, fullPattern, nestLevel + 1);
           }
         }
       });
@@ -386,22 +271,27 @@ export class NEMO {
     // Collect all matching routes
     collectMatchingRoutes(this.middlewares);
 
-    // Sort routes: first by nest level, then by pattern specificity (most generic first)
+    // Sort routes: first by nest level, then prioritize exact matches, then by pattern specificity
     matchedRoutes.sort((a, b) => {
       // First by nest level
       if (a.nestLevel !== b.nestLevel) {
         return a.nestLevel - b.nestLevel;
       }
 
-      // Special case for root path
+      // Then prioritize exact matches
+      if (a.isExactMatch !== b.isExactMatch) {
+        return a.isExactMatch ? 1 : -1; // Exact matches come later
+      }
+
+      // Special case for root path - always first
       if (a.pattern === "/") return -1;
       if (b.pattern === "/") return 1;
 
-      // Otherwise by pattern length (shorter patterns are more generic)
-      return a.pattern.length - b.pattern.length;
+      // Then by specific pattern length
+      return b.pattern.length - a.pattern.length;
     });
 
-    // Second pass: process the sorted matching routes
+    // Process the sorted matching routes
     matchedRoutes.forEach(({ pattern, value, nestLevel }) => {
       // Process middleware based on its type
       if (typeof value === "function") {
@@ -659,7 +549,7 @@ export class NEMO {
    * Clear middleware cache
    */
   async clearCache() {
-    this.matchCache.clear();
+    this.regexpCache.clear();
   }
 }
 
