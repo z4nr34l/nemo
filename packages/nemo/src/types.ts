@@ -1,4 +1,8 @@
-import type { NextRequest, NextResponse } from "next/server";
+import type {
+  NextMiddleware as NextOriginalMiddleware,
+  NextRequest,
+  NextResponse,
+} from "next/server";
 import type { NemoEvent } from "./event";
 import type { StorageAdapter } from "./storage/adapter";
 
@@ -8,6 +12,8 @@ export type NextMiddlewareResult =
   | null
   | undefined
   | void;
+
+export type NextMiddlewareFunction = NextOriginalMiddleware;
 
 export type NextMiddleware = (
   request: NextRequest,

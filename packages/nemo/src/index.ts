@@ -12,6 +12,7 @@ import {
   type MiddlewareMetadata,
   type NemoConfig,
   type NextMiddleware,
+  type NextMiddlewareFunction,
   type NextMiddlewareResult,
   type NextMiddlewareWithMeta,
 } from "./types";
@@ -638,7 +639,7 @@ export class NEMO {
    * @param event - The fetch event to process the middleware for.
    * @returns The result of the middleware processing.
    */
-  middleware = async (
+  middleware: NextMiddlewareFunction = async (
     request: NextRequest,
     event: NextFetchEvent,
   ): Promise<NextMiddlewareResult> => {
@@ -680,7 +681,7 @@ export function createMiddleware(
   middlewares: MiddlewareConfig,
   globalMiddleware?: GlobalMiddlewareConfig,
   config?: NemoConfig,
-) {
+): NextMiddlewareFunction {
   console.warn(
     "[NEMO] `createMiddleware` is deprecated. Use `createNEMO` instead.",
   );
@@ -711,6 +712,6 @@ export function createNEMO(
   middlewares: MiddlewareConfig,
   globalMiddleware?: GlobalMiddlewareConfig,
   config?: NemoConfig,
-) {
+): NextMiddlewareFunction {
   return new NEMO(middlewares, globalMiddleware, config).middleware;
 }
