@@ -156,10 +156,13 @@ export class NEMO {
         return decodedPath === decodedPattern;
       }
 
-      // For non-exact matching, we need to ensure we don't match subpaths
-      // unless explicitly configured for nesting
+      // For non-exact matching, check if this is part of a nested configuration
+      // We determine this based on whether the path is inside a middleware object
+      // with nested routes (handled in propagateQueue). For direct routes in the config,
+      // we only match exact paths.
 
-      // Only match if paths are identical - this prevents "/foo" from matching "/foo/bar"
+      // Check if pattern is a nested route pattern or if the path is an exact match
+      // For nested route objects in collectMatchingRoutes, we'll collect all matching routes
       return decodedPath === decodedPattern;
     }
 
@@ -297,7 +300,15 @@ export class NEMO {
               : key;
 
         // Use getCachedMatch to check both prefix match and exact match
-        const isPrefixMatch = this.getCachedMatch(fullPattern, pathname, false);
+        const isPrefixMatch =
+          nestLevel > 0
+            ? // For nested routes, check if the path starts with the pattern
+              pathname.startsWith(basePath) &&
+              (pathname === basePath ||
+                pathname.charAt(basePath.length) === "/")
+            : // For top-level routes, use the standard matching
+              this.getCachedMatch(fullPattern, pathname, false);
+
         const isExactMatch = this.getCachedMatch(fullPattern, pathname, true);
 
         if (isPrefixMatch) {
