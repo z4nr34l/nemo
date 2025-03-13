@@ -31,9 +31,6 @@ export class NEMO {
   private middlewares: MiddlewareConfig;
   private globalMiddleware?: GlobalMiddlewareConfig;
   private logger: Logger;
-  private regexpCache: Map<string, RegExp> = new Map();
-  // Restore the matchCache structure expected by tests
-  private matchCache: Map<string, Map<string, boolean>> = new Map();
   private storage: StorageAdapter;
 
   /**
@@ -76,38 +73,6 @@ export class NEMO {
       hasGlobalMiddleware: !!globalMiddleware,
       storageAdapter: this.storage.constructor.name,
     });
-  }
-
-  /**
-   * Gets cached match result or computes and caches new result
-   * @param pattern - The pattern to match
-   * @param path - The path to check
-   */
-  private getCachedMatch(
-    pattern: string,
-    path: string,
-    exact: boolean = false,
-  ): boolean {
-    // Get or create pattern cache
-    let patternCache = this.matchCache.get(pattern);
-    if (!patternCache) {
-      patternCache = new Map();
-      this.matchCache.set(pattern, patternCache);
-    }
-
-    // Create a cache key that includes the exact flag
-    const cacheKey = exact ? `exact:${path}` : path;
-
-    // Check if result is already cached
-    const cachedResult = patternCache.get(cacheKey);
-    if (cachedResult !== undefined) {
-      return cachedResult;
-    }
-
-    // Compute and cache the result using path-to-regexp
-    const result = this.computePathMatch(pattern, path, exact);
-    patternCache.set(cacheKey, result);
-    return result;
   }
 
   /**
@@ -167,31 +132,16 @@ export class NEMO {
     }
 
     // For patterns with special characters, use path-to-regexp
-    const regexpKey = `${decodedPattern}:${exact ? "exact" : "prefix"}`;
-
-    let regexp = this.regexpCache.get(regexpKey);
-    if (!regexp) {
-      try {
-        regexp = pathToRegexp(decodedPattern, [], {
-          end: exact,
-          strict: false,
-          sensitive: false,
-        });
-        this.regexpCache.set(regexpKey, regexp);
-      } catch (error) {
-        this.logger.error(
-          `Error creating regexp for pattern ${decodedPattern}:`,
-          error,
-        );
-        return false;
-      }
-    }
-
     try {
+      const regexp = pathToRegexp(decodedPattern, [], {
+        end: exact,
+        strict: false,
+        sensitive: false,
+      });
       return regexp.test(decodedPath);
     } catch (error) {
       this.logger.error(
-        `Error testing path ${decodedPath} against pattern ${decodedPattern}:`,
+        `Error creating regexp for pattern ${decodedPattern}:`,
         error,
       );
       return false;
@@ -299,7 +249,7 @@ export class NEMO {
               ? `${basePath}${key}`
               : key;
 
-        // Use getCachedMatch to check both prefix match and exact match
+        // Use computePathMatch directly to check both prefix match and exact match
         const isPrefixMatch =
           nestLevel > 0
             ? // For nested routes, check if the path starts with the pattern
@@ -307,9 +257,9 @@ export class NEMO {
               (pathname === basePath ||
                 pathname.charAt(basePath.length) === "/")
             : // For top-level routes, use the standard matching
-              this.getCachedMatch(fullPattern, pathname, false);
+              this.computePathMatch(fullPattern, pathname, false);
 
-        const isExactMatch = this.getCachedMatch(fullPattern, pathname, true);
+        const isExactMatch = this.computePathMatch(fullPattern, pathname, true);
 
         if (isPrefixMatch) {
           matchedRoutes.push({
@@ -620,14 +570,6 @@ export class NEMO {
 
     return this.processQueue(queue, request, nemoEvent);
   };
-
-  /**
-   * Clear middleware cache
-   */
-  async clearCache() {
-    this.regexpCache.clear();
-    this.matchCache.clear();
-  }
 }
 
 /**

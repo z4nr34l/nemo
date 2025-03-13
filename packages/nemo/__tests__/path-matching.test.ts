@@ -38,28 +38,6 @@ describe("NEMO Path Matching", () => {
     expect(middleware).toHaveBeenCalled();
   });
 
-  test("should handle cache hits and misses correctly", async () => {
-    const middleware = mock(() => NextResponse.next());
-    const nemo = new NEMO({ "/cached/:id": middleware });
-
-    // First call - cache miss
-    await nemo.middleware(mockRequest("/cached/123"), mockEvent);
-    expect(middleware).toHaveBeenCalledTimes(1);
-
-    // Same path - should use cache
-    await nemo.middleware(mockRequest("/cached/123"), mockEvent);
-    expect(middleware).toHaveBeenCalledTimes(2);
-
-    // Different path but same pattern - should cache separately
-    await nemo.middleware(mockRequest("/cached/456"), mockEvent);
-    expect(middleware).toHaveBeenCalledTimes(3);
-
-    // Clear cache and try again
-    await nemo.clearCache();
-    await nemo.middleware(mockRequest("/cached/123"), mockEvent);
-    expect(middleware).toHaveBeenCalledTimes(4);
-  });
-
   test("should handle malformed URI components", async () => {
     const middleware = mock(() => NextResponse.next());
     const nemo = new NEMO({ "/user/:name": middleware });
@@ -80,6 +58,23 @@ describe("NEMO Path Matching", () => {
     const nemo = new NEMO({ "/café/:item": middleware });
 
     await nemo.middleware(mockRequest("/café/croissant"), mockEvent);
+    expect(middleware).toHaveBeenCalled();
+  });
+
+  test("should match parameters correctly", async () => {
+    const middleware = mock((req, event) => {
+      expect(event.params).toEqual({
+        category: "electronics",
+        id: "123",
+      });
+      return NextResponse.next();
+    });
+
+    const nemo = new NEMO({
+      "/products/:category/:id": middleware,
+    });
+
+    await nemo.middleware(mockRequest("/products/electronics/123"), mockEvent);
     expect(middleware).toHaveBeenCalled();
   });
 });
