@@ -145,18 +145,34 @@ export class NEMO {
       decodedPattern = pattern; // Fall back to raw pattern
     }
 
-    // Create cache key for the regexp
+    // For simple paths (no special characters), we have special handling
+    if (
+      !pattern.includes(":") &&
+      !pattern.includes("*") &&
+      !pattern.includes("(")
+    ) {
+      // For exact matching, paths must be identical
+      if (exact) {
+        return decodedPath === decodedPattern;
+      }
+
+      // For non-exact matching, we need to ensure we don't match subpaths
+      // unless explicitly configured for nesting
+
+      // Only match if paths are identical - this prevents "/foo" from matching "/foo/bar"
+      return decodedPath === decodedPattern;
+    }
+
+    // For patterns with special characters, use path-to-regexp
     const regexpKey = `${decodedPattern}:${exact ? "exact" : "prefix"}`;
 
-    // Get or create regexp for the pattern
     let regexp = this.regexpCache.get(regexpKey);
     if (!regexp) {
       try {
-        // Use path-to-regexp with appropriate options
         regexp = pathToRegexp(decodedPattern, [], {
-          end: exact, // Whether to match the end of the path
-          strict: false, // Whether to be strict about trailing slashes
-          sensitive: false, // Whether to be case sensitive
+          end: exact,
+          strict: false,
+          sensitive: false,
         });
         this.regexpCache.set(regexpKey, regexp);
       } catch (error) {
@@ -168,7 +184,6 @@ export class NEMO {
       }
     }
 
-    // Test the path against the regexp
     try {
       return regexp.test(decodedPath);
     } catch (error) {
