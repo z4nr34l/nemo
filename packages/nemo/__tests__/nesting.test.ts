@@ -227,4 +227,26 @@ describe("NEMO Nesting", () => {
       expect(response?.headers.get("x-child-executed")).toBe("true");
     });
   });
+
+  describe("Path Matching", () => {
+    test("should not match subpaths when not configured for nesting", async () => {
+      const fooMiddleware = mock((req) => {
+        req.headers.set("x-foo-executed", "true");
+        return NextResponse.next();
+      });
+
+      const nemo = new NEMO({
+        "/foo": fooMiddleware,
+      });
+
+      // Request to /foo/bar should not match /foo middleware
+      const response = await nemo.middleware(
+        mockRequest("/foo/bar"),
+        mockEvent,
+      );
+
+      expect(fooMiddleware).not.toHaveBeenCalled();
+      expect(response?.headers.get("x-foo-executed")).toBeNull();
+    });
+  });
 });
