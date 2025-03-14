@@ -4,8 +4,6 @@ description: Learn how to configure middleware
 icon: Settings
 ---
 
-import { SquareFunctionIcon, PlayIcon } from "lucide-react";
-
 The `createMiddleware` function is the main entry point for the Next Easy Middlewares package. It allows you to create a middleware helper that can be used to define middleware functions for your Next.js application.
 
 ## Configuration
@@ -112,7 +110,7 @@ NEMO supports hierarchical organization of middleware through nested routes, all
           // This runs for /admin and all nested routes like /admin/users
           request.headers.set("x-section", "admin");
         },
-        
+
         // Nested route for /admin/users
         '/users': async ({ request }: MiddlewareFunctionProps) => {
           // This only runs for /admin/users
