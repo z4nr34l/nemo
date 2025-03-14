@@ -1,7 +1,13 @@
-import { NextRequest } from "next/server";
+import { describe, expect, it, mock } from "bun:test";
+import { NextRequest, type NextFetchEvent } from "next/server";
 import { createNEMO } from "../src";
 
 describe("Middleware Execution Order", () => {
+  // Create a helper function to create a mock NextFetchEvent
+  const mockEvent: NextFetchEvent = {
+    waitUntil: mock(() => {}),
+  } as never as NextFetchEvent;
+
   it("should execute middleware in correct order for nested routes", async () => {
     const executionOrder: string[] = [];
 
@@ -25,7 +31,7 @@ describe("Middleware Execution Order", () => {
     });
 
     const request = new NextRequest("http://localhost/dashboard/users/123");
-    await middleware(request, { waitUntil: jest.fn() } as any);
+    await middleware(request, mockEvent);
 
     expect(executionOrder).toEqual(["root", "dashboard", "users", "userId"]);
   });
@@ -55,7 +61,7 @@ describe("Middleware Execution Order", () => {
     });
 
     const request = new NextRequest("http://localhost/api/v1/users/123");
-    await middleware(request, { waitUntil: jest.fn() } as any);
+    await middleware(request, mockEvent);
 
     expect(executionOrder).toEqual(["api", "v1", "users", "user-id"]);
   });
@@ -98,7 +104,7 @@ describe("Middleware Execution Order", () => {
     );
 
     const request = new NextRequest("http://localhost/admin/dashboard");
-    await middleware(request, { waitUntil: jest.fn() } as any);
+    await middleware(request, mockEvent);
 
     expect(executionOrder).toEqual([
       "global-before-1",
@@ -140,7 +146,7 @@ describe("Middleware Execution Order", () => {
     );
 
     const request = new NextRequest("http://localhost/protected/content");
-    await middleware(request, { waitUntil: jest.fn() } as any);
+    await middleware(request, mockEvent);
 
     expect(executionOrder).toEqual(["root", "protected"]);
     // 'content' and 'global-after' should not be in the array
@@ -164,7 +170,7 @@ describe("Middleware Execution Order", () => {
     });
 
     const request = new NextRequest("http://localhost/api");
-    await middleware(request, { waitUntil: jest.fn() } as any);
+    await middleware(request, mockEvent);
 
     expect(executionOrder).toEqual(["api-1", "api-2", "api-3"]);
   });
