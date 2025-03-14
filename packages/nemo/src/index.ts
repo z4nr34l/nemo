@@ -226,6 +226,7 @@ export class NEMO {
     this.logger.log("Processing request for path:", pathname);
 
     const queue: NextMiddlewareWithMeta[] = [];
+    const processedPatterns = new Set<string>(); // Track processed patterns
 
     // Add before middlewares
     const beforeMiddlewares = (
@@ -254,6 +255,39 @@ export class NEMO {
 
     const matchedRoutes: MatchedRoute[] = [];
 
+    // Special case for root path - always include the root middleware for ALL requests
+    if (this.middlewares["/"] && pathname !== "/") {
+      const rootValue = this.middlewares["/"];
+      processedPatterns.add("/");
+
+      if (typeof rootValue === "function") {
+        matchedRoutes.push({
+          pattern: "/",
+          middleware: rootValue,
+          nestLevel: 0,
+          isExactMatch: false,
+        });
+      } else if (Array.isArray(rootValue)) {
+        matchedRoutes.push({
+          pattern: "/",
+          middleware: rootValue,
+          nestLevel: 0,
+          isExactMatch: false,
+        });
+      } else if (
+        typeof rootValue === "object" &&
+        rootValue !== null &&
+        "middleware" in rootValue
+      ) {
+        matchedRoutes.push({
+          pattern: "/",
+          middleware: rootValue.middleware,
+          nestLevel: 0,
+          isExactMatch: false,
+        });
+      }
+    }
+
     // Collect all matching routes
     const collectMatchingRoutes = (
       middlewares: Record<string, MiddlewareConfigValue>,
@@ -264,15 +298,22 @@ export class NEMO {
         // Skip processing if the key is "middleware" - it's a special property
         if (key === "middleware") return;
 
+        // Skip root path if already processed
+        if (key === "/" && basePath === "" && processedPatterns.has("/"))
+          return;
+
         // Combine base path with current key for nested routes
         const fullPattern = this.createFullPattern(key, basePath);
+
+        // Skip if already processed
+        if (processedPatterns.has(fullPattern)) return;
+        processedPatterns.add(fullPattern);
 
         // Different path matching logic based on nestLevel and value type
         let isPrefixMatch = false;
         const isExactMatch = this.computePathMatch(fullPattern, pathname, true);
 
-        // For root level routes, we need to check if they're configured for nesting
-        // Only object values with properties besides 'middleware' support nesting
+        // Check if this is a nested routes container
         const supportsNesting =
           typeof value === "object" &&
           value !== null &&
@@ -280,7 +321,7 @@ export class NEMO {
           Object.keys(value).some((k) => k !== "middleware");
 
         if (nestLevel === 0 && !supportsNesting) {
-          // Top-level routes only match exactly unless they support nesting
+          // Top-level routes that don't support nesting only match exactly
           isPrefixMatch = isExactMatch;
         } else {
           // Nested routes or routes that support nesting can match prefix
@@ -323,12 +364,8 @@ export class NEMO {
           }
         }
 
-        // Process nested routes if value is an object
-        if (
-          typeof value === "object" &&
-          value !== null &&
-          !Array.isArray(value)
-        ) {
+        // Process nested routes if value is an object with entries other than middleware
+        if (supportsNesting) {
           // Create a copy of the object without the middleware property
           const nestedEntries = { ...value };
           if ("middleware" in nestedEntries) {
@@ -346,8 +383,12 @@ export class NEMO {
     // Collect all matching routes
     collectMatchingRoutes(this.middlewares);
 
-    // Sort routes: first by nest level, then prioritize exact matches, then by pattern specificity
+    // Sort routes: first by nest level, then by exact matches, then by pattern specificity
     matchedRoutes.sort((a, b) => {
+      // Special case for root path - always first
+      if (a.pattern === "/") return -1;
+      if (b.pattern === "/") return 1;
+
       // First by nest level
       if (a.nestLevel !== b.nestLevel) {
         return a.nestLevel - b.nestLevel;
@@ -358,11 +399,7 @@ export class NEMO {
         return a.isExactMatch ? 1 : -1; // Exact matches come later
       }
 
-      // Special case for root path - always first
-      if (a.pattern === "/") return -1;
-      if (b.pattern === "/") return 1;
-
-      // Then by specific pattern length
+      // Then by specific pattern length (longer patterns are more specific)
       return b.pattern.length - a.pattern.length;
     });
 
