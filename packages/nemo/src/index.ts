@@ -267,13 +267,25 @@ export class NEMO {
         // Combine base path with current key for nested routes
         const fullPattern = this.createFullPattern(key, basePath);
 
-        // Check if the path matches the pattern
-        const isPrefixMatch = this.computePathMatch(
-          fullPattern,
-          pathname,
-          false,
-        );
+        // Different path matching logic based on nestLevel and value type
+        let isPrefixMatch = false;
         const isExactMatch = this.computePathMatch(fullPattern, pathname, true);
+
+        // For root level routes, we need to check if they're configured for nesting
+        // Only object values with properties besides 'middleware' support nesting
+        const supportsNesting =
+          typeof value === "object" &&
+          value !== null &&
+          !Array.isArray(value) &&
+          Object.keys(value).some((k) => k !== "middleware");
+
+        if (nestLevel === 0 && !supportsNesting) {
+          // Top-level routes only match exactly unless they support nesting
+          isPrefixMatch = isExactMatch;
+        } else {
+          // Nested routes or routes that support nesting can match prefix
+          isPrefixMatch = this.computePathMatch(fullPattern, pathname, false);
+        }
 
         // Only process this route if it matches the path
         if (isPrefixMatch) {
