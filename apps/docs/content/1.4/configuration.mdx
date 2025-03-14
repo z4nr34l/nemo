@@ -1,8 +1,10 @@
 ---
 title: Configuration
-description: Learn how to configure middleware
-icon: Settings
+description: Package configuration and explanation
+icon: Wrench
 ---
+
+import { SquareFunctionIcon, PlayIcon } from "lucide-react";
 
 The `createMiddleware` function is the main entry point for the Next Easy Middlewares package. It allows you to create a middleware helper that can be used to define middleware functions for your Next.js application.
 
@@ -31,9 +33,11 @@ export const middleware = createMiddleware(middlewares, globalMiddlewares);
 
 ## Path middlewares construction (`middlewares`)
 
-**Type**: `Record<string, MiddlewareFunctionProps | MiddlewareFunctionProps[]>`
+**Type**: [`Record<string, MiddlewareFunction | MiddlewareFunction[]>`](/docs/1.4/functions)
 
-This is the middleware configuration object that holds all middleware functions mapped to their paths.
+This property contains a map of middleware functions that will be executed for specific routes. The key is the route path, and the value is the middleware function.
+
+Let's break down the construction:
 
 ### Matcher
 
@@ -94,56 +98,7 @@ This is a function that will be executed for the specific route. It can be a sin
   </Tab>
 </Tabs>
 
-### Nested Routes
-
-**Type**: `Record<string, MiddlewareFunction | MiddlewareFunction[] | Record<string, ...>>`
-
-NEMO supports hierarchical organization of middleware through nested routes, allowing you to create advanced routing patterns:
-
-<Tabs items={["Basic nesting", "Deep nesting"]}>
-  <Tab value="Basic nesting">
-    ```ts title="middleware.ts"
-    const middlewares = {
-      '/admin': {
-        // Middleware for /admin route
-        middleware: async ({ request }: MiddlewareFunctionProps) => {
-          // This runs for /admin and all nested routes like /admin/users
-          request.headers.set("x-section", "admin");
-        },
-
-        // Nested route for /admin/users
-        '/users': async ({ request }: MiddlewareFunctionProps) => {
-          // This only runs for /admin/users
-          request.headers.set("x-admin-users", "true");
-        }
-      }
-    };
-    ```
-  </Tab>
-  <Tab value="Deep nesting">
-    ```ts title="middleware.ts"
-    const middlewares = {
-      '/shop': {
-        middleware: shopMiddleware,
-        '/categories': {
-          middleware: categoriesMiddleware,
-          '/:categoryId': {
-            middleware: categoryMiddleware,
-            '/products': {
-              middleware: productsMiddleware,
-              '/:productId': productMiddleware
-            }
-          }
-        }
-      }
-    };
-    ```
-  </Tab>
-</Tabs>
-
-<Callout type="info">
-  When a request matches a nested route, the parent middleware runs first, followed by the child middleware. If any middleware in the chain returns a response, the chain stops and that response is returned.
-</Callout>
+<Card href="/docs/1.4/functions" title="Functions" description="Learn more about NEMO Functions" icon={<PlayIcon/>}/>
 
 ## Global middlewares construction (`globalMiddlewares`)
 
