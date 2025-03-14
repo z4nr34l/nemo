@@ -1,0 +1,141 @@
+---
+title: Nested Routes
+description: How to work with nested routes in NEMO middleware
+icon: GitFork
+---
+
+# Nested Routes
+
+NEMO supports hierarchical organization of middleware through nested routes, allowing you to create advanced routing patterns while maintaining clean code structure.
+
+## Basic Nested Routes
+
+You can define nested routes by using objects that contain both a `middleware` property and additional route keys:
+
+```ts
+import { createNEMO } from "@rescale/nemo";
+
+const middleware = createNEMO({
+  "/admin": {
+    // Middleware for /admin route
+    middleware: async (req) => {
+      req.headers.set("x-section", "admin");
+      return NextResponse.next();
+    },
+    
+    // Nested route for /admin/users
+    "/users": async (req) => {
+      // This middleware only runs for /admin/users
+      return NextResponse.next({ 
+        headers: { "x-admin-users": "true" } 
+      });
+    }
+  }
+});
+```
+
+In this example:
+- The parent middleware runs for `/admin` and any matching child routes
+- The child middleware runs only for `/admin/users`
+- Both middlewares execute in sequence for matching routes
+
+## Execution Order
+
+When a request matches a nested route, NEMO executes the middleware in this order:
+1. Global `before` middleware (if defined)
+2. Root path middleware (`/`) for all non-root requests
+3. Parent middleware
+4. Child middleware
+5. Global `after` middleware (if defined)
+
+<Callout type="info">
+If any middleware in the chain returns a response (like a redirect), the chain stops and that response is returned immediately.
+</Callout>
+
+## Chain Breaking
+
+When a parent middleware returns a response, child middleware will not be executed:
+
+```ts
+const middleware = createNEMO({
+  "/protected": {
+    middleware: (req) => {
+      // If user is not authenticated, redirect to login
+      if (!isAuthenticated(req)) {
+        return NextResponse.redirect("/login");
+      }
+      // Otherwise continue to child routes
+      return NextResponse.next();
+    },
+    "/dashboard": (req) => {
+      // This won't run if the parent redirected
+      return NextResponse.next({ 
+        headers: { "x-dashboard": "true" } 
+      });
+    }
+  }
+});
+```
+
+## Deep Nesting with Parameters
+
+You can create deeply nested routes with URL parameters:
+
+```ts
+const middleware = createNEMO({
+  "/shop": {
+    middleware: shopMiddleware,
+    "/categories": {
+      middleware: categoriesMiddleware,
+      "/:categoryId": {
+        middleware: (req, event) => {
+          // Access the categoryId parameter
+          const categoryId = event.params.categoryId;
+          req.headers.set("x-category-id", categoryId);
+          return NextResponse.next();
+        },
+        "/products": {
+          middleware: productsMiddleware,
+          "/:productId": (req, event) => {
+            const { categoryId, productId } = event.params;
+            // Both parent and child parameters are available
+            return NextResponse.next({
+              headers: {
+                "x-product-id": productId,
+                "x-full-path": `category-${categoryId}/product-${productId}`,
+              },
+            });
+          }
+        }
+      }
+    }
+  }
+});
+```
+
+In this advanced example, a path like `/shop/categories/electronics/products/laptop` would execute all middleware in the chain, with `event.params` containing:
+- `categoryId: "electronics"`
+- `productId: "laptop"`
+
+## Important Notes
+
+1. **Top-level routes** without nesting **only match exact paths** by default.
+   ```ts
+   // This will ONLY match /foo exactly, not /foo/bar
+   const middleware = createNEMO({
+     "/foo": fooMiddleware 
+   });
+   ```
+
+2. **Parent routes** with nested children will match both the exact path and child paths.
+   ```ts
+   // This matches both /parent and /parent/child
+   const middleware = createNEMO({
+     "/parent": {
+       middleware: parentMiddleware,
+       "/child": childMiddleware
+     }
+   });
+   ```
+
+3. **Parameter matching** follows the same rules as regular route matching - parent parameters are available to child routes.

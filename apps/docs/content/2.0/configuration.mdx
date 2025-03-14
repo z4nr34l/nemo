@@ -1,10 +1,15 @@
 ---
 title: Configuration
-description: Package configuration and explanation
-icon: Wrench
+description: Learn how to configure NEMO middleware
+icon: Settings
 ---
 
-import { SquareFunctionIcon, PlayIcon } from "lucide-react";
+import { Tabs, Tab } from 'nextra-theme-docs'
+import { Callout } from 'nextra-theme-docs'
+
+# Configuration
+
+NEMO offers flexible configuration options to organize your middleware functions.
 
 ## Middlewares
 
@@ -22,30 +27,185 @@ const middlewares = {
     console.log("There is NEMO", request.nextUrl.pathname);
   },
 } satisfies MiddlewareConfig;
-
 ```
+
+### Simple Middleware
+
+The simplest form is a direct function assignment to a route pattern:
+
+```ts
+import { createNEMO } from "@rescale/nemo";
+
+const middleware = createNEMO({
+  // Simple middleware for /api route
+  "/api": async (request, event) => {
+    console.log("API request:", request.nextUrl.pathname);
+  }
+});
+```
+
+### Middleware Arrays
+
+You can assign an array of middleware functions to execute in sequence:
+
+```ts
+import { createNEMO } from "@rescale/nemo";
+
+const middleware = createNEMO({
+  // Multiple middleware functions for /auth route
+  "/auth": [
+    // First function in chain
+    async (request, event) => {
+      event.storage.set("startTime", Date.now());
+    },
+    // Second function in chain
+    async (request, event) => {
+      const startTime = event.storage.get("startTime");
+      console.log(`Request processing time: ${Date.now() - startTime}ms`);
+    }
+  ]
+});
+```
+
+### Nested Routes
+
+NEMO supports nested route definitions with their own middleware:
+
+```ts
+import { createNEMO } from "@rescale/nemo";
+
+const middleware = createNEMO({
+  "/admin": {
+    // Middleware for /admin route
+    middleware: async (request) => {
+      console.log("Admin section accessed");
+    },
+    
+    // Nested routes under /admin
+    "/users": async (request) => {
+      console.log("Admin users section");
+    },
+    "/settings": async (request) => {
+      console.log("Admin settings section");
+    }
+  }
+});
+```
+
+<Callout type="info">
+When using nested routes, the parent route's middleware executes before any matching child route middleware.
+</Callout>
+
+### Deep Nesting with Parameters
+
+You can create deeply nested structures with URL parameters:
+
+```ts
+import { createNEMO } from "@rescale/nemo";
+
+const middleware = createNEMO({
+  "/shop": {
+    middleware: shopMiddleware,
+    "/categories": {
+      middleware: categoriesMiddleware,
+      "/:categoryId": {
+        middleware: categoryMiddleware,
+        "/products": {
+          middleware: productsMiddleware,
+          "/:productId": productMiddleware
+        }
+      }
+    }
+  }
+});
+```
+
+This structure handles routes like `/shop/categories/electronics/products/laptop` with parameters accessible via `event.params`.
 
 ## Global Middlewares
 
 **Type**: `GlobalMiddlewareConfig`
 
-**Chain type**: `"before" | "after"`
-
-The `globalMiddlewares` object is a key-value pair where the key is the middleware type and the value is an async function. The middleware type can be either `before` or `after`. The `before` middleware function will be executed before any route middleware, and the `after` middleware function will be executed after any route middleware.
+Global middleware functions are executed for all routes, regardless of the specific route configuration.
 
 ```ts twoslash title="middleware.ts"
 import { type GlobalMiddlewareConfig } from "@rescale/nemo";
 
 const globalMiddlewares = {
-  before: async () => {
-    console.log("Before all middlewares");
+  before: async (request, event) => {
+    console.log("Before any route middleware");
   },
-  after: async () => {
-    console.log("After all middlewares");
+  after: async (request, event) => {
+    console.log("After all route middleware");
   },
 } satisfies GlobalMiddlewareConfig;
-
 ```
+
+### Before
+
+**Type**: [`MiddlewareFunction | MiddlewareFunction[]`](/docs/2.0/functions)
+
+The `before` middleware executes before any route-specific middleware:
+
+<Tabs items={["Single function", "Chained functions"]}>
+  <Tab value="Single function">
+    ```ts title="middleware.ts"
+    const globalMiddlewares = {
+      before: async (request, event) => {
+        console.log("Before route middleware");
+        event.storage.set("startTime", Date.now());
+      }
+    };
+    ```
+  </Tab>
+  <Tab value="Chained functions">
+    ```ts title="middleware.ts"
+    const globalMiddlewares = {
+      before: [
+        async (request, event) => {
+          event.storage.set("startTime", Date.now());
+        },
+        async (request, event) => {
+          // Another before middleware
+        }
+      ]
+    };
+    ```
+  </Tab>
+</Tabs>
+
+### After
+
+**Type**: [`MiddlewareFunction | MiddlewareFunction[]`](/docs/2.0/functions)
+
+The `after` middleware executes after all route-specific middleware:
+
+<Tabs items={["Single function", "Chained functions"]}>
+  <Tab value="Single function">
+    ```ts title="middleware.ts"
+    const globalMiddlewares = {
+      after: async (request, event) => {
+        const startTime = event.storage.get("startTime");
+        console.log(`Request took: ${Date.now() - startTime}ms`);
+      },
+    };
+    ```
+  </Tab>
+  <Tab value="Chained functions">
+    ```ts title="middleware.ts"
+    const globalMiddlewares = {
+      after: [
+        async (request, event) => {
+          // First after middleware
+        },
+        async (request, event) => {
+          // Second after middleware
+        }
+      ]
+    };
+    ```
+  </Tab>
+</Tabs>
 
 ## Config object
 
@@ -141,4 +301,6 @@ export const config = {
   matcher: ["/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)"],
 };
 
-```
+```import { Tabs, Tab } from 'nextra-theme-docs'
+import { Callout } from 'nextra-theme-docs'
+

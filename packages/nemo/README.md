@@ -85,6 +85,18 @@ export default createNEMO({
 
 Each middleware in a chain is executed in sequence until one returns a response or all are completed. Nested routes allow you to organize your middleware hierarchically, matching more specific paths while maintaining a clean structure.
 
+### Nested Routes Execution Order
+
+When a request matches a nested route, NEMO executes middleware in this order:
+
+1. Global `before` middleware (if defined)
+2. Root path middleware (`/`) for all non-root requests 
+3. Parent middleware (using the `middleware` property)
+4. Child middleware
+5. Global `after` middleware (if defined)
+
+If any middleware returns a response (like a redirect), the chain stops and that response is returned immediately.
+
 ## API Reference
 
 ### Types
