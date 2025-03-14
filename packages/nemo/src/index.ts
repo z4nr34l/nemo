@@ -110,8 +110,6 @@ export class NEMO {
       decodedPattern = pattern; // Fall back to raw pattern
     }
 
-    console.log(decodedPattern, decodedPath);
-
     // For simple paths (no special characters), we have special handling
     if (
       !pattern.includes(":") &&
@@ -123,14 +121,13 @@ export class NEMO {
         return decodedPath === decodedPattern;
       }
 
-      // For non-exact matching, check if this is part of a nested configuration
-      // We determine this based on whether the path is inside a middleware object
-      // with nested routes (handled in propagateQueue). For direct routes in the config,
-      // we only match exact paths.
-
-      // Check if pattern is a nested route pattern or if the path is an exact match
-      // For nested route objects in collectMatchingRoutes, we'll collect all matching routes
-      return decodedPath === decodedPattern;
+      // For non-exact matching:
+      // 1. Path is exactly the pattern
+      // 2. Path starts with pattern followed by a slash
+      return (
+        decodedPath === decodedPattern ||
+        decodedPath.startsWith(decodedPattern + "/")
+      );
     }
 
     // For patterns with special characters, use path-to-regexp
@@ -250,7 +247,7 @@ export class NEMO {
     // Collection of matched routes with their metadata to be processed in order
     type MatchedRoute = {
       pattern: string;
-      value: MiddlewareConfigValue;
+      middleware: NextMiddleware | NextMiddleware[];
       nestLevel: number;
       isExactMatch: boolean;
     };
@@ -264,44 +261,66 @@ export class NEMO {
       nestLevel = 0,
     ) => {
       Object.entries(middlewares).forEach(([key, value]) => {
+        // Skip processing if the key is "middleware" - it's a special property
+        if (key === "middleware") return;
+
         // Combine base path with current key for nested routes
         const fullPattern = this.createFullPattern(key, basePath);
 
-        // Use computePathMatch directly to check both prefix match and exact match
-        const isPrefixMatch =
-          nestLevel > 0
-            ? // For nested routes, check if the path starts with the pattern
-              pathname.startsWith(basePath) &&
-              (pathname === basePath ||
-                pathname.charAt(basePath.length) === "/")
-            : // For top-level routes, use the standard matching
-              this.computePathMatch(fullPattern, pathname, false);
-
+        // Check if the path matches the pattern
+        const isPrefixMatch = this.computePathMatch(
+          fullPattern,
+          pathname,
+          false,
+        );
         const isExactMatch = this.computePathMatch(fullPattern, pathname, true);
 
+        // Only process this route if it matches the path
         if (isPrefixMatch) {
-          matchedRoutes.push({
-            pattern: fullPattern,
-            value,
-            nestLevel,
-            isExactMatch,
-          });
-          this.logger.log(
-            `Added route to matched: ${fullPattern}, nestLevel: ${nestLevel}, exactMatch: ${isExactMatch}`,
-          );
+          // Handle middleware directly attached to this route
+          if (typeof value === "function") {
+            matchedRoutes.push({
+              pattern: fullPattern,
+              middleware: value,
+              nestLevel,
+              isExactMatch,
+            });
+          }
+          // Handle array of middleware functions
+          else if (Array.isArray(value)) {
+            matchedRoutes.push({
+              pattern: fullPattern,
+              middleware: value,
+              nestLevel,
+              isExactMatch,
+            });
+          }
+          // Handle object with middleware property
+          else if (
+            typeof value === "object" &&
+            value !== null &&
+            !Array.isArray(value) &&
+            "middleware" in value
+          ) {
+            matchedRoutes.push({
+              pattern: fullPattern,
+              middleware: value.middleware,
+              nestLevel,
+              isExactMatch,
+            });
+          }
         }
 
-        // Always process nested routes for objects
+        // Process nested routes if value is an object
         if (
           typeof value === "object" &&
           value !== null &&
           !Array.isArray(value)
         ) {
+          // Create a copy of the object without the middleware property
           const nestedEntries = { ...value };
-
-          // Only remove middleware if we're going to include this route
-          if (isPrefixMatch && "middleware" in nestedEntries) {
-            delete (nestedEntries as Record<string, any>)["middleware"];
+          if ("middleware" in nestedEntries) {
+            delete (nestedEntries as Record<string, unknown>).middleware;
           }
 
           // Continue processing nested routes if there are any entries left
@@ -336,24 +355,12 @@ export class NEMO {
     });
 
     // Process the sorted matching routes
-    matchedRoutes.forEach(({ pattern, value, nestLevel }) => {
-      // Process middleware based on its type
-      if (typeof value === "function") {
-        queue.push(
-          this.attachMetadata(value, {
-            chain: "main",
-            index: queue.length - beforeMiddlewares.length,
-            pathname,
-            routeKey: pattern,
-            nestLevel,
-          }),
-        );
-      }
+    matchedRoutes.forEach(({ pattern, middleware, nestLevel }) => {
       // Handle array of middleware functions
-      else if (Array.isArray(value)) {
-        value.forEach((middleware: NextMiddleware, index) => {
+      if (Array.isArray(middleware)) {
+        middleware.forEach((middlewareFn, index) => {
           queue.push(
-            this.attachMetadata(middleware, {
+            this.attachMetadata(middlewareFn, {
               chain: "main",
               index,
               pathname,
@@ -363,39 +370,17 @@ export class NEMO {
           );
         });
       }
-      // Handle object with middleware property
-      else if (
-        typeof value === "object" &&
-        value !== null &&
-        !Array.isArray(value) &&
-        "middleware" in value
-      ) {
-        const middlewareValue = value.middleware;
-
-        // Support both single function and array of functions in middleware property
-        if (Array.isArray(middlewareValue)) {
-          middlewareValue.forEach((middleware: NextMiddleware, index) => {
-            queue.push(
-              this.attachMetadata(middleware, {
-                chain: "main",
-                index,
-                pathname,
-                routeKey: pattern,
-                nestLevel,
-              }),
-            );
-          });
-        } else if (typeof middlewareValue === "function") {
-          queue.push(
-            this.attachMetadata(middlewareValue, {
-              chain: "main",
-              index: queue.length - beforeMiddlewares.length,
-              pathname,
-              routeKey: pattern,
-              nestLevel,
-            }),
-          );
-        }
+      // Handle single middleware function
+      else if (typeof middleware === "function") {
+        queue.push(
+          this.attachMetadata(middleware, {
+            chain: "main",
+            index: queue.length - beforeMiddlewares.length,
+            pathname,
+            routeKey: pattern,
+            nestLevel,
+          }),
+        );
       }
     });
 
