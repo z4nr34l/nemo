@@ -34,7 +34,7 @@ describe("NEMO Nesting", () => {
       const nemo = new NEMO({
         "/": rootMiddleware,
         "/admin": {
-          "/": adminMiddleware,
+          middleware: adminMiddleware,
           "/users": () =>
             NextResponse.next({ headers: { "x-admin-users": "true" } }),
         },
