@@ -1,11 +1,11 @@
 ---
-title: Storage (shared context)
-description: Storage (shared context) between functions across the execution chain
+title: Storage
+description: Storage between functions across the execution chain
 icon: Waypoints
 ---
 
 
-NEMO provides a storage (shared context) that allows you to share data between functions in the middleware execution chain. This can be useful when you need to pass data between functions or store data that needs to be accessed by multiple functions.
+NEMO provides a storage that allows you to share data between functions in the middleware execution chain. This can be useful when you need to pass data between functions or store data that needs to be accessed by multiple functions.
 
 By default it operates using in-memory storage, but you can extend it with your own storage solution or database of choice.
 
@@ -19,7 +19,7 @@ By default it operates using in-memory storage, but you can extend it with your 
 
 ## Usage example
 
-Below you can see an example of how to use the shared context in your middleware functions.
+Below you can see an example of how to use the storage in your middleware functions.
 
 <Callout type="warn">
   Remember that each request&apos;s middleware execution is a separate event instance, so the context is not shared between different requests.
