@@ -364,15 +364,19 @@ export class NEMO {
           }
         }
 
-        // Process nested routes if value is an object with entries other than middleware
+        /**
+         * Process nested routes for objects that can contain child routes
+         * Objects that contain keys other than "middleware" are considered
+         * route containers that can have nested routes inside them
+         */
         if (supportsNesting) {
-          // Create a copy of the object without the middleware property
+          // Clone the object and remove middleware property to isolate child routes
           const nestedEntries = { ...value };
           if ("middleware" in nestedEntries) {
             delete (nestedEntries as Record<string, unknown>).middleware;
           }
 
-          // Continue processing nested routes if there are any entries left
+          // Recursively process nested routes with updated base path and nest level
           if (Object.keys(nestedEntries).length > 0) {
             collectMatchingRoutes(nestedEntries, fullPattern, nestLevel + 1);
           }
@@ -380,32 +384,37 @@ export class NEMO {
       });
     };
 
-    // Collect all matching routes
+    // Start the recursive route collection process from the root middleware config
     collectMatchingRoutes(this.middlewares);
 
-    // Sort routes: first by nest level, then by exact matches, then by pattern specificity
+    /**
+     * Sort matched routes by priority:
+     * 1. Root path ("/") always comes first
+     * 2. Routes are ordered by nest level (parent routes before children)
+     * 3. Exact path matches take priority over prefix matches
+     * 4. Longer patterns take priority over shorter ones (more specific wins)
+     */
     matchedRoutes.sort((a, b) => {
-      // Special case for root path - always first
       if (a.pattern === "/") return -1;
       if (b.pattern === "/") return 1;
 
-      // First by nest level
       if (a.nestLevel !== b.nestLevel) {
         return a.nestLevel - b.nestLevel;
       }
 
-      // Then prioritize exact matches
       if (a.isExactMatch !== b.isExactMatch) {
         return a.isExactMatch ? 1 : -1; // Exact matches come later
       }
 
-      // Then by specific pattern length (longer patterns are more specific)
       return b.pattern.length - a.pattern.length;
     });
 
-    // Process the sorted matching routes
+    /**
+     * Add all matched middleware functions to the execution queue
+     * Each middleware receives metadata about its position in the chain
+     * and the route it belongs to
+     */
     matchedRoutes.forEach(({ pattern, middleware, nestLevel }) => {
-      // Handle array of middleware functions
       if (Array.isArray(middleware)) {
         middleware.forEach((middlewareFn, index) => {
           queue.push(

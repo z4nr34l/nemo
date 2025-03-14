@@ -90,7 +90,7 @@ Each middleware in a chain is executed in sequence until one returns a response 
 When a request matches a nested route, NEMO executes middleware in this order:
 
 1. Global `before` middleware (if defined)
-2. Root path middleware (`/`) for all non-root requests 
+2. Root path middleware (`/`) for all non-root requests
 3. Parent middleware (using the `middleware` property)
 4. Child middleware
 5. Global `after` middleware (if defined)
@@ -275,12 +275,6 @@ The matcher fully supports Unicode characters in both patterns and paths:
 
 This matches `/café/croissant` and provides `item` param with value `croissant`.
 
-## Debugging tool
-
-To debug your matchers and see how parameters are extracted, you can use this tool:
-
-[Rescale path-to-regexp debugger](https://www.rescale.build/tools/path-to-regexp)
-
 ## Usage Examples
 
 ### Basic Path-Based Middleware
@@ -314,8 +308,6 @@ export const middleware = createNEMO({
   }
 });
 ```
-
-Test your patterns using the [path-to-regexp debugger](https://www.rescale.build/tools/path-to-regexp).
 
 ### Using Global Middleware
 
