@@ -110,6 +110,8 @@ export class NEMO {
       decodedPattern = pattern; // Fall back to raw pattern
     }
 
+    console.log(decodedPattern, decodedPath);
+
     // For simple paths (no special characters), we have special handling
     if (
       !pattern.includes(":") &&
@@ -197,6 +199,27 @@ export class NEMO {
   }
 
   /**
+   * Creates a full pattern path by combining base path and key
+   * @param key - The route key
+   * @param basePath - The base path
+   * @returns The combined full pattern
+   */
+  private createFullPattern(key: string, basePath: string): string {
+    // Check if basePath exists first
+    if (!basePath) {
+      return key; // If no basePath, just return the key
+    }
+
+    // Now handle different key scenarios
+    switch (key) {
+      case "/":
+        return basePath; // For root key with basePath, return just the basePath
+      default:
+        return `${basePath}${key}`; // Otherwise concatenate them
+    }
+  }
+
+  /**
    * Propagate the queue of middleware functions for the given request.
    * @param request - The request to propagate the queue for.
    * @returns The queue of middleware functions.
@@ -242,12 +265,7 @@ export class NEMO {
     ) => {
       Object.entries(middlewares).forEach(([key, value]) => {
         // Combine base path with current key for nested routes
-        const fullPattern =
-          key === "/" && basePath
-            ? basePath
-            : basePath
-              ? `${basePath}${key}`
-              : key;
+        const fullPattern = this.createFullPattern(key, basePath);
 
         // Use computePathMatch directly to check both prefix match and exact match
         const isPrefixMatch =
