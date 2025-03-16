@@ -253,6 +253,55 @@ describe("NEMO", () => {
       await nemo.middleware(mockRequest("/other"), mockEvent);
       expect(middleware).not.toHaveBeenCalled();
     });
+
+    test("should match root path only for direct root requests, not nested paths", async () => {
+      // First test with root path
+      const rootMiddleware = mock((req) => {
+        req.headers.set("x-processed-by", "root");
+        return NextResponse.next();
+      });
+
+      const settingsMiddleware = mock((req) => {
+        req.headers.set("x-processed-by", "settings");
+        return NextResponse.next();
+      });
+
+      const nemo = new NEMO({
+        "/": rootMiddleware,
+        "/settings": settingsMiddleware,
+      });
+
+      // Root path should be processed by the root middleware
+      const rootResponse = await nemo.middleware(mockRequest("/"), mockEvent);
+      expect(rootMiddleware).toHaveBeenCalled();
+      expect(settingsMiddleware).not.toHaveBeenCalled();
+      expect(rootResponse?.headers.get("x-processed-by")).toBe("root");
+
+      // Create a new instance with fresh mocks for the second test
+      const rootMiddleware2 = mock((req) => {
+        req.headers.set("x-processed-by", "root");
+        return NextResponse.next();
+      });
+
+      const settingsMiddleware2 = mock((req) => {
+        req.headers.set("x-processed-by", "settings");
+        return NextResponse.next();
+      });
+
+      const nemo2 = new NEMO({
+        "/": rootMiddleware2,
+        "/settings": settingsMiddleware2,
+      });
+
+      // Settings path should be processed by the settings middleware, not the root middleware
+      const settingsResponse = await nemo2.middleware(
+        mockRequest("/settings"),
+        mockEvent,
+      );
+      expect(rootMiddleware2).not.toHaveBeenCalled();
+      expect(settingsMiddleware2).toHaveBeenCalled();
+      expect(settingsResponse?.headers.get("x-processed-by")).toBe("settings");
+    });
   });
 
   describe("Error Handling", () => {
