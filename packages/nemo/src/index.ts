@@ -255,9 +255,9 @@ export class NEMO {
 
     const matchedRoutes: MatchedRoute[] = [];
 
-    // Special case for root path - only include the root middleware for exact match to root
-    // Changed this section to only match the root path for direct root requests
-    if (this.middlewares["/"] && pathname === "/") {
+    // Special case for root path - only process the root middleware for exact root path matches
+    // This ensures root middleware only runs for "/" and not for other paths
+    if (this.middlewares["/"] && (pathname === "/" || pathname === "")) {
       const rootValue = this.middlewares["/"];
       processedPatterns.add("/");
 
@@ -299,9 +299,13 @@ export class NEMO {
         // Skip processing if the key is "middleware" - it's a special property
         if (key === "middleware") return;
 
-        // Skip root path if already processed
-        if (key === "/" && basePath === "" && processedPatterns.has("/"))
+        // Skip root path completely if not at root level or if already processed
+        // This ensures the root middleware doesn't match other paths
+        if (key === "/" && (basePath !== "" || processedPatterns.has("/")))
           return;
+
+        // Skip the root path in regular processing for non-root paths
+        if (key === "/" && pathname !== "/" && pathname !== "") return;
 
         // Combine base path with current key for nested routes
         const fullPattern = this.createFullPattern(key, basePath);
