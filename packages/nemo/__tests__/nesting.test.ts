@@ -49,7 +49,7 @@ describe("NEMO Nesting", () => {
         mockRequest("/admin"),
         mockEvent,
       );
-      expect(rootMiddleware).toHaveBeenCalled();
+      expect(rootMiddleware).not.toHaveBeenCalled();
       expect(userMiddleware).not.toHaveBeenCalled();
       expect(adminMiddleware).toHaveBeenCalled();
       expect(adminResponse?.headers.get("x-section")).toBe("admin");

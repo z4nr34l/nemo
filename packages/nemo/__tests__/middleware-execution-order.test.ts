@@ -33,7 +33,7 @@ describe("Middleware Execution Order", () => {
     const request = new NextRequest("http://localhost/dashboard/users/123");
     await middleware(request, mockEvent);
 
-    expect(executionOrder).toEqual(["root", "dashboard", "users", "userId"]);
+    expect(executionOrder).toEqual(["dashboard", "users", "userId"]);
   });
 
   it("should execute middleware in correct order for multiple nested parent routes", async () => {
@@ -109,7 +109,6 @@ describe("Middleware Execution Order", () => {
     expect(executionOrder).toEqual([
       "global-before-1",
       "global-before-2",
-      "root",
       "admin",
       "dashboard",
       "global-after-1",
@@ -148,7 +147,7 @@ describe("Middleware Execution Order", () => {
     const request = new NextRequest("http://localhost/protected/content");
     await middleware(request, mockEvent);
 
-    expect(executionOrder).toEqual(["root", "protected"]);
+    expect(executionOrder).toEqual(["protected"]);
     // 'content' and 'global-after' should not be in the array
   });
 

@@ -255,8 +255,9 @@ export class NEMO {
 
     const matchedRoutes: MatchedRoute[] = [];
 
-    // Special case for root path - always include the root middleware for ALL requests
-    if (this.middlewares["/"] && pathname !== "/") {
+    // Special case for root path - only include the root middleware for exact match to root
+    // Changed this section to only match the root path for direct root requests
+    if (this.middlewares["/"] && pathname === "/") {
       const rootValue = this.middlewares["/"];
       processedPatterns.add("/");
 
@@ -265,14 +266,14 @@ export class NEMO {
           pattern: "/",
           middleware: rootValue,
           nestLevel: 0,
-          isExactMatch: false,
+          isExactMatch: true,
         });
       } else if (Array.isArray(rootValue)) {
         matchedRoutes.push({
           pattern: "/",
           middleware: rootValue,
           nestLevel: 0,
-          isExactMatch: false,
+          isExactMatch: true,
         });
       } else if (
         typeof rootValue === "object" &&
@@ -283,7 +284,7 @@ export class NEMO {
           pattern: "/",
           middleware: rootValue.middleware,
           nestLevel: 0,
-          isExactMatch: false,
+          isExactMatch: true,
         });
       }
     }
