@@ -1,8 +1,11 @@
 name: SonarQube
 
 on:
+  push:
+    branches:
+      - canary
   pull_request:
-    branches: ['canary']
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 permissions: read-all
