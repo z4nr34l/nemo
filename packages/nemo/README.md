@@ -276,6 +276,36 @@ The matcher fully supports Unicode characters in both patterns and paths:
 
 This matches `/café/croissant` and provides `item` param with value `croissant`.
 
+### Parameter Constraints
+
+You can constrain route parameters to match only specific values or exclude certain values:
+
+```typescript
+// Match only if :lang is either 'en' or 'cn'
+const nemo = new NEMO({
+  "/:lang(en|cn)/settings": [
+    // This middleware only runs for /en/settings or /cn/settings
+    (req) => {
+      const { lang } = req.params;
+      // lang will be either 'en' or 'cn'
+      return NextResponse.next();
+    },
+  ],
+});
+
+// Exclude specific values from matching
+const nemo = new NEMO({
+  "/:path(!api)/:subpath": [
+    // This middleware runs for any /:path/:subpath EXCEPT when path is 'api'
+    // e.g., /docs/intro will match, but /api/users will not
+    (req) => {
+      const { path, subpath } = req.params;
+      return NextResponse.next();
+    },
+  ],
+});
+```
+
 ## Usage Examples
 
 ### Basic Path-Based Middleware

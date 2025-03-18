@@ -1,0 +1,123 @@
+---
+title: Advanced Route Matching
+description: Learn advanced patterns for route matching in NEMO
+---
+
+# Advanced Route Matching
+
+NEMO provides powerful route matching capabilities that go beyond simple path matching. This guide covers advanced techniques for fine-tuning your route patterns.
+
+## Parameter Constraints
+
+### Matching Specific Values
+
+You can constrain route parameters to match only a specific set of values using the `(option1|option2)` syntax:
+
+```typescript
+const nemo = new NEMO({
+  "/:lang(en|fr|es)/documentation": [
+    (req) => {
+      const { lang } = req.params;
+      // lang will be either 'en', 'fr', or 'es'
+      return NextResponse.next();
+    },
+  ],
+});
+```
+
+This route will match:
+- `/en/documentation`
+- `/fr/documentation`
+- `/es/documentation`
+
+But will NOT match:
+- `/de/documentation`
+- `/jp/documentation`
+
+### Excluding Specific Values
+
+You can exclude specific values from matching by using the `!` operator in the constraint:
+
+```typescript
+const nemo = new NEMO({
+  "/:section(!api)/details": [
+    (req) => {
+      const { section } = req.params;
+      // section will be anything EXCEPT 'api'
+      return NextResponse.next();
+    },
+  ],
+});
+```
+
+This route will match:
+- `/products/details`
+- `/users/details`
+- `/settings/details`
+
+But will NOT match:
+- `/api/details`
+
+### Combining Multiple Constraints
+
+You can use multiple parameter constraints within a single route:
+
+```typescript
+const nemo = new NEMO({
+  "/:project/:env(dev|staging|prod)/:resource(!secrets)": [
+    (req) => {
+      const { project, env, resource } = req.params;
+      // env will be either 'dev', 'staging', or 'prod'
+      // resource will be anything EXCEPT 'secrets'
+      return NextResponse.next();
+    },
+  ],
+});
+```
+
+## Examples
+
+### Language-specific Routes
+
+```typescript
+const nemo = new NEMO({
+  "/:lang(en|cn)/blog/:postId": [
+    // Only matches English and Chinese blog pages
+    (req) => {
+      const { lang, postId } = req.params;
+      // lang will be either 'en' or 'cn'
+      return NextResponse.next();
+    },
+  ],
+});
+```
+
+### Protected Routes Exclusion
+
+```typescript
+const nemo = new NEMO({
+  "/:area(!admin|!settings)/:page": [
+    // This middleware runs for any routes EXCEPT in admin or settings areas
+    (req) => {
+      const { area, page } = req.params;
+      return NextResponse.next();
+    },
+  ],
+});
+```
+
+## Using Regular Expressions
+
+For even more complex matching requirements, NEMO supports full regular expressions within parameter constraints:
+
+```typescript
+const nemo = new NEMO({
+  "/:id([0-9]{5})/profile": [
+    // Only matches if id consists of exactly 5 digits
+    (req) => {
+      const { id } = req.params;
+      return NextResponse.next();
+    },
+  ],
+});
+```
