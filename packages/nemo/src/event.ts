@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars -- library */
+/* eslint-disable security/detect-object-injection -- library */
+/* eslint-disable @typescript-eslint/prefer-as-const -- library */
+/* eslint-disable @typescript-eslint/no-explicit-any -- library */
 import type { WaitUntil } from "next/dist/server/after/builtin-request-context";
 import type { NextRequest } from "next/server";
 import { match } from "path-to-regexp";
@@ -61,7 +65,6 @@ export class FetchEvent implements Event {
     throw new Error("Method not implemented.");
   }
 
-  // TODO: is this dead code? NextFetchEvent never lets this get called
   respondWith(response: Response | Promise<Response>): void {
     if (this.hasResponded) {
       throw new Error("FetchEvent.respondWith() has already been called");
@@ -70,7 +73,6 @@ export class FetchEvent implements Event {
     this[responseSymbol] = Promise.resolve(response);
   }
 
-  // TODO: is this dead code? passThroughSymbol is unused
   passThroughOnException(): void {
     this[passThroughSymbol] = true;
   }
@@ -83,7 +85,7 @@ export class FetchEvent implements Event {
     }
     if (this[waitUntilSymbol].kind === "external") {
       // if we received an external waitUntil, we delegate to it
-      // TODO(after): this will make us not go through `getServerError(error, 'edge-server')` in `sandbox`
+
       const waitUntil = this[waitUntilSymbol].function;
       return waitUntil(promise);
     } else {

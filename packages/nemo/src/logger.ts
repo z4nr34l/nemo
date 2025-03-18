@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- library */
 export class Logger {
   private readonly debug: boolean;
   private readonly prefix: string = "[NEMO]";

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- library */
+/* eslint-disable security/detect-object-injection -- library */
 import { StorageAdapter } from "../adapter";
 
 export class MemoryStorageAdapter extends StorageAdapter {

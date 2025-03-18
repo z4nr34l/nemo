@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars -- library */
 export abstract class StorageAdapter {
   abstract get<T>(key: string): T | undefined;
   abstract set<T>(key: string, value: T): void;
