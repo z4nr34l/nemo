@@ -1,6 +1,7 @@
 {
   "pages": [
-    "supabase"
+    "supabase",
+    "next-auth"
   ],
   "title": "Packages"
 }
