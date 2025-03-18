@@ -21,9 +21,9 @@ Just skip the part of setting up the middleware and follow the steps below.
 
     ```typescript title="@/middleware.ts"
     import { auth as authMiddleware } from "@/auth";
-    import { createNEMO } from '@rescale/nemo';
+    import { type MiddlewareConfig, type GlobalMiddlewareConfig, createNEMO } from '@rescale/nemo';
 
-    const globalMiddlewares = {
+    const globalMiddlewares: GlobalMiddlewareConfig = {
       before: async (request, event) => {
         await authMiddleware((_request, _event) => {
           const { auth } = _request;
@@ -32,10 +32,10 @@ Just skip the part of setting up the middleware and follow the steps below.
       }
     }
 
-    const middlewares = {
+    const middlewares: MiddlewareConfig = {
       '/': [
         async (request, event) => {
-          console.log('There is NEMO', event.stoarge.get("user"));
+          console.log('There is NEMO', event.storage.get("user"));
         },
       ],
     };

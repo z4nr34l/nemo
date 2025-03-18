@@ -70,16 +70,16 @@ We will only make one small change to make it work with NEMO.
     We need to edit primary `middleware.ts` file to use the new middleware function.
 
     ```typescript title="@/middleware.ts"
-    import { createNEMO } from '@rescale/nemo';
+    import { type MiddlewareConfig, type GlobalMiddlewareConfig, createNEMO } from '@rescale/nemo';
     import { updateSession } from '@/lib/supabase/middleware';
 
-    const globalMiddlewares = {
+    const globalMiddlewares: GlobalMiddlewareConfig = {
       before: updateSession, // REMEMBER TO IMPORT updateSession
     }
 
-    const middlewares = {
+    const middlewares: MiddlewareConfig = {
       '/': [
-        async ({ request }: MiddlewareFunctionProps) => {
+        async (request) => {
           console.log('There is NEMO', request.nextUrl.pathname);
         },
       ],
