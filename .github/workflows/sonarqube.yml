@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - canary
-  pull_request:
-    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 permissions: read-all
