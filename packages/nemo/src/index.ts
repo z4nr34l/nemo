@@ -157,7 +157,7 @@ export class NEMO {
     initialHeaders: Headers,
     finalHeaders: Headers,
   ): Record<string, string> {
-    const diff: Record<string, string> = {};
+    const entries: [string, string][] = [];
     const seen = new Set<string>();
 
     // Optimize header comparison using Sets
@@ -165,18 +165,18 @@ export class NEMO {
       seen.add(key);
       const initialValue = initialHeaders.get(key);
       if (!initialValue || initialValue !== value) {
-        diff[key] = value;
+        entries.push([key, value]);
       }
     });
 
     // Check for deleted headers
     initialHeaders.forEach((_, key) => {
       if (!seen.has(key)) {
-        diff[key] = ""; // Mark for deletion
+        entries.push([key, ""]); // Mark for deletion
       }
     });
 
-    return diff;
+    return Object.fromEntries(entries);
   }
 
   /**
