@@ -12,7 +12,6 @@ const passThroughSymbol = Symbol.for("passThrough");
 const waitUntilSymbol = Symbol.for("waitUntil");
 
 export class FetchEvent implements Event {
-  // TODO(after): get rid of the 'internal' variant and always use an external waitUntil
   // (this means removing `FetchEventResult.waitUntil` which also requires a builder change)
   readonly [waitUntilSymbol]:
     | { kind: "internal"; promises: Promise<any>[] }

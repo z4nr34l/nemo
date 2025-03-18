@@ -4,6 +4,8 @@ import onlyWarn from "eslint-plugin-only-warn";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 import pluginReact from "eslint-plugin-react";
 import pluginReactHooks from "eslint-plugin-react-hooks";
+import pluginSecurity from "eslint-plugin-security";
+import sonarjs from 'eslint-plugin-sonarjs';
 import turboPlugin from "eslint-plugin-turbo";
 import globals from "globals";
 import tseslint from "typescript-eslint";
@@ -33,7 +35,14 @@ export const config = [
   js.configs.recommended,
   eslintConfigPrettier,
   eslintPluginPrettierRecommended,
+  pluginSecurity.configs.recommended,
   ...tseslint.configs.recommended,
+  {
+    plugins: { sonarjs },
+    rules: {
+      'sonarjs/no-implicit-dependencies': 'error',
+    },
+  },
   {
     ...pluginReact.configs.flat.recommended,
     languageOptions: {
