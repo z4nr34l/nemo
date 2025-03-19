@@ -3,6 +3,9 @@
   "bugs": {
     "url": "https://github.com/z4nr34l/nemo/issues"
   },
+  "dependencies": {
+    "@fumadocs/mdx-remote": "^1.2.0"
+  },
   "devDependencies": {
     "@changesets/cli": "^2.27.12",
     "@commitlint/cli": "^19.7.1",
@@ -20,7 +23,7 @@
     "Path"
   ],
   "license": "MIT",
-  "name": "root",
+  "name": "nemo",
   "packageManager": "bun@1.2.2",
   "publishConfig": {
     "provenance": true
@@ -35,16 +38,13 @@
     "release": "turbo build --filter='@rescale/nemo' && changeset publish",
     "version-packages": "changeset version"
   },
+  "trustedDependencies": [
+    "@swc/core",
+    "docs"
+  ],
   "workspaces": [
     "packages/*",
     "examples/*",
     "apps/*"
-  ],
-  "dependencies": {
-    "@fumadocs/mdx-remote": "^1.2.0"
-  },
-  "trustedDependencies": [
-    "@swc/core",
-    "docs"
   ]
 }
