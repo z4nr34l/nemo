@@ -480,129 +480,175 @@ export class NEMO {
     request: NextRequest,
     event: NemoEvent,
   ): Promise<NextMiddlewareResult> {
-    let result: NextMiddlewareResult;
     const initialHeaders = new Headers(request.headers);
-
-    // Add timing tracking only when enabled
-    const chainTiming = this.config.enableTiming
-      ? {
-          before: 0,
-          main: 0,
-          after: 0,
-        }
-      : null;
+    const chainTiming = this.initializeTimingTracking();
 
     this.logger.log("Starting middleware queue processing");
 
+    const result = await this.executeMiddlewareChain(
+      queue,
+      request,
+      event,
+      chainTiming,
+    );
+    this.logFinalTiming(chainTiming);
+
+    return result || this.createFinalResponse(initialHeaders, request);
+  }
+
+  private initializeTimingTracking(): {
+    before: number;
+    main: number;
+    after: number;
+  } | null {
+    return this.config.enableTiming ? { before: 0, main: 0, after: 0 } : null;
+  }
+
+  private async executeMiddlewareChain(
+    queue: NextMiddlewareWithMeta[],
+    request: NextRequest,
+    event: NemoEvent,
+    chainTiming: { before: number; main: number; after: number } | null,
+  ): Promise<NextMiddlewareResult> {
     for (const middleware of queue) {
       try {
-        const startTime = this.config.enableTiming ? performance.now() : 0;
-
-        this.logger.log("Executing middleware:", {
-          chain: middleware.__nemo?.chain,
-          index: middleware.__nemo?.index,
-          pathname: middleware.__nemo?.pathname,
-          routeKey: middleware.__nemo?.routeKey,
-          nestLevel: middleware.__nemo?.nestLevel,
-        });
-
-        // Set current middleware metadata before execution
-        if (middleware.__nemo) {
-          event.setCurrentMetadata(middleware.__nemo);
+        const result = await this.executeMiddleware(
+          middleware,
+          request,
+          event,
+          chainTiming,
+        );
+        if (this.isTerminatingResult(result)) {
+          return result;
         }
-
-        result = await middleware(request, event);
-
-        if (
-          this.config.enableTiming &&
-          chainTiming &&
-          middleware.__nemo?.chain
-        ) {
-          const duration = performance.now() - startTime;
-          chainTiming[middleware.__nemo.chain] += duration;
-          this.logger.log(
-            `Middleware execution time: ${duration.toFixed(2)}ms`,
-          );
-        }
-
-        // Only return early if the result exists and is not a "next" response
-        if (result) {
-          // Check if the result is specifically a "next" response, not just equality
-          const isNextResponse =
-            result instanceof NextResponse &&
-            !result.headers.has("x-middleware-rewrite") &&
-            !result.headers.has("Location") &&
-            !result.headers.get("content-type")?.includes("application/json");
-
-          if (!isNextResponse) {
-            // Log final timing before early return
-            if (this.config.enableTiming && chainTiming) {
-              this.logger.log("Chain timing summary:", {
-                before: `${chainTiming.before.toFixed(2)}ms`,
-                main: `${chainTiming.main.toFixed(2)}ms`,
-                after: `${chainTiming.after.toFixed(2)}ms`,
-                total: `${(
-                  chainTiming.before +
-                  chainTiming.main +
-                  chainTiming.after
-                ).toFixed(2)}ms`,
-              });
-            }
-            this.logger.log("Middleware returned custom result, ending chain");
-            return result;
-          } else {
-            // Simplified header handling - just add to request headers
-            if (result instanceof NextResponse) {
-              // Apply headers to the request for subsequent middleware
-              result.headers.forEach((value, key) => {
-                if (!key.startsWith("x-middleware-")) {
-                  request.headers.set(key, value);
-                }
-              });
-            }
-
-            this.logger.log(
-              "Middleware returned next response, continuing chain",
-            );
-          }
-        }
+        this.applyHeadersToRequest(result, request);
       } catch (error) {
-        this.logger.error("Middleware execution failed:", {
-          error,
-          metadata: middleware.__nemo,
-        });
-
-        if (this.config.errorHandler) {
-          const handled = await this.config.errorHandler(
-            error as Error,
-            middleware.__nemo!,
-          );
-          if (handled) {
-            this.logger.log("Error handled by custom handler");
-            return handled;
-          }
-        }
-
-        if (!this.config.silent) {
-          throw new NemoMiddlewareError(
-            "Middleware execution failed",
-            middleware.__nemo!,
-            error,
-          );
+        const errorResult = await this.handleMiddlewareError(error, middleware);
+        if (errorResult) {
+          return errorResult;
         }
       }
     }
+    return null;
+  }
 
-    // Log final timing before default return
+  private async executeMiddleware(
+    middleware: NextMiddlewareWithMeta,
+    request: NextRequest,
+    event: NemoEvent,
+    chainTiming: { before: number; main: number; after: number } | null,
+  ): Promise<NextMiddlewareResult> {
+    const startTime = this.config.enableTiming ? performance.now() : 0;
+
+    this.logMiddlewareExecution(middleware);
+
+    if (middleware.__nemo) {
+      event.setCurrentMetadata(middleware.__nemo);
+    }
+
+    const result = await middleware(request, event);
+    this.updateTimingStats(startTime, middleware, chainTiming);
+
+    return result;
+  }
+
+  private logMiddlewareExecution(middleware: NextMiddlewareWithMeta): void {
+    this.logger.log("Executing middleware:", {
+      chain: middleware.__nemo?.chain,
+      index: middleware.__nemo?.index,
+      pathname: middleware.__nemo?.pathname,
+      routeKey: middleware.__nemo?.routeKey,
+      nestLevel: middleware.__nemo?.nestLevel,
+    });
+  }
+
+  private isTerminatingResult(result: NextMiddlewareResult): boolean {
+    if (!result) return false;
+
+    const isNextResponse =
+      result instanceof NextResponse &&
+      !result.headers.has("x-middleware-rewrite") &&
+      !result.headers.has("Location") &&
+      !result.headers.get("content-type")?.includes("application/json");
+
+    return !isNextResponse;
+  }
+
+  private applyHeadersToRequest(
+    result: NextMiddlewareResult,
+    request: NextRequest,
+  ): void {
+    if (result instanceof NextResponse) {
+      result.headers.forEach((value, key) => {
+        if (!key.startsWith("x-middleware-")) {
+          request.headers.set(key, value);
+        }
+      });
+    }
+  }
+
+  private updateTimingStats(
+    startTime: number,
+    middleware: NextMiddlewareWithMeta,
+    chainTiming: { before: number; main: number; after: number } | null,
+  ): void {
+    if (this.config.enableTiming && chainTiming && middleware.__nemo?.chain) {
+      const duration = performance.now() - startTime;
+      const chain = middleware.__nemo.chain as keyof typeof chainTiming;
+      chainTiming[chain] += duration;
+      this.logger.log(`Middleware execution time: ${duration.toFixed(2)}ms`);
+    }
+  }
+
+  private async handleMiddlewareError(
+    error: any,
+    middleware: NextMiddlewareWithMeta,
+  ): Promise<NextMiddlewareResult> {
+    this.logger.error("Middleware execution failed:", {
+      error,
+      metadata: middleware.__nemo,
+    });
+
+    if (this.config.errorHandler) {
+      const handled = await this.config.errorHandler(
+        error as Error,
+        middleware.__nemo!,
+      );
+      if (handled) {
+        this.logger.log("Error handled by custom handler");
+        return handled;
+      }
+    }
+
+    if (!this.config.silent) {
+      throw new NemoMiddlewareError(
+        "Middleware execution failed",
+        middleware.__nemo!,
+        error,
+      );
+    }
+
+    return null;
+  }
+
+  private logFinalTiming(
+    chainTiming: { before: number; main: number; after: number } | null,
+  ): void {
     if (this.config.enableTiming && chainTiming) {
+      const total = chainTiming.before + chainTiming.main + chainTiming.after;
       this.logger.log("Chain timing summary:", {
         before: `${chainTiming.before.toFixed(2)}ms`,
         main: `${chainTiming.main.toFixed(2)}ms`,
         after: `${chainTiming.after.toFixed(2)}ms`,
-        total: `${(chainTiming.before + chainTiming.main + chainTiming.after).toFixed(2)}ms`,
+        total: `${total.toFixed(2)}ms`,
       });
     }
+  }
 
+  private createFinalResponse(
+    initialHeaders: Headers,
+    request: NextRequest,
+  ): NextMiddlewareResult {
     const finalHeaders = new Headers(request.headers);
     const headerDiff = this.getHeadersDiff(initialHeaders, finalHeaders);
     this.logger.log("Headers modified:", headerDiff);
