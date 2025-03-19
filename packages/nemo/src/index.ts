@@ -27,11 +27,11 @@ export * from "./types";
 export * from "./utils";
 
 export class NEMO {
-  private config: NemoConfig;
-  private middlewares: MiddlewareConfig;
-  private globalMiddleware?: GlobalMiddlewareConfig;
-  private logger: Logger;
-  private storage: StorageAdapter;
+  private readonly config: NemoConfig;
+  private readonly middlewares: MiddlewareConfig;
+  private readonly globalMiddleware?: GlobalMiddlewareConfig;
+  private readonly logger: Logger;
+  private readonly storage: StorageAdapter;
 
   /**
    * NEMO Middleware
@@ -208,11 +208,10 @@ export class NEMO {
     }
 
     // Now handle different key scenarios
-    switch (key) {
-      case "/":
-        return basePath; // For root key with basePath, return just the basePath
-      default:
-        return `${basePath}${key}`; // Otherwise concatenate them
+    if (key === "/") {
+      return basePath; // For root key with basePath, return just the basePath
+    } else {
+      return `${basePath}${key}`; // Otherwise concatenate them
     }
   }
 
@@ -261,14 +260,7 @@ export class NEMO {
       const rootValue = this.middlewares["/"];
       processedPatterns.add("/");
 
-      if (typeof rootValue === "function") {
-        matchedRoutes.push({
-          pattern: "/",
-          middleware: rootValue,
-          nestLevel: 0,
-          isExactMatch: true,
-        });
-      } else if (Array.isArray(rootValue)) {
+      if (typeof rootValue === "function" || Array.isArray(rootValue)) {
         matchedRoutes.push({
           pattern: "/",
           middleware: rootValue,

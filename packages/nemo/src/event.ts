@@ -124,7 +124,7 @@ export class NextFetchEvent extends FetchEvent {
 export class NemoEvent extends NextFetchEvent {
   storage: StorageAdapter;
   private currentMetadata?: MiddlewareMetadata;
-  private logger: Logger;
+  private readonly logger: Logger;
 
   constructor(params: {
     request: NextRequest;
