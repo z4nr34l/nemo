@@ -594,7 +594,7 @@ export class NEMO {
   ): void {
     if (this.config.enableTiming && chainTiming && middleware.__nemo?.chain) {
       const duration = performance.now() - startTime;
-      const chain = middleware.__nemo.chain as keyof typeof chainTiming;
+      const chain = middleware.__nemo.chain;
       chainTiming[chain] += duration;
       this.logger.log(`Middleware execution time: ${duration.toFixed(2)}ms`);
     }
