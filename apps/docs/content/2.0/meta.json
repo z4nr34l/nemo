@@ -1,0 +1,20 @@
+{
+  "description": "Latest version",
+  "icon": "Tag",
+  "pages": [
+    "---Getting started---",
+    "index",
+    "configuration",
+    "matcher",
+    "advanced-matching",
+    "functions",
+    "context",
+    "best-practices",
+    "---Conventions---",
+    "...conventions",
+    "---3rd parties---",
+    "3rd-parties"
+  ],
+  "root": true,
+  "title": "v2.0"
+}

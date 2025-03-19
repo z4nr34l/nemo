@@ -1,9 +1,9 @@
-import { ReactElement } from 'react';
-import { Hero } from '@/components/homepage/hero';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { Activity, Github, Globe, Link2, PackageOpen } from 'lucide-react';
-import { Comparizon } from '@/components/homepage/comparizon';
+import { Comparizon } from "@/components/homepage/comparizon";
+import { Hero } from "@/components/homepage/hero";
+import { Button } from "@/components/ui/button";
+import { Activity, Github, Globe, Link2, PackageOpen } from "lucide-react";
+import Link from "next/link";
+import { ReactElement } from "react";
 
 export default function HomePage(): ReactElement {
   return (
@@ -16,7 +16,7 @@ export default function HomePage(): ReactElement {
         <div className="grid lg:grid-cols-3 bg-border gap-px">
           <div className="p-8 lg:px-10 lg:py-14 bg-background flex flex-col items-start justify-start gap-6">
             <h2 className="text-4xl font-bold text-muted-foreground">
-              <span className="text-foreground">Simplify</span> your middlewares{' '}
+              <span className="text-foreground">Simplify</span> your middlewares{" "}
               <span className="text-foreground">now</span>!
             </h2>
             <Link href="/docs">

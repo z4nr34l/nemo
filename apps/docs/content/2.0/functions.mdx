@@ -1,0 +1,68 @@
+---
+title: Functions
+description: Middleware functions standardization, explanation and usage
+icon: Play
+---
+
+import { WaypointsIcon, ArrowRightIcon } from "lucide-react";
+
+NEMO uses Next.js native middleware function schema to provide you with a familiar way of writing middleware functions and enabling you to use 3rd party packages without any issues.
+
+## Function schema
+
+NEMO middleware function API is fully compatible with Next.js native API. It's just extending the event prop with some additional props and functions.
+
+```ts twoslash title="_middleware.ts"
+import { NextMiddleware } from "@rescale/nemo";
+
+const example: NextMiddleware = async (request, event) => {
+  // function body
+};
+
+```
+
+<Callout>
+#### Info
+
+You can check detailed types by hovering on function parts and props.
+</Callout>
+
+## Explanation
+
+### Prop:&nbsp;&nbsp;`request`
+
+Type: [NextRequest](https://nextjs.org/docs/app/functions/next-request)
+
+That's a user middleware's request passed to middleware and can be later **updated** by functions in chain.
+
+This props cookies will only deffer from the original user's request if you've forwarded any response it in the chain.
+
+### Prop:&nbsp;&nbsp;`event`
+
+Type: `NemoEvent` extends [NextFetchEvent](https://nextjs.org/docs/app/building-your-application/routing/middleware#waituntil-and-nextfetchevent)
+
+This property contains event object for serverless functions execution extended via `nemo` prop which contains chain execution storage.
+
+<Card
+  href="/docs/2.0/context"
+  title="Storage"
+  description="Learn more about storage in middleware"
+  icon={<WaypointsIcon />}
+/>
+
+#### Logger methods
+
+The event object includes built-in logging capabilities that use the same logger as NEMO internally:
+
+```ts
+// Debug logging (only displayed when debug is enabled in config)
+event.log("Processing user request", userId);
+
+// Error logging (always displayed)
+event.error("Failed to process request", error);
+
+// Warning logging (always displayed)
+event.warn("Deprecated feature used", featureName);
+```
+
+These logger methods maintain the "[NEMO]" prefix for consistent logging throughout your middleware chain.

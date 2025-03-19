@@ -1,5 +1,19 @@
 {
-  "name": "root",
+  "author": "Z4NR34L <software@zanreal.net>",
+  "bugs": {
+    "url": "https://github.com/z4nr34l/nemo/issues"
+  },
+  "dependencies": {
+    "@fumadocs/mdx-remote": "^1.2.0"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.12",
+    "@commitlint/cli": "^19.7.1",
+    "@commitlint/config-conventional": "^19.7.1",
+    "husky": "^9.1.7",
+    "turbo": "^2.4.4"
+  },
+  "homepage": "https://nemo.rescale.build",
   "keywords": [
     "Next.js",
     "Middleware",
@@ -8,43 +22,29 @@
     "Route",
     "Path"
   ],
-  "homepage": "https://nemo.rescale.build",
-  "bugs": {
-    "url": "https://github.com/z4nr34l/nemo/issues"
-  },
-  "repository": "https://github.com/z4nr34l/nemo",
   "license": "MIT",
-  "author": "Z4NR34L <software@zanreal.net>",
-  "scripts": {
-    "build": "turbo run build",
-    "changeset": "changeset",
-    "clean": "turbo clean",
-    "dev": "turbo run dev --parallel",
-    "format": "prettier --write \"**/*.{ts,tsx}\"",
-    "lint": "turbo run lint",
-    "prepare": "husky install",
-    "release": "turbo build --filter='@rescale/nemo' && changeset publish",
-    "version-packages": "changeset version"
-  },
-  "prettier": "@vercel/style-guide/prettier",
-  "devDependencies": {
-    "@changesets/cli": "^2.27.7",
-    "@commitlint/cli": "^18.4.3",
-    "@commitlint/config-conventional": "^18.4.3",
-    "@commitlint/config-pnpm-scopes": "^18.4.3",
-    "@vercel/style-guide": "^6.0.0",
-    "husky": "^8.0.3",
-    "prettier": "^3.1.1",
-    "prettier-plugin-tailwindcss": "^0.5.9",
-    "turbo": "^2.3.0"
-  },
-  "packageManager": "pnpm@9.15.0",
+  "name": "nemo",
+  "packageManager": "bun@1.2.2",
   "publishConfig": {
     "provenance": true
   },
-  "pnpm": {
-    "overrides": {
-      "eslint": "^8"
-    }
-  }
+  "repository": "https://github.com/z4nr34l/nemo",
+  "scripts": {
+    "build": "turbo build",
+    "clean": "turbo clean",
+    "dev": "turbo dev --concurrency 20",
+    "examples": "turbo examples",
+    "prepare": "husky",
+    "release": "turbo build --filter='@rescale/nemo' && changeset publish",
+    "version-packages": "changeset version"
+  },
+  "trustedDependencies": [
+    "@swc/core",
+    "docs"
+  ],
+  "workspaces": [
+    "packages/*",
+    "examples/*",
+    "apps/*"
+  ]
 }

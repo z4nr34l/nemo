@@ -1,0 +1,127 @@
+{
+  "folders": [
+    {
+      "name": "NEMO",
+      "path": "../packages/nemo",
+    },
+    {
+      "name": "examples",
+      "path": "../examples",
+    },
+    {
+      "name": "docs",
+      "path": "../apps/docs",
+    },
+    {
+      "name": "ROOT",
+      "path": "../",
+    },
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.git": true,
+      "**/.svn": true,
+      "**/.hg": true,
+      "**/CVS": true,
+      "**/.DS_Store": true,
+      "**/Thumbs.db": true,
+      "node_modules/": true,
+      "**/node_modules/": true,
+      "apps/": true,
+      "services/": true,
+      "infrastructure/": true,
+      "pnpm-lock.yaml": true,
+      "dist/": true,
+      ".turbo/": true,
+      ".next/": true,
+      "bun.lock": true,
+      "**/.retool_types/**": true,
+      "**/*tsconfig.json": true,
+      ".cache": true,
+      "retool.config.json": true
+    },
+    "files.autoSave": "afterDelay",
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.fixAll.sortJSON": "explicit",
+      "source.organizeImports": "explicit",
+      "source.sortImports": "explicit",
+      "source.removeUnusedImports": "explicit"
+    },
+    "eslint.run": "onSave",
+    "eslint.format.enable": true,
+    "eslint.ignoreUntitled": true,
+    "eslint.useFlatConfig": true,
+    "eslint.probe": [
+      "astro",
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact",
+      "html",
+      "vue",
+      "json",
+      "jsonc",
+      "mdx",
+      "md",
+      "markdown"
+    ],
+    "eslint.validate": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact",
+      "html",
+      "vue",
+      "json",
+      "jsonc",
+      "mdx",
+      "md",
+      "markdown"
+    ],
+    "[jsonc]": {
+      "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[json]": {
+      "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "jest.enable": false,
+    "typescript.preferences.preferTypeOnlyAutoImports": true,
+    "[mdx]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+      "files.trimTrailingWhitespace": false,
+      "editor.rulers": [
+        100
+      ],
+      "editor.wordWrap": "wordWrapColumn",
+      "editor.wordWrapColumn": 100,
+      "editor.codeActionsOnSave": {
+        "source.sortImports": "never",
+        "source.organizeImports": "never"
+      }
+    },
+  },
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "SonarSource.sonarlint-vscode",
+      "bradlc.vscode-tailwindcss",
+      "Vercel.turbo-vsc",
+      "joshbolduc.commitlint",
+      "oven.bun-vscode",
+      "github.vscode-github-actions",
+      "GitHub.vscode-pull-request-github",
+      "GitHub.codespaces",
+      "folke.vscode-monorepo-workspace",
+      "formulahendry.auto-close-tag",
+      "formulahendry.auto-rename-tag",
+      "mikestead.dotenv",
+      "GitHub.copilot",
+      "GitHub.copilot-chat"
+    ]
+  },
+}

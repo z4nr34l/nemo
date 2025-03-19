@@ -1,10 +1,10 @@
-import type { Metadata } from 'next/types';
+import type { Metadata } from "next/types";
 
-import { createMetadataImage } from 'fumadocs-core/server';
-import { source } from '@/app/source';
+import { createMetadataImage } from "fumadocs-core/server";
+import { source } from "@/app/source";
 
 export const metadataImage = createMetadataImage({
-  imageRoute: '/docs-og',
+  imageRoute: "/docs-og",
   source,
 });
 
@@ -14,13 +14,13 @@ export function createMetadata(override: Metadata): Metadata {
     openGraph: {
       title: override.title ?? undefined,
       description: override.description ?? undefined,
-      url: 'https://nemo.rescale.build',
-      siteName: 'NEMO',
+      url: "https://nemo.rescale.build",
+      siteName: "NEMO",
       ...override.openGraph,
     },
     twitter: {
-      card: 'summary_large_image',
-      creator: '@z4nr34l',
+      card: "summary_large_image",
+      creator: "@z4nr34l",
       title: override.title ?? undefined,
       description: override.description ?? undefined,
       ...override.twitter,
@@ -29,6 +29,6 @@ export function createMetadata(override: Metadata): Metadata {
 }
 
 export const baseUrl =
-  process.env.NODE_ENV === 'development'
-    ? new URL('http://localhost:3000')
+  process.env.NODE_ENV === "development"
+    ? new URL("http://localhost:3000")
     : new URL(`https://nemo.rescale.build`);

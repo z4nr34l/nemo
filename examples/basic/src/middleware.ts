@@ -1,69 +1,37 @@
-import {
-  createMiddleware,
-  type MiddlewareConfig,
-  type MiddlewareFunctionProps,
-} from '@rescale/nemo';
-import { NextResponse } from 'next/server';
+import { createNEMO, type MiddlewareConfig } from "@rescale/nemo";
+import { NextResponse, type NextRequest } from "next/server";
+
+const globlMiddleware = {
+  before: () => {}
+}
 
 const middlewares = {
-  '/page1': [
-    async ({ request, forward }: MiddlewareFunctionProps) => {
-      const response = NextResponse.next({
-        request,
-      });
-
-      console.log('Middleware for /page1', request.nextUrl.pathname);
-      response.cookies.set('passed-cookie', 'cookie-value');
-      response.headers.set('x-custom-header', 'header-value');
-
-      forward(response);
+  "/page1/:path*": [
+    (request) => {
+      console.log("middleware 1 before", request.headers.get('x-custom-header'));
+      request.headers.set("x-custom-header", "custom-value");
+      console.log("middleware 1 after", request.headers.get('x-custom-header'));
     },
-    async ({ request, response }: MiddlewareFunctionProps) => {
-      console.log('Chained middleware for /page1', request.nextUrl.pathname);
-      console.log('Passed cookie value:', request.cookies.get('passed-cookie'));
-      console.log(
-        'Passed header value:',
-        response?.headers.get('x-custom-header'),
-      );
-    },
+    (request) => {
+      console.log("middleware 2", "x-custom-sent-header", request.headers.get('x-custom-sent-header'));
+      console.log("middleware 2", "x-custom-header", request.headers.get('x-custom-header'));
+    }
   ],
-  '/page2': [
-    async ({ request, forward }: MiddlewareFunctionProps) => {
-      const response = NextResponse.next();
-      console.log('Middleware for /page2', request.nextUrl.pathname);
-      response.cookies.set('passed-cookie', 'cookie-value');
-      response.headers.set('x-custom-header', 'header-value');
-
-      forward(response);
-    },
-    async () => {
-      const redirectUrl = 'http://localhost:3001/page1'; // Redirect within the same domain
-      console.log('Redirecting to:', redirectUrl);
-
-      return NextResponse.redirect(redirectUrl);
-    },
-    /**
-     * THIS WILL NOT BE EXECUTED!
-     */
-    async ({ request, forward }: MiddlewareFunctionProps) => {
-      const response = NextResponse.next({ request });
-
-      console.log('This should not be executed');
-      console.log('Chained middleware for /page2', request.nextUrl.pathname);
-      console.log('Passed cookie value:', request.cookies.get('passed-cookie'));
-      console.log(
-        'Passed header value:',
-        request.headers.get('x-custom-header'),
-      );
-
-      forward(response);
-    },
-  ],
+  "/page2": [
+    (request: NextRequest) => {
+      return NextResponse.next({
+        headers: { "x-test": "value" },
+      })
+    }
+  ]
 } satisfies MiddlewareConfig;
 
 // Create middlewares helper
-export const middleware = createMiddleware(middlewares);
+export const middleware = createNEMO(middlewares, globlMiddleware, {
+  debug: true,
+  enableTiming: true
+});
 
 export const config = {
-  matcher: ['/page2', '/page1/:path*'],
+  matcher: ["/page2", "/page1/:path*"],
 };

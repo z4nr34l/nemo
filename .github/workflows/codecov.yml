@@ -2,9 +2,9 @@ name: Tests
 
 on:
   push:
-    branches: ['main']
+    branches: ["main"]
   pull_request:
-    branches: ['main']
+    branches: ["main"]
 
 jobs:
   analyze:
@@ -16,21 +16,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup pnpm 8
-        uses: pnpm/action-setup@v3
-        with:
-          version: 8
-
-      - name: Setup Node.js 20.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20.x
+      - name: Prepare
+        uses: oven-sh/setup-bun@v2
 
       - name: Install Dependencies
-        run: pnpm i
+        run: bun install
 
       - name: Run Tests
-        run: pnpm turbo test
+        run: bun test
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.6.0

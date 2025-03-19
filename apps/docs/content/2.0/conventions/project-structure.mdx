@@ -1,0 +1,73 @@
+---
+title: Project structure
+description: Project structure and organization proposal
+icon: Folder
+---
+
+import { SquareFunctionIcon } from "lucide-react";
+
+### Motivation
+
+The project structure is a key factor in the development process. It helps to organize the codebase, make it easier to maintain, and improve the development experience. A well-structured project can help developers to understand the codebase faster, find the files they need, and make changes more efficiently.
+
+### Proposal
+
+<Files>
+  <Folder name="app" defaultOpen>
+    <Folder name="(internal)" defaultOpen>
+      <File
+        name="_middleware.ts"
+        icon={<SquareFunctionIcon className="text-amber-500" />}
+      />
+      <Folder name="[slug]" defaultOpen>
+        <File
+          name="_middleware.ts"
+          icon={<SquareFunctionIcon className="text-amber-500" />}
+        />
+        <File name="layout.tsx" />
+        <File name="page.tsx" />
+      </Folder>
+    </Folder>
+    <Folder name="(public)" defaultOpen>
+      <File name="layout.tsx" />
+      <File name="page.tsx" />
+    </Folder>
+    <File
+      name="_middleware.ts"
+      icon={<SquareFunctionIcon className="text-amber-500" />}
+    />
+    <File name="layout.tsx" />
+    <File name="page.tsx" />
+    <File name="global.css" />
+  </Folder>
+  <Folder name="components">
+    <File name="button.tsx" />
+    <File name="tabs.tsx" />
+    <File name="dialog.tsx" />
+  </Folder>
+  <File
+    name="middleware.ts"
+    icon={<SquareFunctionIcon className="text-amber-500" />}
+  />
+  <File name="package.json" />
+</Files>
+
+### Explanation
+
+`app` folder contains the main application code. It is divided into two subfolders: `(internal)` and `(public)`. The `(internal)` folder contains the internal pages, while the `(public)` folder contains the public pages. Each grouped layout has its own `layout.tsx` file and a `page.tsx` file. The `_middleware.ts` file is used to define middleware functions for route groups or pages that it's used in.
+
+<Callout>
+  Use imports inside the `middleware.ts` file to use separate middleware
+  functions inside global middleware configuration.
+</Callout>
+
+### Related topics
+
+<Cards>
+  <Card
+    title="Functions naming"
+    icon={<SquareFunctionIcon />}
+    description="How to name middleware functions"
+    href="/docs/2.0/conventions/functions-naming"
+  />
+</Cards>

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Check, Copy } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Check, Copy } from "lucide-react";
 
 async function copyToClipboardWithMeta(value: string) {
   await navigator.clipboard.writeText(value);
@@ -32,8 +32,8 @@ export function CopyButton({
       variant="ghost"
       size="icon"
       className={cn(
-        'absolute top-1.5 right-1.5 z-20 p-0 w-8 h-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-transparent',
-        className,
+        "absolute top-1.5 right-1.5 z-20 p-0 w-8 h-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-transparent",
+        className
       )}
       onClick={() => {
         copyToClipboardWithMeta(value)

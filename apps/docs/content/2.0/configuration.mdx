@@ -1,0 +1,300 @@
+---
+title: Configuration
+description: Learn how to configure NEMO middleware
+icon: Settings
+---
+
+# Configuration
+
+NEMO offers flexible configuration options to organize your middleware functions.
+
+## Middlewares
+
+**Type**: `MiddlewareConfig`
+
+**Chain type**: `"main"`
+
+The `middlewares` object is a key-value pair where the key is the route path and the value is an array of middleware functions. Each middleware function is an async function that takes a single argument, `request`, which is an object containing the request details.
+
+```ts twoslash title="middleware.ts"
+import { type MiddlewareConfig } from "@rescale/nemo";
+
+const middlewares = {
+  "/:path*": async (request, event) => {
+    console.log("There is NEMO", request.nextUrl.pathname);
+  },
+} satisfies MiddlewareConfig;
+```
+
+### Simple Middleware
+
+The simplest form is a direct function assignment to a route pattern:
+
+```ts
+import { createNEMO } from "@rescale/nemo";
+
+const middleware = createNEMO({
+  // Simple middleware for /api route
+  "/api": async (request, event) => {
+    console.log("API request:", request.nextUrl.pathname);
+  }
+});
+```
+
+### Middleware Arrays
+
+You can assign an array of middleware functions to execute in sequence:
+
+```ts
+import { createNEMO } from "@rescale/nemo";
+
+const middleware = createNEMO({
+  // Multiple middleware functions for /auth route
+  "/auth": [
+    // First function in chain
+    async (request, event) => {
+      event.storage.set("startTime", Date.now());
+    },
+    // Second function in chain
+    async (request, event) => {
+      const startTime = event.storage.get("startTime");
+      console.log(`Request processing time: ${Date.now() - startTime}ms`);
+    }
+  ]
+});
+```
+
+### Nested Routes
+
+NEMO supports nested route definitions with their own middleware:
+
+```ts
+import { createNEMO } from "@rescale/nemo";
+
+const middleware = createNEMO({
+  "/admin": {
+    // Middleware for /admin route
+    middleware: async (request) => {
+      console.log("Admin section accessed");
+    },
+    
+    // Nested routes under /admin
+    "/users": async (request) => {
+      console.log("Admin users section");
+    },
+    "/settings": async (request) => {
+      console.log("Admin settings section");
+    }
+  }
+});
+```
+
+<Callout type="info">
+When using nested routes, the parent route's middleware executes before any matching child route middleware.
+</Callout>
+
+### Deep Nesting with Parameters
+
+You can create deeply nested structures with URL parameters:
+
+```ts
+import { createNEMO } from "@rescale/nemo";
+
+const middleware = createNEMO({
+  "/shop": {
+    middleware: shopMiddleware,
+    "/categories": {
+      middleware: categoriesMiddleware,
+      "/:categoryId": {
+        middleware: categoryMiddleware,
+        "/products": {
+          middleware: productsMiddleware,
+          "/:productId": productMiddleware
+        }
+      }
+    }
+  }
+});
+```
+
+This structure handles routes like `/shop/categories/electronics/products/laptop` with parameters accessible via `event.params`.
+
+## Global Middlewares
+
+**Type**: `GlobalMiddlewareConfig`
+
+Global middleware functions are executed for all routes, regardless of the specific route configuration.
+
+```ts twoslash title="middleware.ts"
+import { type GlobalMiddlewareConfig } from "@rescale/nemo";
+
+const globalMiddlewares = {
+  before: async (request, event) => {
+    console.log("Before any route middleware");
+  },
+  after: async (request, event) => {
+    console.log("After all route middleware");
+  },
+} satisfies GlobalMiddlewareConfig;
+```
+
+### Before
+
+**Type**: [`MiddlewareFunction | MiddlewareFunction[]`](/docs/2.0/functions)
+
+The `before` middleware executes before any route-specific middleware:
+
+<Tabs items={["Single function", "Chained functions"]}>
+  <Tab value="Single function">
+    ```ts title="middleware.ts"
+    const globalMiddlewares = {
+      before: async (request, event) => {
+        console.log("Before route middleware");
+        event.storage.set("startTime", Date.now());
+      }
+    };
+    ```
+  </Tab>
+  <Tab value="Chained functions">
+    ```ts title="middleware.ts"
+    const globalMiddlewares = {
+      before: [
+        async (request, event) => {
+          event.storage.set("startTime", Date.now());
+        },
+        async (request, event) => {
+          // Another before middleware
+        }
+      ]
+    };
+    ```
+  </Tab>
+</Tabs>
+
+### After
+
+**Type**: [`MiddlewareFunction | MiddlewareFunction[]`](/docs/2.0/functions)
+
+The `after` middleware executes after all route-specific middleware:
+
+<Tabs items={["Single function", "Chained functions"]}>
+  <Tab value="Single function">
+    ```ts title="middleware.ts"
+    const globalMiddlewares = {
+      after: async (request, event) => {
+        const startTime = event.storage.get("startTime");
+        console.log(`Request took: ${Date.now() - startTime}ms`);
+      },
+    };
+    ```
+  </Tab>
+  <Tab value="Chained functions">
+    ```ts title="middleware.ts"
+    const globalMiddlewares = {
+      after: [
+        async (request, event) => {
+          // First after middleware
+        },
+        async (request, event) => {
+          // Second after middleware
+        }
+      ]
+    };
+    ```
+  </Tab>
+</Tabs>
+
+## Config object
+
+Type: `NemoConfig`
+
+The `config` object is a key-value pair where the key is the configuration option and the value is the configuration value. The available configuration options are:
+
+<TypeTable
+  type={{
+    debug: {
+      description: "A boolean value that enables or disables debug mode.",
+      type: "boolean",
+      default: "false",
+    },
+    silent: {
+      description: "A boolean value that enables or disables silent mode.",
+      type: "boolean",
+      default: "false",
+    },
+    enableTiming: {
+      description: "A boolean value that enables or disables timing mode.",
+      type: "boolean",
+      default: "false",
+    },
+    errorHandler: {
+      description:
+        "A function that takes two arguments, `error` and `metadata`, and handles errors.",
+      type: "ErrorHandler",
+      default: "undefined",
+    },
+  }}
+/>
+
+```ts twoslash title="middleware.ts"
+import { type NemoConfig } from "@rescale/nemo";
+
+const config = {
+  debug: true,
+  silent: true,
+  enableTiming: true,
+  errorHandler: (error, metadata) => {
+    console.error(error, metadata);
+  },
+} satisfies NemoConfig;
+
+```
+
+## Example
+
+Getting all of above informations together makes for us NEMO&apos;s full configuration representing all usable properites.
+
+The `createNEMO()` constructor is the entry point for the NEMO package. It allows you to create a middleware helper that can be used to define middleware functions for your Next.js application.
+
+```ts twoslash title="middleware.ts"
+import {
+  createNEMO,
+  type MiddlewareConfig,
+  type GlobalMiddlewareConfig,
+  type NemoConfig,
+} from "@rescale/nemo";
+
+const middlewares = {
+  "/:path*": async (request) => {
+    // middleware functions for /api route
+  },
+} satisfies MiddlewareConfig;
+
+const globalMiddlewares = {
+  before: async () => {
+    // global middleware function that will be executed before any route middleware
+  },
+  after: async () => {
+    // global middleware function that will be executed after any route middleware
+  },
+} satisfies GlobalMiddlewareConfig;
+
+const nemoConfig = {
+  debug: true, // default is false
+  silent: true, // default is false
+  enableTiming: true, // default is false
+  errorHandler: (error, metadata) => {
+    // custom error handler
+  },
+} satisfies NemoConfig;
+
+export const middleware = createNEMO(
+  middlewares,
+  globalMiddlewares,
+  nemoConfig,
+);
+
+export const config = {
+  matcher: ["/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)"],
+};
+```

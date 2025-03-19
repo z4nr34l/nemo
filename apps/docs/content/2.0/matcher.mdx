@@ -1,0 +1,175 @@
+---
+title: Route matchers
+description: path-to-regexp matchers for middleware functions
+icon: Variable
+---
+
+import { WrenchIcon } from "lucide-react";
+
+This package uses [path-to-regexp](https://github.com/component/path-to-regexp) package to match the middleware routes path and parse the route params in a same way as Next.js does in config's matcher prop.
+
+## Examples
+
+To make it easier to understand, you can check the below examples:
+
+### Simple route
+
+Matches `/dashboard` route and returns no params.
+
+<Tabs items={["Matcher", "Result"]}>
+  <Tab value="Matcher">
+  ```plaintext
+    /dashboard
+  ```
+  </Tab>
+  <Tab value="Result">
+  ```ts
+    /
+    /home
+    /dashboard [PASS] // [!code ++]
+    /settings
+  ```
+  </Tab>
+</Tabs>
+
+### Grouped routes
+
+Matches `/v1` and `/v2` prefixed routes.
+
+<Tabs items={["Matcher", "Result"]}>
+  <Tab value="Matcher">
+  ```plaintext
+    /(v1|v2)/:path*
+  ```
+  </Tab>
+  <Tab value="Result">
+  ```ts
+    /
+    /home
+    /v1/anything [PASS] // [!code ++]
+    /v2/anything [PASS] // [!code ++]
+    /settings
+  ```
+  </Tab>
+</Tabs>
+
+### Prams
+
+General structure of the params is `:paramName` where `paramName` is the name of the param that will be returned in the middleware function.
+
+#### Single
+
+Matches `/dashboard/anything` route and returns `team` param with `anything` value.
+
+<Tabs items={["Matcher", "Result"]}>
+  <Tab value="Matcher">
+  ```plaintext
+    /dashboard/:team
+  ```
+  </Tab>
+  <Tab value="Result">
+  ```ts
+    /
+    /home
+    /dashboard
+    /dashboard/team1 [PASS] // [!code ++]
+    /dashboard/team2 [PASS] // [!code ++]
+    /settings
+  ```
+  </Tab>
+</Tabs>
+
+You can also define segments in the middle of URL with is matching `/team/anything/dashboard` and returns `team` param with `anything` value.
+
+<Tabs items={["Matcher", "Result"]}>
+  <Tab value="Matcher">
+  ```plaintext
+    /dashboard/:team/delete
+  ```
+  </Tab>
+  <Tab value="Result">
+  ```ts
+    /
+    /home
+    /dashboard
+    /dashboard/team1
+    /dashboard/team2/delete [PASS] // [!code ++]
+    /settings
+  ```
+  </Tab>
+</Tabs>
+
+#### Optional
+
+Matches `/dashboard` and `/dashboard/anything` routes and returns `team` param with `anything` value if there is value provided in url.
+
+<Tabs items={["Matcher", "Result"]}>
+  <Tab value="Matcher">
+  ```plaintext
+    /team/:slug?
+  ```
+  </Tab>
+  <Tab value="Result">
+  ```ts
+    /
+    /home
+    /dashboard
+    /team                [PASS] // [!code ++]
+    /team/team1          [PASS] // [!code ++]
+    /team/team2/settings
+    /settings
+  ```
+  </Tab>
+</Tabs>
+
+#### Optional Wildcard
+
+<Callout>
+Zero or more params
+</Callout>
+
+Matches `/dashboard` and `/dashboard/anything/test` routes and returns `team` param with `[anything, test]` value if there is value provided in url.
+
+<Tabs items={["Matcher", "Result"]}>
+  <Tab value="Matcher">
+  ```plaintext
+    /team/:slug*
+  ```
+  </Tab>
+  <Tab value="Result">
+  ```ts
+    /
+    /home
+    /dashboard
+    /team/team1          [PASS] // [!code ++]
+    /team/team2/settings [PASS] // [!code ++]
+    /settings
+  ```
+  </Tab>
+</Tabs>
+
+#### Required Wildcard
+
+<Callout>
+One or more params
+</Callout>
+
+Matches `/dashboard` and `/dashboard/anything/test` routes and returns `team` param with `[anything, test]` value if there is value provided in url.
+
+<Tabs items={["Matcher", "Result"]}>
+  <Tab value="Matcher">
+  ```plaintext
+    /team/:slug+
+  ```
+  </Tab>
+  <Tab value="Result">
+  ```ts
+    /
+    /home
+    /dashboard
+    /team/team1          [PASS] // [!code ++]
+    /team/team2/settings [PASS] // [!code ++]
+    /settings
+  ```
+  </Tab>
+</Tabs>

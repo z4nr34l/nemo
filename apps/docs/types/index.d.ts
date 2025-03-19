@@ -1,8 +1,8 @@
-import { NextFetchEvent, NextRequest, NextResponse } from 'next/server';
+import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 
 type NextMiddleware = (
   request: NextRequest,
-  event: NextFetchEvent,
+  event: NextFetchEvent
 ) => Response | NextResponse | Promise<Response | NextResponse>;
 interface MiddlewareFunctionProps {
   request: NextRequest;
@@ -11,7 +11,7 @@ interface MiddlewareFunctionProps {
   event: NextFetchEvent;
 }
 type MiddlewareFunction = (
-  props: MiddlewareFunctionProps,
+  props: MiddlewareFunctionProps
 ) => NextResponse | Response | Promise<NextResponse | Response>;
 type MiddlewareConfig = Record<
   string,
@@ -20,9 +20,9 @@ type MiddlewareConfig = Record<
 declare function createMiddleware(
   pathMiddlewareMap: MiddlewareConfig,
   globalMiddleware?: Record<
-    'before' | 'after',
+    "before" | "after",
     MiddlewareFunction | MiddlewareFunction[]
-  >,
+  >
 ): NextMiddleware;
 
 export {

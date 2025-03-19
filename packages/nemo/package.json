@@ -1,6 +1,6 @@
 {
   "name": "@rescale/nemo",
-  "version": "1.4.0",
+  "version": "2.0.0",
   "keywords": [
     "Next.js",
     "Middleware",
@@ -32,27 +32,34 @@
     "lint": "eslint \"**/*.ts*\"",
     "test": "jest --coverage"
   },
-  "prettier": "@vercel/style-guide/prettier",
   "dependencies": {
-    "path-to-regexp": "^8.2.0"
+    "path-to-regexp": "^6.1.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@next/eslint-plugin-next": "^15.1.0",
     "@swc/core": "^1.5.24",
-    "@types/jest": "^29.5.14",
-    "@types/node": "20.14.1",
-    "@types/react": "^18.3.3",
-    "@vercel/style-guide": "^6.0.0",
-    "eslint": "^8",
+    "@types/bun": "^1.2.2",
+    "@types/node": "^22.13.1",
+    "@types/react": "^19.0.1",
+    "eslint": "^9.15.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-only-warn": "^1.1.0",
+    "eslint-plugin-prettier": "^5.2.2",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-turbo": "^2.3.0",
+    "eslint-plugin-security": "^3.0.1",
+    "eslint-plugin-sonarjs": "^3.0.2",
+    "globals": "^16.0.0",
     "jest": "^29.7.0",
-    "ts-jest": "^29.2.5",
-    "ts-node": "^10.9.2",
+    "prettier": "^3.4.2",
     "tsup": "^8.1.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.24.0"
   },
   "peerDependencies": {
-    "next": ">=13.1.0 || ^15.0.0",
-    "react": "^18.2.0 || ^19.0.0",
-    "react-dom": "^18.2.0 || ^19.0.0"
+    "next": ">=13.1.0 | 15.3.0-canary.1 | latest | canary"
   },
   "publishConfig": {
     "provenance": true

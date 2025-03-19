@@ -1,0 +1,156 @@
+---
+title: Storage
+description: Storage between functions across the execution chain
+icon: Waypoints
+---
+
+
+NEMO provides a storage that allows you to share data between functions in the middleware execution chain. This can be useful when you need to pass data between functions or store data that needs to be accessed by multiple functions.
+
+By default it operates using in-memory storage, but you can extend it with your own storage solution or database of choice.
+
+<Callout type="warn">
+  **Warning!** Be careful using database as storage adapter, as it can slow down the execution chain and make your site&apos;s TTFB skyrocket.
+
+  **Recommendation**: Use KV databases/solutions like Redis, Vercel EdgeConfig etc.
+
+  [Read more about good practices](/docs/2.0/best-practices)
+</Callout>
+
+## Usage example
+
+Below you can see an example of how to use the storage in your middleware functions.
+
+<Callout type="warn">
+  Remember that each request&apos;s middleware execution is a separate event instance, so the context is not shared between different requests.
+</Callout>
+
+```ts title="_middleware.ts"
+import type { NextMiddleware } from "@rescale/nemo";
+
+const example: NextMiddleware = async (req, { storage }) => {// [!code focus]
+  let user = undefined; // [!code focus]
+
+  if(!storage.has('user')) { // [!code focus]
+    user = await fetchUser(); // [!code focus]
+    storage.set('user', user); // [!code focus]
+  } else { // [!code focus]
+    user = storage.get('user'); // [!code focus]
+  } // [!code focus]
+
+  if(!user) {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+}
+
+```
+
+### Type Safety
+
+The storage API preserves type information when you use TypeScript generics:
+
+```typescript
+interface UserData {
+  id: number;
+  name: string;
+  roles: string[];
+}
+
+// Store data with type
+storage.set<UserData>('user', {
+  id: 1,
+  name: 'John',
+  roles: ['admin', 'editor']
+});
+
+// Retrieve with correct type
+const user = storage.get<UserData>('user');
+if (user) {
+  // TypeScript knows the shape of user
+  console.log(user.name);
+  console.log(user.roles.join(', '));
+}
+```
+
+## Custom Storage adapter
+
+You can extend the default in-memory storage with your own storage adapter. To do this, you need to create a class that implements the `StorageAdapter` interface.
+
+```ts title="StorageAdapter.ts"
+import { StorageAdapter } from "@rescale/nemo";
+
+export class CustomStorageAdapter extends StorageAdapter {
+  // Implement required methods
+  async get<T>(key: string): T | undefined {
+    // Your implementation
+    return undefined;
+  }
+
+  async set<T>(key: string, value: T): void {
+    // Your implementation
+  }
+
+  async has(key: string): boolean {
+    // Your implementation
+    return false;
+  }
+
+  async delete(key: string): boolean {
+    // Your implementation
+    return false;
+  }
+
+  async clear(): void {
+    // Your implementation
+  }
+
+  // Implement other required methods
+  entries(): IterableIterator<[string, unknown]> {
+    // Your implementation
+    return [][Symbol.iterator]();
+  }
+
+  keys(): IterableIterator<string> {
+    // Your implementation
+    return [][Symbol.iterator]();
+  }
+
+  values(): IterableIterator<unknown> {
+    // Your implementation
+    return [][Symbol.iterator]();
+  }
+
+  get size(): number {
+    // Your implementation
+    return 0;
+  }
+}
+
+```
+
+After creating your storage adapter, you can use it by passing it to the `NEMO` constructor.
+
+<Tabs items={["Direct instance", "Factory function"]}>
+  <Tab value="Direct instance">
+    ```ts title="middleware.ts"
+    import { NEMO } from "@rescale/nemo";
+    import { CustomStorageAdapter } from "./StorageAdapter";
+
+    export const middleware = createNEMO(middlewares, globalMiddleware, {
+      storage: new CustomStorageAdapter()
+    });
+
+    ```
+  </Tab>
+  <Tab value="Factory function">
+    ```ts title="middleware.ts"
+    import { NEMO } from "@rescale/nemo";
+    import { CustomStorageAdapter } from "./StorageAdapter";
+
+    export const middleware = createNEMO(middlewares, globalMiddleware, {
+      storage: () => new CustomStorageAdapter()
+    });
+
+    ```
+  </Tab>
+</Tabs>

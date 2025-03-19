@@ -1,12 +1,12 @@
-import { type MetadataRoute } from 'next';
-import { url } from '@/app/sitemap';
+import { type MetadataRoute } from "next";
+import { url } from "@/app/sitemap";
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
-      userAgent: '*',
-      allow: '/',
+      userAgent: "*",
+      allow: "/",
     },
-    sitemap: url('/sitemap'),
+    sitemap: url("/sitemap"),
   };
 }

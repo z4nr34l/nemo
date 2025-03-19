@@ -1,4 +1,4 @@
-import { CodeBlock } from '@/components/code-block';
+import { CodeBlock } from "@/components/code-block";
 
 export function Comparizon() {
   return (
@@ -24,10 +24,10 @@ export function Comparizon() {
               className="h-full"
               wrapper={{
                 allowCopy: false,
-                title: 'middleware.ts',
-                lang: 'typescript',
+                title: "middleware.ts",
+                lang: "typescript",
                 icon: <TSIcon />,
-                className: 'my-0 rounded-none flex-1 h-full',
+                className: "my-0 rounded-none flex-1 h-full",
               }}
             />
           </div>
@@ -41,10 +41,10 @@ export function Comparizon() {
               className="h-full"
               wrapper={{
                 allowCopy: false,
-                title: 'middleware.ts',
-                lang: 'typescript',
+                title: "middleware.ts",
+                lang: "typescript",
                 icon: <TSIcon />,
-                className: 'my-0 rounded-none flex-1 h-full',
+                className: "my-0 rounded-none flex-1 h-full",
               }}
             />
           </div>
@@ -77,7 +77,7 @@ export const middleware = async (req: NextRequest) => {
     return NextResponse.next();
   }
 
-  if(req.nextUrl.pathname.startsWith('/team')) {
+  if(req.nextUrl.pathname.startsWith('/team/') || req.nextUrl.pathname.startsWith('/t/')) {
     user = await getUserByToken(token);
 
     if(!user) {
@@ -101,19 +101,20 @@ export const config = {
   matcher: ['/((?!_next/|_static|_vercel|[\\\\w-]+\\\\.\\\\w+).*)'],
 };`;
 
-const codeAfter = `import { createMiddleware, type MiddlewareFunctionProps } from '@rescale/nemo';
+const codeAfter = `import { createNEMO, type MiddlewareFunctionProps } from '@rescale/nemo';
 import { auth } from '@/app/(auth)/auth/_middleware';
 import { team } from '@/app/(team)/team/_middleware';
 
 const globalMiddlewares = {
-  before: auth,
+  before: auth, // OR: [auth, ...]
 };
 
 const middlewares = {
-  '/team/:slug': team,
+  '/auth/:path*': auth,
+  '/(team|t)/:slug/:path*': team, // OR: [team, ...]
 };
 
-export const middleware = createMiddleware(middlewares);
+export const middleware = createNEMO(middlewares, globalMiddlewares);
 
 export const config = {
   matcher: ['/((?!_next/|_static|_vercel|[\\\\w-]+\\\\.\\\\w+).*)'],

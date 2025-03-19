@@ -1,0 +1,122 @@
+---
+title: Supabase
+description: NEMO middleware functions for Supabase
+icon: SquareFunction
+---
+
+## Installation
+
+Integrate Supabase with your project using the official guides:
+
+[Supabase Quickstart](https://supabase.com/docs/guides/getting-started/quickstarts/nextjs) or [Supabase Next.js App](https://supabase.com/docs/guides/getting-started/tutorials/with-nextjs)
+
+We will only make one small change to make it work with NEMO.
+
+## Integrate NEMO with Supabase middleware
+
+<Steps>
+
+  <Step>
+    ### Create `_middleware.ts`.
+
+    Create a new file in your projects lib or supabase directory called `_middleware.ts`.
+
+    And paste middleware code that you&apos;ve copied from the Supabase documentation.
+
+    It should look something like this:
+
+    ```ts title="@/lib/supabase/middleware.ts"
+    import { createServerClient } from '@supabase/ssr';
+    import { type NextRequest, NextResponse } from 'next/server';
+
+    export async function updateSession(request: NextRequest) {
+      let supabaseResponse = NextResponse.next({
+        request,
+      })
+
+      const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        {
+          cookies: {
+            getAll() {
+              return request.cookies.getAll()
+            },
+            setAll(cookiesToSet) {
+              cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+                supabaseResponse = NextResponse.next({
+                request,
+              })
+              cookiesToSet.forEach(({ name, value, options }) =>
+                supabaseResponse.cookies.set(name, value, options)
+              )
+            },
+          },
+        }
+      );
+
+      // refreshing the auth token
+      await supabase.auth.getUser();
+
+      return supabaseResponse;
+    }
+
+    ```
+  </Step>
+
+  <Step>
+    ### Replace `middleware.ts` code
+
+    We need to edit primary `middleware.ts` file to use the new middleware function.
+
+    ```typescript title="@/middleware.ts"
+    import { type MiddlewareConfig, type GlobalMiddlewareConfig, createNEMO } from '@rescale/nemo';
+    import { updateSession } from '@/lib/supabase/middleware';
+
+    const globalMiddlewares: GlobalMiddlewareConfig = {
+      before: updateSession, // REMEMBER TO IMPORT updateSession
+    }
+
+    const middlewares: MiddlewareConfig = {
+      '/': [
+        async (request) => {
+          console.log('There is NEMO', request.nextUrl.pathname);
+        },
+      ],
+    };
+
+    export const middleware = createNEMO(middlewares, globalMiddlewares);
+
+    export const config = {
+      matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+    };
+
+    ```
+  </Step>
+
+  <Step>
+      ### (Optional) Add user infomation to context
+
+      To add user information to the context, you can use the following code:
+
+      ```typescript title="@/lib/supabase/middleware.ts"
+      // imports
+
+      export async function updateSession(request, { storage }) {  // [!code focus] [!code ++]
+
+        // prev code
+
+        // refreshing the auth token
+        await supabase.auth.getUser(); // [!code focus] [!code --]
+        const { user } = await supabase.auth.getUser(); // [!code focus] [!code ++]
+
+        // add user to storage
+        storage.set('user', user ?? undefined); // [!code focus] [!code ++]
+
+        return supabaseResponse;
+      }
+
+      ```
+  </Step>
+
+</Steps>

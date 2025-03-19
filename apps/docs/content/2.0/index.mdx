@@ -1,0 +1,129 @@
+---
+title: Getting started
+description: Supercharge your Next.js middleware with NEMO
+icon: Book
+---
+
+import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
+
+## Installation & usage
+
+<Steps>
+  <Step>
+    ### Paste installation command into your terminal to install package.
+
+    ```package-install
+    @rescale/nemo
+    ```
+
+  </Step>
+  <Step>
+    ### Import the package inside middleware.ts file.
+
+    (or create it if you don't have one yet)
+
+    ```typescript title="middleware.ts"
+    import { createNEMO } from '@rescale/nemo';  // [!code ++]
+
+    // [...]
+    
+    ```
+
+  </Step>
+  <Step>
+    ### Use the createNEMO function to create a middleware helper.
+
+    ```typescript title="middleware.ts"
+    import { createNEMO } from '@rescale/nemo';
+
+    export const middleware = createNEMO(/* your functions will go here */); // [!code ++]
+
+    // [...]
+
+    ```
+
+  </Step>
+  <Step>
+    ### Define your middlewares config and update the createNEMO function parameters.
+
+    ```typescript title="middleware.ts"
+    import { createNEMO, type MiddlewareConfig } from '@rescale/nemo'; // [!code ++]
+
+    const middlewares: MiddlewareConfig = { // [!code ++]
+      '/': [ // [!code ++]
+        async (request) => { // [!code ++]
+          console.log('There is NEMO', request.nextUrl.pathname); // [!code ++]
+        }, // [!code ++]
+      ], // [!code ++]
+    }; // [!code ++]
+
+    export const middleware = createNEMO(/* your functions will go here */); // [!code --]
+    export const middleware = createNEMO(middlewares); // [!code ++]
+
+    // [...]
+
+    ```
+
+    After that step, you should see an `There is NEMO` message in your console for every request made to your application.
+
+    <Cards>
+      <Card href="/docs/2.0/configuration" title="Configuration" description="Learn more about middlewres configuration" icon={<WrenchIcon/>}/>
+      <Card href="/docs/2.0/functions" title="Functions" description="Learn more about middlewre functions" icon={<SquareFunctionIcon/>}/>
+    </Cards>
+
+  </Step>
+  <Step>
+    ### Optimize your middleware execution to not execute it on every signle request.
+
+    ```typescript title="middleware.ts"
+    // [...]
+
+    export const config = { // [!code ++]
+      matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'], // [!code ++]
+    }; // [!code ++]
+
+    ```
+
+    That will prevent your middleware from executing on routes:
+    1. `/_next/` (Next.js internals)
+    2. `/_static` (inside /public)
+    3. `/_vercel` (Vercel internals)
+    4. Static files (e.g. `/favicon.ico`, `/sitemap.xml`, `/robots.txt`, etc.)
+
+    <Callout>
+      Reed more about [Next.js middleware configuration](https://nextjs.org/docs/app/file-conventions/middleware#config-object-optional)
+    </Callout>
+
+  </Step>
+  <Step>
+    ### Finally, let's put it all together.
+
+    ```typescript twoslash title="middleware.ts"
+    import { createNEMO, type MiddlewareConfig } from '@rescale/nemo';
+
+    const middlewares = {
+      '/': [
+        async (request) => {
+          console.log('There is NEMO', request.nextUrl.pathname);
+        },
+      ],
+    } satisfies MiddlewareConfig;
+
+    export const middleware = createNEMO(middlewares);
+
+    export const config = {
+      matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+    };
+
+    ```
+
+    That's how should your `middleware.ts` file looks like after all steps.
+
+  </Step>
+</Steps>
+
+## Motivation
+
+I'm working with Next.js project for a few years now, after Vercel moved multiple `/**/_middleware.ts` files to a single `/middleware.ts` file, there was a unfilled gap - but just for now. After a 2023 retro I had found that there is no good solution for that problem, so I took matters into my own hands. I wanted to share that motivation with everyone here, as I think that we all need to remember how it all started.
+
+Hope it will save you some time and would make your project DX better!

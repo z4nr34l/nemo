@@ -1,0 +1,56 @@
+---
+title: NextAuth (Auth.js)
+description: NEMO middleware functions for NextAuth (Auth.js)
+icon: SquareFunction
+---
+
+## Installation
+
+Integrate NextAuth with your project using the official guides:
+
+[Auth.js Quickstart](https://authjs.dev/getting-started/installation?framework=Next.js) or [Next.js App Example](https://github.com/vercel/next.js/tree/canary/examples/auth).
+
+Just skip the part of setting up the middleware and follow the steps below.
+
+<Steps>
+
+  <Step>
+    ### Replace `middleware.ts` code
+
+    We need to edit primary `middleware.ts` file to use the new middleware function.
+
+    ```typescript title="@/middleware.ts"
+    import { auth as authMiddleware } from "@/auth";
+    import { type MiddlewareConfig, type GlobalMiddlewareConfig, createNEMO } from '@rescale/nemo';
+
+    const globalMiddlewares: GlobalMiddlewareConfig = {
+      before: async (request, event) => {
+        await authMiddleware((_request, _event) => {
+          const { auth } = _request;
+          event.storage.set("user", auth?.user);
+        })(request, event);
+      }
+    }
+
+    const middlewares: MiddlewareConfig = {
+      '/': [
+        async (request, event) => {
+          console.log('There is NEMO', event.storage.get("user"));
+        },
+      ],
+    };
+
+    export const middleware = createNEMO(middlewares, globalMiddlewares);
+
+    export const config = {
+      matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+    };
+
+    ```
+  </Step>
+
+  <Step>
+    Just use the `user` key inside storage as you need! 🎉
+  </Step>
+
+</Steps>
