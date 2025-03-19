@@ -12,6 +12,7 @@ import { StorageAdapter } from "./storage/adapter";
 import { MemoryStorageAdapter } from "./storage/adapters/memory";
 import {
   type GlobalMiddlewareConfig,
+  type MiddlewareChain,
   type MiddlewareConfig,
   type MiddlewareConfigValue,
   type MiddlewareMetadata,
@@ -228,13 +229,17 @@ export class NEMO {
     const processedPatterns = new Set<string>(); // Track processed patterns
 
     // Add before middlewares
-    const beforeMiddlewares = (
-      this.globalMiddleware?.before
-        ? Array.isArray(this.globalMiddleware.before)
-          ? this.globalMiddleware.before
-          : [this.globalMiddleware.before]
-        : []
-    ).map((middleware, index) =>
+    // Extract the middleware array from global middleware configuration
+    let beforeMiddlewareArray: MiddlewareChain = [];
+
+    if (this.globalMiddleware?.before) {
+      beforeMiddlewareArray = Array.isArray(this.globalMiddleware.before)
+        ? this.globalMiddleware.before
+        : [this.globalMiddleware.before];
+    }
+
+    // Map middleware array to attach metadata
+    const beforeMiddlewares = beforeMiddlewareArray.map((middleware, index) =>
       this.attachMetadata(middleware, {
         chain: "before",
         index,
@@ -440,13 +445,17 @@ export class NEMO {
     });
 
     // Add after middlewares
-    const afterMiddlewares = (
-      this.globalMiddleware?.after
-        ? Array.isArray(this.globalMiddleware.after)
-          ? this.globalMiddleware.after
-          : [this.globalMiddleware.after]
-        : []
-    ).map((middleware, index) =>
+    // Extract the middleware array from global middleware configuration
+    let afterMiddlewareArray: MiddlewareChain = [];
+
+    if (this.globalMiddleware?.after) {
+      afterMiddlewareArray = Array.isArray(this.globalMiddleware.after)
+        ? this.globalMiddleware.after
+        : [this.globalMiddleware.after];
+    }
+
+    // Map middleware array to attach metadata
+    const afterMiddlewares = afterMiddlewareArray.map((middleware, index) =>
       this.attachMetadata(middleware, {
         chain: "after",
         index,
