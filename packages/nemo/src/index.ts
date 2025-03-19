@@ -292,93 +292,86 @@ export class NEMO {
       basePath = "",
       nestLevel = 0,
     ) => {
-      Object.entries(middlewares).forEach(([key, value]) => {
+      // Helper function to check if we should process this route
+      const shouldProcessRoute = (
+        routeKey: string,
+        pattern: string,
+      ): boolean => {
         // Skip processing if the key is "middleware" - it's a special property
-        if (key === "middleware") return;
+        if (routeKey === "middleware") return false;
 
-        // Skip root path completely if not at root level or if already processed
-        // This ensures the root middleware doesn't match other paths
-        if (key === "/" && (basePath !== "" || processedPatterns.has("/")))
-          return;
+        // Skip root path cases
+        if (routeKey === "/") {
+          if (basePath !== "" || processedPatterns.has("/")) return false;
+          if (pathname !== "/" && pathname !== "") return false;
+        }
 
-        // Skip the root path in regular processing for non-root paths
-        if (key === "/" && pathname !== "/" && pathname !== "") return;
+        // Skip if already processed
+        if (processedPatterns.has(pattern)) return false;
 
+        return true;
+      };
+
+      // Helper function to add middleware to matched routes
+      const addToMatchedRoutes = (
+        pattern: string,
+        middleware: NextMiddleware | NextMiddleware[],
+        isExactMatch: boolean,
+      ) => {
+        matchedRoutes.push({
+          pattern,
+          middleware,
+          nestLevel,
+          isExactMatch,
+        });
+      };
+
+      Object.entries(middlewares).forEach(([key, value]) => {
         // Combine base path with current key for nested routes
         const fullPattern = this.createFullPattern(key, basePath);
 
-        // Skip if already processed
-        if (processedPatterns.has(fullPattern)) return;
+        if (!shouldProcessRoute(key, fullPattern)) return;
+
+        // Mark as processed
         processedPatterns.add(fullPattern);
 
         // Different path matching logic based on nestLevel and value type
-        let isPrefixMatch = false;
         const isExactMatch = this.computePathMatch(fullPattern, pathname, true);
-
-        // Check if this is a nested routes container
         const supportsNesting =
           typeof value === "object" &&
           value !== null &&
           !Array.isArray(value) &&
           Object.keys(value).some((k) => k !== "middleware");
 
+        // Determine if this is a prefix match
+        let isPrefixMatch = false;
         if (nestLevel === 0 && !supportsNesting) {
-          // Top-level routes that don't support nesting only match exactly
+          // Top-level routes without nesting only match exactly
           isPrefixMatch = isExactMatch;
         } else {
-          // Nested routes or routes that support nesting can match prefix
+          // Nested routes can match prefix
           isPrefixMatch = this.computePathMatch(fullPattern, pathname, false);
         }
 
-        // Only process this route if it matches the path
+        // Process this route if it matches the path
         if (isPrefixMatch) {
-          // Handle middleware directly attached to this route
-          if (typeof value === "function") {
-            matchedRoutes.push({
-              pattern: fullPattern,
-              middleware: value,
-              nestLevel,
-              isExactMatch,
-            });
-          }
-          // Handle array of middleware functions
-          else if (Array.isArray(value)) {
-            matchedRoutes.push({
-              pattern: fullPattern,
-              middleware: value,
-              nestLevel,
-              isExactMatch,
-            });
-          }
-          // Handle object with middleware property
-          else if (
+          // Handle middleware based on type
+          if (typeof value === "function" || Array.isArray(value)) {
+            addToMatchedRoutes(fullPattern, value, isExactMatch);
+          } else if (
             typeof value === "object" &&
             value !== null &&
-            !Array.isArray(value) &&
             "middleware" in value
           ) {
-            matchedRoutes.push({
-              pattern: fullPattern,
-              middleware: value.middleware,
-              nestLevel,
-              isExactMatch,
-            });
+            addToMatchedRoutes(fullPattern, value.middleware, isExactMatch);
           }
         }
 
-        /**
-         * Process nested routes for objects that can contain child routes
-         * Objects that contain keys other than "middleware" are considered
-         * route containers that can have nested routes inside them
-         */
+        // Process nested routes if applicable
         if (supportsNesting) {
-          // Clone the object and remove middleware property to isolate child routes
           const nestedEntries = { ...value };
-          if ("middleware" in nestedEntries) {
-            delete (nestedEntries as Record<string, unknown>).middleware;
-          }
+          delete (nestedEntries as Record<string, unknown>).middleware;
 
-          // Recursively process nested routes with updated base path and nest level
           if (Object.keys(nestedEntries).length > 0) {
             collectMatchingRoutes(nestedEntries, fullPattern, nestLevel + 1);
           }
