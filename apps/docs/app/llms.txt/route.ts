@@ -1,21 +1,31 @@
-import fg from "fast-glob";
-import matter from "gray-matter";
-import * as fs from "node:fs/promises";
+import { source } from "@/app/source";
 import { remark } from "remark";
 
 export const revalidate = false;
 
 export async function GET() {
-  // all scanned content
-  const files = await fg(["./content/docs/**/*.mdx"]);
+  const pages = source.getPages();
 
-  const scan = files.map(async (file) => {
-    const fileContent = await fs.readFile(file);
-    const { content, data } = matter(fileContent.toString());
+  const scan = pages.map(async (page) => {
+    const { lastModified, structuredData, toc, title, description, icon } =
+      page.data;
+    const processed = await processContent(
+      structuredData.contents.map((item) => item.content).join("\n\n"),
+    );
 
-    const processed = await processContent(content);
-    return `file: ${file}
-meta: ${JSON.stringify(data, null, 2)}
+    return `file: ${page.file.flattenedPath}
+meta: ${JSON.stringify(
+      {
+        lastModified,
+        structuredData,
+        toc,
+        title,
+        description,
+        icon,
+      },
+      null,
+      2,
+    )}
         
 ${processed}`;
   });
