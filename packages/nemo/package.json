@@ -32,6 +32,24 @@
     "lint": "eslint \"**/*.ts*\"",
     "test": "jest --coverage"
   },
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./storage": {
+      "require": "./dist/storage/index.js",
+      "import": "./dist/storage/index.js",
+      "types": "./dist/storage/index.d.ts"
+    },
+    "./storage/adapters/memory": {
+      "require": "./dist/storage/adapters/memory/index.js",
+      "import": "./dist/storage/adapters/memory/index.js",
+      "types": "./dist/storage/adapters/memory/index.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
   "dependencies": {
     "path-to-regexp": "^6.1.0"
   },
