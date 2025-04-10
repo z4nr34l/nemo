@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@rescale/nemo": "workspace:*",
-    "next": "^15.2.0-canary.56",
+    "next": "^15.3.1-canary.0",
     "react": "latest",
     "react-dom": "latest"
   },
