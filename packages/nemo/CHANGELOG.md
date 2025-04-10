@@ -1,5 +1,11 @@
 # NEMO
 
+## 2.0.1
+
+### Patch Changes
+
+- 75d4a18: Fixed module resolution due to missing storage primitives and adapters
+
 ## 2.0.0
 
 ### Major Changes
