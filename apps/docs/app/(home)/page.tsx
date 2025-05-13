@@ -111,11 +111,11 @@ export default function HomePage(): ReactElement {
       <div className="relative max-w-5xl mx-auto">
         <p className="text-muted-foreground text-xs text-right">
           Handcrafted by&nbsp;
-          <Link href="https://www.rescale.build">
-            <Button variant="link" className="p-0">
-              Rescale
-            </Button>
-          </Link>
+          <Button variant="link" className="p-0" asChild>
+            <Link href="https://zanreal.com" target="_blank">
+              ZANREAL
+            </Link>
+          </Button>
         </p>
       </div>
     </main>

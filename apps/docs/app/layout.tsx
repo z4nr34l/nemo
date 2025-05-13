@@ -6,7 +6,6 @@ import { RootProvider } from "fumadocs-ui/provider";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import { Viewport } from "next";
-import Script from "next/script";
 import type { ReactNode } from "react";
 import "./global.css";
 
@@ -58,13 +57,6 @@ export default function Layout({ children }: { children: ReactNode }) {
           {children}
         </RootProvider>
         <Analytics />
-        {process.env.NEXT_PUBLIC_ANALYTICS_TOKEN && (
-          <Script
-            src="https://cdn.rscl.it/ra.js?ver=1.0.2"
-            data-token={process.env.NEXT_PUBLIC_ANALYTICS_TOKEN}
-            strategy="afterInteractive"
-          />
-        )}
       </body>
     </html>
   );
