@@ -1,7 +1,7 @@
 import type { Metadata } from "next/types";
 
-import { createMetadataImage } from "fumadocs-core/server";
 import { source } from "@/app/source";
+import { createMetadataImage } from "fumadocs-core/server";
 
 export const metadataImage = createMetadataImage({
   imageRoute: "/docs-og",
@@ -31,4 +31,4 @@ export function createMetadata(override: Metadata): Metadata {
 export const baseUrl =
   process.env.NODE_ENV === "development"
     ? new URL("http://localhost:3000")
-    : new URL(`https://nemo.rescale.build`);
+    : new URL(`https://nemo.zanreal.com`);
