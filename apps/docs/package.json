@@ -15,7 +15,7 @@
     "fumadocs-ui": "14.4.0",
     "geist": "^1.2.2",
     "lucide-react": "^0.414.0",
-    "next": "^15.3.1-canary.0",
+    "next": "^15.4.0-canary.33",
     "react": "latest",
     "react-dom": "latest",
     "shiki": "^1.12.1",

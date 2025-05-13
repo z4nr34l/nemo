@@ -1,5 +1,6 @@
 import { CopyButton } from "@/components/copy-button";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import Link from "next/link";
 
 export function Hero() {
@@ -20,11 +21,14 @@ function Content() {
       <div className="col-span-1 md:col-span-2" />
       <div className="col-span-8 flex flex-col items-start justify-between h-full gap-4 md:gap-0">
         <div className="flex items-center gap-x-1">
-          <Link href="https://www.rescale.build/" target="_blank">
-            <img
-              src="https://www.rescale.build/logo.svg"
+          <Link href="https://zanreal.com/" target="_blank">
+            <Image
+              src="https://cdn.zanreal.com/public/logo.svg"
               className="h-10"
-              alt="Rescale logo"
+              alt="ZANREAL logo"
+              width={40}
+              height={40}
+              priority
             />
           </Link>
           <svg

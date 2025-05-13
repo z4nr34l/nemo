@@ -22,9 +22,9 @@ export default function HomePage(): ReactElement {
               <span className="text-foreground">Simplify</span> your middlewares{" "}
               <span className="text-foreground">now</span>!
             </h2>
-            <Link href="/docs">
-              <Button className="rounded-full">Get started</Button>
-            </Link>
+            <Button className="rounded-full" asChild>
+              <Link href="/docs">Get started</Link>
+            </Button>
           </div>
 
           <div className="p-8 lg:px-8 lg:py-12 bg-background flex flex-col items-start justify-start gap-6">
@@ -98,16 +98,17 @@ export default function HomePage(): ReactElement {
                 missing!
               </p>
             </div>
-            <Link href="https://github.com/z4nr34l/nemo" target="_blank">
-              <Button
-                variant="secondary"
-                size="lg"
-                className="rounded-full flex items-center justify-center gap-x-4"
-              >
+            <Button
+              variant="secondary"
+              size="lg"
+              className="rounded-full flex items-center justify-center gap-x-4"
+              asChild
+            >
+              <Link href="https://github.com/z4nr34l/nemo" target="_blank">
                 <Github className="w-6 h-6" />
                 GitHub
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
