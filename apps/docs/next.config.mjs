@@ -9,11 +9,20 @@ const config = {
   compiler: {
     ...(process.env.VERCEL_ENV === "production"
       ? {
-          removeConsole: {
-            exclude: ["error"],
-          },
-        }
+        removeConsole: {
+          exclude: ["error"],
+        },
+      }
       : {}),
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cdn.zanreal.com",
+        pathname: "/public/**",
+      },
+    ],
   },
   redirects: () => {
     return [

@@ -9,13 +9,13 @@
     "Route",
     "Path"
   ],
-  "homepage": "https://nemo.rescale.build",
+  "homepage": "https://nemo.zanreal.com",
   "bugs": {
     "url": "https://github.com/z4nr34l/nemo/issues"
   },
   "repository": "https://github.com/z4nr34l/nemo",
   "license": "MIT",
-  "author": "Z4NR34L <mateusz@rescale.build>",
+  "author": "Mateusz Janota <m.janota@zanreal.com>",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

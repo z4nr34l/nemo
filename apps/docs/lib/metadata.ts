@@ -14,7 +14,7 @@ export function createMetadata(override: Metadata): Metadata {
     openGraph: {
       title: override.title ?? undefined,
       description: override.description ?? undefined,
-      url: "https://nemo.rescale.build",
+      url: "https://nemo.zanreal.com",
       siteName: "NEMO",
       ...override.openGraph,
     },

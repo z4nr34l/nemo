@@ -47,9 +47,9 @@ function HeaderLogo() {
   return (
     <div className="flex items-center gap-x-1">
       <img
-        src="https://www.rescale.build/logo.svg"
+        src="https://cdn.zanreal.com/public/logo.svg"
         className="h-6"
-        alt="Rescale logo"
+        alt="ZANREAL logo"
       />
       <svg
         className="text-border h-6 w-6"
