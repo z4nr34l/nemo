@@ -4,6 +4,7 @@
     "@rescale/nemo": "workspace:*",
     "@types/flexsearch": "^0.7.6",
     "@vercel/analytics": "^1.2.2",
+    "@vercel/speed-insights": "^1.2.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "fumadocs-core": "14.4.0",
