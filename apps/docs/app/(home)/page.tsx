@@ -1,5 +1,6 @@
 import { Comparizon } from "@/components/homepage/comparizon";
 import { Hero } from "@/components/homepage/hero";
+import { VercelOssProgram } from "@/components/homepage/vercel-oss-program";
 import { Button } from "@/components/ui/button";
 import { Activity, Github, Globe, Link2, PackageOpen } from "lucide-react";
 import Link from "next/link";
@@ -10,6 +11,8 @@ export default function HomePage(): ReactElement {
     <main className="px-4 xl:px-0 py-[150px]">
       <div className="relative max-w-5xl mx-auto border bg-background divide-y divide-border">
         <Hero />
+
+        <VercelOssProgram />
 
         <Comparizon />
 
