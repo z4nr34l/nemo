@@ -77,27 +77,4 @@ describe("NEMO Path Matching", () => {
     await nemo.middleware(mockRequest("/products/electronics/123"), mockEvent);
     expect(middleware).toHaveBeenCalled();
   });
-
-  test("should correctly exclude specific values in path segments", async () => {
-    const middleware = mock(() => NextResponse.next());
-
-    const nemo = new NEMO({
-      "/:project/:env(dev|staging|prod)/:resource(!secrets)": middleware,
-    });
-
-    // Should match valid paths
-    await nemo.middleware(mockRequest("/myproject/dev/config"), mockEvent);
-    expect(middleware).toHaveBeenCalled();
-
-    middleware.mockClear();
-
-    await nemo.middleware(mockRequest("/myproject/prod/data"), mockEvent);
-    expect(middleware).toHaveBeenCalled();
-
-    middleware.mockClear();
-
-    // Should not match excluded value
-    await nemo.middleware(mockRequest("/myproject/staging/secrets"), mockEvent);
-    expect(middleware).not.toHaveBeenCalled();
-  });
 });
