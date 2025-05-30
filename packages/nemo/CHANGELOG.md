@@ -1,5 +1,11 @@
 # NEMO
 
+## 2.0.2
+
+### Patch Changes
+
+- c796819: Updated readme, simplified peer deps versioning
+
 ## 2.0.1
 
 ### Patch Changes
