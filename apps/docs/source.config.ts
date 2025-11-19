@@ -20,10 +20,11 @@ export const { docs, meta } = defineDocs({
 });
 
 export default defineConfig({
-  lastModifiedTime: "git",
   mdxOptions: {
     remarkPlugins: [remarkInstall, remarkImage, remarkStructure],
     rehypeCodeOptions: {
+      ...rehypeCodeDefaultOptions,
+      lazy: false, // Disable lazy loading to ensure all languages are available
       transformers: [
         ...(rehypeCodeDefaultOptions.transformers as never),
         transformerTwoslash(),

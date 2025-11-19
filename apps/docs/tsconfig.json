@@ -26,7 +26,8 @@
         "./*"
       ]
     },
-    "target": "ES2017"
+    "target": "ES2017",
+    "types": []
   },
   "include": [
     "next-env.d.ts",

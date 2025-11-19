@@ -1,7 +1,7 @@
 import { source } from "@/app/source";
 import { metadataImage } from "@/lib/metadata";
 import { Popup, PopupContent, PopupTrigger } from "fumadocs-twoslash/ui";
-import { createTypeTable } from "fumadocs-typescript/ui";
+import { AutoTypeTable } from "fumadocs-typescript/ui";
 import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 import { Callout } from "fumadocs-ui/components/callout";
 import { File, Files, Folder } from "fumadocs-ui/components/files";
@@ -25,21 +25,26 @@ export default async function Page(props: {
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
-  const { AutoTypeTable } = createTypeTable();
-
-  const MDX = page.data.body;
+  const pageData = page.data as {
+    body: React.ComponentType<any>;
+    toc: any[];
+    full?: boolean;
+    title?: string;
+    description?: string;
+  };
+  const MDX = pageData.body;
 
   return (
     <DocsPage
-      toc={page.data.toc}
-      full={page.data.full}
+      toc={pageData.toc}
+      full={pageData.full}
       tableOfContent={{
         style: "clerk",
         single: false,
       }}
     >
-      <DocsTitle>{page.data.title}</DocsTitle>
-      <DocsDescription>{page.data.description}</DocsDescription>
+      <DocsTitle>{pageData.title}</DocsTitle>
+      <DocsDescription>{pageData.description}</DocsDescription>
       <DocsBody>
         <MDX
           components={{
@@ -88,8 +93,12 @@ export async function generateMetadata(props: {
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
+  const pageData = page.data as {
+    title?: string;
+    description?: string;
+  };
   return metadataImage.withImage(page.slugs, {
-    title: page.data.title,
-    description: page.data.description,
+    title: pageData.title,
+    description: pageData.description,
   });
 }

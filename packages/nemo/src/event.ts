@@ -15,7 +15,7 @@ const responseSymbol = Symbol.for("response");
 const passThroughSymbol = Symbol.for("passThrough");
 const waitUntilSymbol = Symbol.for("waitUntil");
 
-export class FetchEvent implements Event {
+export class FetchEvent implements Omit<Event, 'composedPath'> {
   // (this means removing `FetchEventResult.waitUntil` which also requires a builder change)
   readonly [waitUntilSymbol]:
     | { kind: "internal"; promises: Promise<any>[] }
@@ -50,7 +50,7 @@ export class FetchEvent implements Event {
   }
 
   composedPath(): EventTarget[] {
-    throw new Error("Method not implemented.");
+    return [];
   }
   initEvent(type: string, bubbles?: boolean, cancelable?: boolean): void {
     throw new Error("Method not implemented.");
