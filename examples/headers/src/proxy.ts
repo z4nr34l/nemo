@@ -49,7 +49,7 @@ const middlewares = {
 } satisfies MiddlewareConfig;
 
 // Create middlewares helper
-export const middleware = createMiddleware(middlewares);
+export const proxy = createMiddleware(middlewares);
 
 export const config = {
   matcher: ["/((?!api/|_next/|_static|_vercel|[\\w-]+\\.\\w+).*)"],

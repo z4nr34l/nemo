@@ -27,7 +27,7 @@ const middlewares = {
 } satisfies MiddlewareConfig;
 
 // Create middlewares helper
-export const middleware = createNEMO(middlewares, globlMiddleware, {
+export const proxy = createNEMO(middlewares, globlMiddleware, {
   debug: true,
   enableTiming: true
 });

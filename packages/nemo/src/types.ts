@@ -34,6 +34,9 @@ export type MiddlewareConfigValue =
 
 export type MiddlewareConfig = Record<string, MiddlewareConfigValue>;
 
+// Alias for MiddlewareConfig to support both middleware.ts and proxy.ts naming
+export type ProxyConfig = MiddlewareConfig;
+
 export type GlobalMiddlewareConfig = Partial<
   Record<"before" | "after", MiddlewareChain>
 >;

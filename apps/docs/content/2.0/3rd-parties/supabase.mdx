@@ -67,31 +67,60 @@ We will only make one small change to make it work with NEMO.
   <Step>
     ### Replace `middleware.ts` code
 
-    We need to edit primary `middleware.ts` file to use the new middleware function.
+    We need to edit primary middleware/proxy file to use the new middleware function.
 
-    ```typescript title="@/middleware.ts"
-    import { type MiddlewareConfig, type GlobalMiddlewareConfig, createNEMO } from '@rescale/nemo';
-    import { updateSession } from '@/lib/supabase/middleware';
+    <Tabs items={["Next.js 16", "Older Next.js"]}>
+      <Tab value="Next.js 16">
+        ```typescript title="@/proxy.ts"
+        import { type MiddlewareConfig, type GlobalMiddlewareConfig, createNEMO } from '@rescale/nemo';
+        import { updateSession } from '@/lib/supabase/middleware';
 
-    const globalMiddlewares: GlobalMiddlewareConfig = {
-      before: updateSession, // REMEMBER TO IMPORT updateSession
-    }
+        const globalMiddlewares: GlobalMiddlewareConfig = {
+          before: updateSession, // REMEMBER TO IMPORT updateSession
+        }
 
-    const middlewares: MiddlewareConfig = {
-      '/': [
-        async (request) => {
-          console.log('There is NEMO', request.nextUrl.pathname);
-        },
-      ],
-    };
+        const middlewares: MiddlewareConfig = {
+          '/': [
+            async (request) => {
+              console.log('There is NEMO', request.nextUrl.pathname);
+            },
+          ],
+        };
 
-    export const middleware = createNEMO(middlewares, globalMiddlewares);
+        export const middleware = createNEMO(middlewares, globalMiddlewares);
 
-    export const config = {
-      matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
-    };
+        export const config = {
+          matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+        };
 
-    ```
+        ```
+      </Tab>
+      <Tab value="Older Next.js">
+        ```typescript title="@/middleware.ts"
+        import { type MiddlewareConfig, type GlobalMiddlewareConfig, createNEMO } from '@rescale/nemo';
+        import { updateSession } from '@/lib/supabase/middleware';
+
+        const globalMiddlewares: GlobalMiddlewareConfig = {
+          before: updateSession, // REMEMBER TO IMPORT updateSession
+        }
+
+        const middlewares: MiddlewareConfig = {
+          '/': [
+            async (request) => {
+              console.log('There is NEMO', request.nextUrl.pathname);
+            },
+          ],
+        };
+
+        export const middleware = createNEMO(middlewares, globalMiddlewares);
+
+        export const config = {
+          matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+        };
+
+        ```
+      </Tab>
+    </Tabs>
   </Step>
 
   <Step>

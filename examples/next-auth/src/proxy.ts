@@ -53,7 +53,7 @@ const middlewares = {
 } satisfies MiddlewareConfig;
 
 // Create middlewares helper
-export const middleware = createNEMO(middlewares, globalMiddleware);
+export const proxy = createNEMO(middlewares, globalMiddleware);
 
 export const config = {
   matcher: ["/((?!api/|_next/|_static|_vercel|[\\w-]+\\.\\w+).*)"],

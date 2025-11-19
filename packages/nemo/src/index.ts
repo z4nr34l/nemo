@@ -1,9 +1,11 @@
-import {
-  NextFetchEvent,
-  NextMiddleware as NextMiddlewareFunction,
-  NextRequest,
-  NextResponse,
-} from "next/server";
+import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
+// Support both Next.js 16 (NextProxy) and older versions (NextMiddleware)
+// NextProxy (Next.js 16+) and NextMiddleware (Next.js <16) have the same signature,
+// so we use a compatible function type that works with both
+type NextMiddlewareFunction = (
+  request: NextRequest,
+  event: NextFetchEvent,
+) => Promise<Response | NextResponse | null | undefined | void>;
 import { pathToRegexp } from "path-to-regexp";
 import { NemoMiddlewareError } from "./errors";
 import { NemoEvent } from "./event";
@@ -13,13 +15,13 @@ import { MemoryStorageAdapter } from "./storage/adapters/memory";
 import {
   type GlobalMiddlewareConfig,
   type MiddlewareChain,
-  type MiddlewareConfig,
   type MiddlewareConfigValue,
   type MiddlewareMetadata,
   type NemoConfig,
   type NextMiddleware,
   type NextMiddlewareResult,
   type NextMiddlewareWithMeta,
+  type ProxyConfig,
 } from "./types";
 
 export { NemoMiddlewareError } from "./errors";
@@ -29,7 +31,7 @@ export * from "./utils";
 
 export class NEMO {
   private readonly config: NemoConfig;
-  private readonly middlewares: MiddlewareConfig;
+  private readonly middlewares: ProxyConfig;
   private readonly globalMiddleware?: GlobalMiddlewareConfig;
   private readonly logger: Logger;
   private readonly storage: StorageAdapter;
@@ -41,7 +43,7 @@ export class NEMO {
    * @param config - NEMO configuration
    */
   constructor(
-    middlewares: MiddlewareConfig,
+    middlewares: ProxyConfig,
     globalMiddleware?: GlobalMiddlewareConfig,
     config?: NemoConfig,
   ) {
@@ -669,8 +671,8 @@ export class NEMO {
     request: NextRequest,
     event: NextFetchEvent,
   ): Promise<NextMiddlewareResult> => {
-    // Create NemoEvent with empty initial context
-    const nemoEvent = NemoEvent.from(event as never);
+    // Create NemoEvent with empty initial context and custom storage
+    const nemoEvent = NemoEvent.from(event as never, {}, this.storage);
 
     const queue: NextMiddlewareWithMeta[] = this.propagateQueue(request);
 
@@ -697,7 +699,7 @@ export class NEMO {
  * ```
  */
 export function createMiddleware(
-  middlewares: MiddlewareConfig,
+  middlewares: ProxyConfig,
   globalMiddleware?: GlobalMiddlewareConfig,
   config?: NemoConfig,
 ): NextMiddlewareFunction {
@@ -728,7 +730,7 @@ export function createMiddleware(
  * ```
  */
 export function createNEMO(
-  middlewares: MiddlewareConfig,
+  middlewares: ProxyConfig,
   globalMiddleware?: GlobalMiddlewareConfig,
   config?: NemoConfig,
 ): NextMiddlewareFunction {
