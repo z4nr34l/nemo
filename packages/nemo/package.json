@@ -34,19 +34,19 @@
   },
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/index.js"
     },
     "./storage": {
+      "types": "./dist/storage/index.d.ts",
       "require": "./dist/storage/index.js",
-      "import": "./dist/storage/index.js",
-      "types": "./dist/storage/index.d.ts"
+      "import": "./dist/storage/index.js"
     },
     "./storage/adapters/memory": {
+      "types": "./dist/storage/adapters/memory/index.d.ts",
       "require": "./dist/storage/adapters/memory/index.js",
-      "import": "./dist/storage/adapters/memory/index.js",
-      "types": "./dist/storage/adapters/memory/index.d.ts"
+      "import": "./dist/storage/adapters/memory/index.js"
     },
     "./package.json": "./package.json"
   },

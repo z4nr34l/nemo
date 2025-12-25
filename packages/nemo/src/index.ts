@@ -37,8 +37,9 @@ export class NEMO {
   private readonly storage: StorageAdapter;
 
   /**
-   * NEMO Middleware
-   * @param middlewares - Middleware configuration
+   * NEMO Middleware/Proxy
+   * Compatible with both Next.js <16 (middleware.ts) and Next.js 16+ (proxy.ts)
+   * @param middlewares - Middleware configuration (MiddlewareConfig or ProxyConfig)
    * @param globalMiddleware - Global middleware configuration
    * @param config - NEMO configuration
    */
@@ -662,7 +663,8 @@ export class NEMO {
   }
 
   /**
-   * Middleware
+   * Middleware/Proxy handler
+   * Compatible with both Next.js <16 (middleware.ts) and Next.js 16+ (proxy.ts)
    * @param request - The request to process the middleware for.
    * @param event - The fetch event to process the middleware for.
    * @returns The result of the middleware processing.
@@ -681,17 +683,22 @@ export class NEMO {
 }
 
 /**
- * @deprecated This function is going to be deprecated as it's named just like many other packages and can cause conflicts. Use `new NEMO()` instead. Example: `export const middleware = createNEMO(middlewares, globalMiddleware, config)`.
+ * @deprecated This function is going to be deprecated as it's named just like many other packages and can cause conflicts. Use `new NEMO()` instead. 
+ * 
+ * Example for Next.js 16+: `export const proxy = createNEMO(middlewares, globalMiddleware, config)`
+ * Example for Next.js <16: `export const middleware = createNEMO(middlewares, globalMiddleware, config)`
  *
  * @param middlewares - Middleware configuration
  * @param globalMiddleware - Global middleware configuration
- * @returns NextMiddleware
+ * @returns NextMiddleware (compatible with both Next.js <16 NextMiddleware and Next.js 16+ NextProxy)
  *
  * @example
  * ```ts
  * import { createNEMO } from "@rescale/nemo";
  *
- * const middleware = createNEMO({
+ * // Next.js 16+: export const proxy = createNEMO({...})
+ * // Next.js <16: export const middleware = createNEMO({...})
+ * const proxy = createNEMO({
  *  "/api/:path*": (req, event) => {
  *    console.log("API request:", req.nextUrl.pathname);
  *  },
@@ -712,17 +719,21 @@ export function createMiddleware(
 
 /**
  * Creates a new NEMO instance with the given middlewares and optional configurations.
+ * 
+ * Compatible with both Next.js <16 (middleware.ts) and Next.js 16+ (proxy.ts).
  *
- * @param middlewares - Middleware configuration
+ * @param middlewares - Middleware configuration (MiddlewareConfig or ProxyConfig)
  * @param globalMiddleware - Global middleware configuration
  * @param config - Optional Nemo configuration
- * @returns NextMiddleware
+ * @returns NextMiddleware (compatible with both Next.js <16 NextMiddleware and Next.js 16+ NextProxy)
  *
  * @example
  * ```ts
  * import { createNEMO } from "@rescale/nemo";
  *
- * const middleware = createNEMO({
+ * // Next.js 16+: export const proxy = createNEMO({...})
+ * // Next.js <16: export const middleware = createNEMO({...})
+ * const proxy = createNEMO({
  *  "/api/:path*": (req, event) => {
  *    console.log("API request:", req.nextUrl.pathname);
  *  },

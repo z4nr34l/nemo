@@ -50,7 +50,7 @@ export class FetchEvent implements Omit<Event, 'composedPath'> {
   }
 
   composedPath(): EventTarget[] {
-    return [];
+    throw new Error("Method not implemented.");
   }
   initEvent(type: string, bubbles?: boolean, cancelable?: boolean): void {
     throw new Error("Method not implemented.");

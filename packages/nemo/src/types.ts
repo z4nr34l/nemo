@@ -34,7 +34,10 @@ export type MiddlewareConfigValue =
 
 export type MiddlewareConfig = Record<string, MiddlewareConfigValue>;
 
-// Alias for MiddlewareConfig to support both middleware.ts and proxy.ts naming
+/**
+ * Alias for MiddlewareConfig to support both middleware.ts (Next.js <16) and proxy.ts (Next.js 16+) naming.
+ * Both types are functionally identical and can be used interchangeably.
+ */
 export type ProxyConfig = MiddlewareConfig;
 
 export type GlobalMiddlewareConfig = Partial<
