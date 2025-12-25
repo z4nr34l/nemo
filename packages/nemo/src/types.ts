@@ -51,8 +51,10 @@ export interface NemoConfig {
   storage?: StorageAdapter | (() => StorageAdapter); // Updated storage type
 }
 
+export type ChainType = "before" | "main" | "after";
+
 export interface MiddlewareMetadata {
-  chain: "before" | "main" | "after";
+  chain: ChainType;
   index: number;
   pathname: string;
   routeKey: string;

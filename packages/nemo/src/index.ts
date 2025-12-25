@@ -5,6 +5,7 @@ import { Logger } from "./logger";
 import { StorageAdapter } from "./storage/adapter";
 import { MemoryStorageAdapter } from "./storage/adapters/memory";
 import {
+  type ChainType,
   type GlobalMiddlewareConfig,
   type MiddlewareChain,
   type MiddlewareConfig,
@@ -521,8 +522,8 @@ export class NEMO {
   }
 
   private shouldSkipMiddleware(
-    middlewareChain: "before" | "main" | "after" | undefined,
-    currentChain: "before" | "main" | "after" | undefined,
+    middlewareChain: ChainType | undefined,
+    currentChain: ChainType | undefined,
     skipCurrentChain: boolean,
     event: NemoEvent,
   ): boolean {
@@ -538,11 +539,11 @@ export class NEMO {
   }
 
   private handleChainTransition(
-    middlewareChain: "before" | "main" | "after" | undefined,
-    currentChain: "before" | "main" | "after" | undefined,
+    middlewareChain: ChainType | undefined,
+    currentChain: ChainType | undefined,
     event: NemoEvent,
   ): {
-    newChain: "before" | "main" | "after" | undefined;
+    newChain: ChainType | undefined;
     shouldResetSkip: boolean;
   } {
     if (!middlewareChain || middlewareChain === currentChain) {
@@ -561,7 +562,7 @@ export class NEMO {
     result: NextMiddlewareResult,
     request: NextRequest,
     event: NemoEvent,
-    middlewareChain: "before" | "main" | "after" | undefined,
+    middlewareChain: ChainType | undefined,
   ): Promise<{ shouldTerminate: boolean; shouldSkipChain: boolean }> {
     if (this.isTerminatingResult(result)) {
       return Promise.resolve({ shouldTerminate: true, shouldSkipChain: false });
@@ -588,7 +589,7 @@ export class NEMO {
     event: NemoEvent,
     chainTiming: { before: number; main: number; after: number } | null,
   ): Promise<NextMiddlewareResult> {
-    let currentChain: "before" | "main" | "after" | undefined = undefined;
+    let currentChain: ChainType | undefined = undefined;
     let skipCurrentChain = false;
 
     for (const middleware of queue) {
