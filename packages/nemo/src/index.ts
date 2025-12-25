@@ -582,7 +582,15 @@ export class NEMO {
   ): void {
     if (result instanceof NextResponse) {
       result.headers.forEach((value, key) => {
-        if (!key.startsWith("x-middleware-")) {
+        // Extract headers from x-middleware-request-* format
+        // When NextResponse.next({ request: { headers } }) is used,
+        // Next.js stores these headers as x-middleware-request-{header-name}
+        if (key.startsWith("x-middleware-request-")) {
+          // Remove the x-middleware-request- prefix and apply to request
+          const headerName = key.replace("x-middleware-request-", "");
+          request.headers.set(headerName, value);
+        } else if (!key.startsWith("x-middleware-")) {
+          // Apply other non-middleware headers directly
           request.headers.set(key, value);
         }
       });
@@ -655,9 +663,14 @@ export class NEMO {
     const headerDiff = this.getHeadersDiff(initialHeaders, finalHeaders);
     this.logger.log("Headers modified:", headerDiff);
 
+    // Pass headers diff for response headers and request headers for forwarding
+    // This ensures both response headers and request headers (from x-middleware-request-*)
+    // are properly handled
     return NextResponse.next({
       headers: new Headers(headerDiff),
-      request,
+      request: {
+        headers: finalHeaders,
+      },
     });
   }
 
