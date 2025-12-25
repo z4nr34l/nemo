@@ -399,5 +399,291 @@ describe("Skip Middleware Chain", () => {
       expect(result).toBeDefined();
     });
   });
+
+  describe("event.skip() with skipAfter option", () => {
+    it("should skip after chain when skipAfter option is true from before chain", async () => {
+      const executionOrder: string[] = [];
+
+      const globalMiddlewares: GlobalMiddlewareConfig = {
+        before: [
+          async (request, event) => {
+            executionOrder.push("before-1");
+            event.skip({ skipAfter: true }); // Skip after chain
+          },
+        ],
+        after: [
+          async (request, event) => {
+            executionOrder.push("after-1"); // Should not execute
+          },
+          async (request, event) => {
+            executionOrder.push("after-2"); // Should not execute
+          },
+        ],
+      };
+
+      const middleware = createNEMO(
+        {
+          "/": [
+            async (request, event) => {
+              executionOrder.push("main-1");
+            },
+          ],
+        },
+        globalMiddlewares,
+      );
+
+      const request = createMockRequest("/");
+      const event = createMockEvent();
+
+      const result = await middleware(request, event as any);
+
+      expect(executionOrder).toEqual(["before-1", "main-1"]);
+      expect(result).toBeDefined();
+    });
+
+    it("should skip after chain when skipAfter option is true from main chain", async () => {
+      const executionOrder: string[] = [];
+
+      const globalMiddlewares: GlobalMiddlewareConfig = {
+        after: [
+          async (request, event) => {
+            executionOrder.push("after-1"); // Should not execute
+          },
+          async (request, event) => {
+            executionOrder.push("after-2"); // Should not execute
+          },
+        ],
+      };
+
+      const middleware = createNEMO(
+        {
+          "/": [
+            async (request, event) => {
+              executionOrder.push("main-1");
+              event.skip({ skipAfter: true }); // Skip remaining main and after chain
+            },
+            async (request, event) => {
+              executionOrder.push("main-2"); // Should not execute
+            },
+          ],
+        },
+        globalMiddlewares,
+      );
+
+      const request = createMockRequest("/");
+      const event = createMockEvent();
+
+      const result = await middleware(request, event as any);
+
+      expect(executionOrder).toEqual(["main-1"]);
+      expect(result).toBeDefined();
+    });
+
+    it("should skip after chain when skipAfter option is true from after chain itself", async () => {
+      const executionOrder: string[] = [];
+
+      const globalMiddlewares: GlobalMiddlewareConfig = {
+        after: [
+          async (request, event) => {
+            executionOrder.push("after-1");
+            event.skip({ skipAfter: true }); // Skip remaining after middlewares
+          },
+          async (request, event) => {
+            executionOrder.push("after-2"); // Should not execute
+          },
+          async (request, event) => {
+            executionOrder.push("after-3"); // Should not execute
+          },
+        ],
+      };
+
+      const middleware = createNEMO({}, globalMiddlewares);
+
+      const request = createMockRequest("/");
+      const event = createMockEvent();
+
+      const result = await middleware(request, event as any);
+
+      expect(executionOrder).toEqual(["after-1"]);
+      expect(result).toBeDefined();
+    });
+
+    it("should skip both current chain and after chain when skipAfter is true", async () => {
+      const executionOrder: string[] = [];
+
+      const globalMiddlewares: GlobalMiddlewareConfig = {
+        after: [
+          async (request, event) => {
+            executionOrder.push("after-1"); // Should not execute
+          },
+        ],
+      };
+
+      const middleware = createNEMO(
+        {
+          "/": [
+            async (request, event) => {
+              executionOrder.push("main-1");
+              event.skip({ skipAfter: true }); // Skip remaining main and after chain
+            },
+            async (request, event) => {
+              executionOrder.push("main-2"); // Should not execute
+            },
+          ],
+        },
+        globalMiddlewares,
+      );
+
+      const request = createMockRequest("/");
+      const event = createMockEvent();
+
+      const result = await middleware(request, event as any);
+
+      expect(executionOrder).toEqual(["main-1"]);
+      expect(result).toBeDefined();
+    });
+
+    it("should work correctly with multiple skip() calls with skipAfter (idempotent)", async () => {
+      const executionOrder: string[] = [];
+
+      const globalMiddlewares: GlobalMiddlewareConfig = {
+        after: [
+          async (request, event) => {
+            executionOrder.push("after-1"); // Should not execute
+          },
+        ],
+      };
+
+      const middleware = createNEMO(
+        {
+          "/": [
+            async (request, event) => {
+              executionOrder.push("main-1");
+              event.skip({ skipAfter: true });
+              event.skip({ skipAfter: true }); // Calling multiple times should be safe
+              event.skip({ skipAfter: true });
+            },
+          ],
+        },
+        globalMiddlewares,
+      );
+
+      const request = createMockRequest("/");
+      const event = createMockEvent();
+
+      const result = await middleware(request, event as any);
+
+      expect(executionOrder).toEqual(["main-1"]);
+      expect(result).toBeDefined();
+    });
+
+    it("should skip after chain in nested routes", async () => {
+      const executionOrder: string[] = [];
+
+      const globalMiddlewares: GlobalMiddlewareConfig = {
+        after: [
+          async (request, event) => {
+            executionOrder.push("after-1"); // Should not execute
+          },
+        ],
+      };
+
+      const middleware = createNEMO(
+        {
+          "/admin": {
+            middleware: async (request, event) => {
+              executionOrder.push("admin-parent");
+            },
+            "/users": [
+              async (request, event) => {
+                executionOrder.push("admin-users-1");
+                event.skip({ skipAfter: true }); // Skip after chain
+              },
+            ],
+          },
+        },
+        globalMiddlewares,
+      );
+
+      const request = createMockRequest("/admin/users");
+      const event = createMockEvent();
+
+      const result = await middleware(request, event as any);
+
+      expect(executionOrder).toEqual(["admin-parent", "admin-users-1"]);
+      expect(result).toBeDefined();
+    });
+
+    it("should not skip after chain if skipAfter option is not provided", async () => {
+      const executionOrder: string[] = [];
+
+      const globalMiddlewares: GlobalMiddlewareConfig = {
+        after: [
+          async (request, event) => {
+            executionOrder.push("after-1"); // Should execute
+          },
+        ],
+      };
+
+      const middleware = createNEMO(
+        {
+          "/": [
+            async (request, event) => {
+              executionOrder.push("main-1");
+              event.skip(); // Skip remaining main, but not after
+            },
+            async (request, event) => {
+              executionOrder.push("main-2"); // Should not execute
+            },
+          ],
+        },
+        globalMiddlewares,
+      );
+
+      const request = createMockRequest("/");
+      const event = createMockEvent();
+
+      const result = await middleware(request, event as any);
+
+      expect(executionOrder).toEqual(["main-1", "after-1"]);
+      expect(result).toBeDefined();
+    });
+
+    it("should allow skip() without options and then skip() with skipAfter", async () => {
+      const executionOrder: string[] = [];
+
+      const globalMiddlewares: GlobalMiddlewareConfig = {
+        after: [
+          async (request, event) => {
+            executionOrder.push("after-1"); // Should not execute
+          },
+        ],
+      };
+
+      const middleware = createNEMO(
+        {
+          "/": [
+            async (request, event) => {
+              executionOrder.push("main-1");
+              event.skip(); // Skip remaining main
+            },
+            async (request, event) => {
+              executionOrder.push("main-2"); // Should not execute
+              event.skip({ skipAfter: true }); // This won't execute, but test that it's safe
+            },
+          ],
+        },
+        globalMiddlewares,
+      );
+
+      const request = createMockRequest("/");
+      const event = createMockEvent();
+
+      const result = await middleware(request, event as any);
+
+      expect(executionOrder).toEqual(["main-1", "after-1"]);
+      expect(result).toBeDefined();
+    });
+  });
 });
 

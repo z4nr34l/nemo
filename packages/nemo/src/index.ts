@@ -535,6 +535,11 @@ export class NEMO {
           continue;
         }
 
+        // Skip middleware if it's in after chain and skipAfter() was called
+        if (middlewareChain === "after" && event.shouldSkipAfterChain()) {
+          continue;
+        }
+
         const result = await this.executeMiddleware(
           middleware,
           request,

@@ -150,18 +150,36 @@ const middleware: NextMiddleware = async (request, event) => {
 };
 ```
 
+**Skip with options:**
+
+You can also skip the `after` chain by passing the `skipAfter` option:
+
+```ts
+const middleware: NextMiddleware = async (request, event) => {
+  if (someCondition) {
+    // Skip remaining middlewares in current chain AND skip after chain
+    event.skip({ skipAfter: true });
+    return NextResponse.next();
+  }
+};
+```
+
 <Callout type="info">
 **Chain sections**: The skip functionality works per chain section. If you call `event.skip()` in the `main` chain, it will only skip remaining middlewares in the `main` chain, but `after` chain middlewares will still execute. This allows you to have cleanup logic in the `after` chain that always runs.
+
+If you call `event.skip({ skipAfter: true })`, it will skip both the remaining middlewares in the current chain section AND all middlewares in the `after` chain.
 </Callout>
 
 **Use cases:**
 - Early exit when a condition is met without redirecting
 - Conditional middleware execution based on request properties
 - Performance optimization by skipping unnecessary middleware processing
+- Skip cleanup logic in after chain when not needed
 
-**Example:**
+**Examples:**
 
 ```ts
+// Skip only current chain section
 const authCheck: NextMiddleware = async (request, event) => {
   const token = request.cookies.get('auth-token');
   
@@ -172,6 +190,19 @@ const authCheck: NextMiddleware = async (request, event) => {
   }
   
   // Continue with authentication logic
+};
+
+// Skip current chain and after chain
+const cacheCheck: NextMiddleware = async (request, event) => {
+  const cached = await checkCache(request);
+  
+  if (cached) {
+    // Skip remaining middlewares AND after chain (no cleanup needed)
+    event.skip({ skipAfter: true });
+    return NextResponse.next({
+      headers: { 'x-cached': 'true' },
+    });
+  }
 };
 
 const adminCheck: NextMiddleware = async (request, event) => {

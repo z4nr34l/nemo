@@ -126,6 +126,7 @@ export class NemoEvent extends NextFetchEvent {
   private currentMetadata?: MiddlewareMetadata;
   private readonly logger: Logger;
   private shouldSkipRemaining: boolean = false;
+  private shouldSkipAfter: boolean = false;
 
   constructor(params: {
     request: NextRequest;
@@ -179,8 +180,12 @@ export class NemoEvent extends NextFetchEvent {
    * This allows a middleware to stop the execution of subsequent middlewares
    * without returning a terminating response (like redirect/rewrite).
    * 
+   * @param options - Optional configuration for skip behavior
+   * @param options.skipAfter - If true, also skip all after chain middlewares
+   * 
    * @example
    * ```ts
+   * // Skip remaining middlewares in current chain only
    * async (request, event) => {
    *   if (someCondition) {
    *     event.skip();
@@ -188,9 +193,23 @@ export class NemoEvent extends NextFetchEvent {
    *   }
    * }
    * ```
+   * 
+   * @example
+   * ```ts
+   * // Skip remaining middlewares and after chain
+   * async (request, event) => {
+   *   if (someCondition) {
+   *     event.skip({ skipAfter: true });
+   *     // Remaining middlewares in this chain AND after chain will not execute
+   *   }
+   * }
+   * ```
    */
-  skip(): void {
+  skip(options?: { skipAfter?: boolean }): void {
     this.shouldSkipRemaining = true;
+    if (options?.skipAfter) {
+      this.shouldSkipAfter = true;
+    }
   }
 
   /**
@@ -199,6 +218,14 @@ export class NemoEvent extends NextFetchEvent {
    */
   shouldSkip(): boolean {
     return this.shouldSkipRemaining;
+  }
+
+  /**
+   * Check if skipAfter was called
+   * @internal
+   */
+  shouldSkipAfterChain(): boolean {
+    return this.shouldSkipAfter;
   }
 
   /**
