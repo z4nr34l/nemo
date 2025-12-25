@@ -512,8 +512,29 @@ export class NEMO {
     event: NemoEvent,
     chainTiming: { before: number; main: number; after: number } | null,
   ): Promise<NextMiddlewareResult> {
+    let currentChain: "before" | "main" | "after" | undefined = undefined;
+    let skipCurrentChain = false;
+
     for (const middleware of queue) {
       try {
+        // Reset skip flag when moving to a new chain section (before/main/after)
+        // This allows skip() to only affect the current chain section
+        const middlewareChain = middleware.__nemo?.chain;
+        if (middlewareChain && middlewareChain !== currentChain) {
+          // Reset skip flag when transitioning between chain sections
+          // This allows skip() in one section (e.g., main) to not affect other sections (e.g., after)
+          if (currentChain !== undefined) {
+            event.resetSkip();
+            skipCurrentChain = false;
+          }
+          currentChain = middlewareChain;
+        }
+
+        // Skip middleware if skip() was called in the current chain section
+        if (skipCurrentChain && middlewareChain === currentChain) {
+          continue;
+        }
+
         const result = await this.executeMiddleware(
           middleware,
           request,
@@ -524,6 +545,14 @@ export class NEMO {
           return result;
         }
         this.applyHeadersToRequest(result, request);
+
+        // Check if skip was called - if so, mark to skip remaining middlewares in this chain section
+        if (event.shouldSkip()) {
+          this.logger.log("Skipping remaining middlewares in chain:", {
+            chain: middlewareChain,
+          });
+          skipCurrentChain = true;
+        }
       } catch (error) {
         const errorResult = await this.handleMiddlewareError(error, middleware);
         if (errorResult) {

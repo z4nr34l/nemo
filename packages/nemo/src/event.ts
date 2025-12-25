@@ -125,6 +125,7 @@ export class NemoEvent extends NextFetchEvent {
   storage: StorageAdapter;
   private currentMetadata?: MiddlewareMetadata;
   private readonly logger: Logger;
+  private shouldSkipRemaining: boolean = false;
 
   constructor(params: {
     request: NextRequest;
@@ -171,6 +172,41 @@ export class NemoEvent extends NextFetchEvent {
    */
   setCurrentMetadata(metadata: MiddlewareMetadata): void {
     this.currentMetadata = metadata;
+  }
+
+  /**
+   * Skip the remaining middlewares in the current chain (before/main/after)
+   * This allows a middleware to stop the execution of subsequent middlewares
+   * without returning a terminating response (like redirect/rewrite).
+   * 
+   * @example
+   * ```ts
+   * async (request, event) => {
+   *   if (someCondition) {
+   *     event.skip();
+   *     // Remaining middlewares in this chain will not execute
+   *   }
+   * }
+   * ```
+   */
+  skip(): void {
+    this.shouldSkipRemaining = true;
+  }
+
+  /**
+   * Check if skip was called
+   * @internal
+   */
+  shouldSkip(): boolean {
+    return this.shouldSkipRemaining;
+  }
+
+  /**
+   * Reset skip flag (used internally when transitioning between chain sections)
+   * @internal
+   */
+  resetSkip(): void {
+    this.shouldSkipRemaining = false;
   }
 
   /**
