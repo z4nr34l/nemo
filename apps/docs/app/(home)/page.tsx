@@ -8,8 +8,8 @@ import { ReactElement } from "react";
 
 export default function HomePage(): ReactElement {
   return (
-    <main className="px-4 xl:px-0 py-[150px] bg-muted">
-      <div className="relative max-w-5xl mx-auto border divide-y divide-border">
+    <main className="px-4 xl:px-0 py-[150px] bg-background">
+      <div className="relative max-w-5xl mx-auto border divide-y">
         <Hero />
 
         <VercelOssProgram />

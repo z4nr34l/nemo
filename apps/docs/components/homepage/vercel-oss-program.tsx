@@ -5,7 +5,7 @@ import { Button } from "../ui/button";
 export function VercelOssProgram() {
   return (
     <Link href="https://vercel.com/blog/spring25-oss-program" target="_blank">
-      <div className="bg-black flex flex-col md:flex-row items-start md:items-center justify-between py-2 px-6">
+      <div className="bg-black flex flex-col md:flex-row items-start md:items-center justify-between py-2 px-6 border-b">
         <div className="flex items-center gap-4">
           <svg
             className="h-4"
