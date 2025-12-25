@@ -15,7 +15,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/z4nr34l/nemo.git"
+    "url": "git+https://github.com/z4nr34l/nemo.git",
+    "directory": "packages/nemo"
   },
   "license": "MIT",
   "author": "Mateusz Janota <m.janota@zanreal.com>",
