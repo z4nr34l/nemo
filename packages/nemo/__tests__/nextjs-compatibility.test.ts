@@ -173,10 +173,10 @@ describe("Next.js Version Compatibility", () => {
       };
 
       const globalMiddleware = {
-        before: async (request) => {
+        before: async (request: NextRequest) => {
           // Global before middleware
         },
-        after: async (request) => {
+        after: async (request: NextRequest) => {
           // Global after middleware
         },
       };
