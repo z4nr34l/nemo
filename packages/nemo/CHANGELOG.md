@@ -1,5 +1,11 @@
 # NEMO
 
+## 2.1.1
+
+### Patch Changes
+
+- fcf93d0: Fix repository field in package.json by adding directory path for monorepo compatibility
+
 ## 2.1.0
 
 ### Minor Changes
