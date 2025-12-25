@@ -1,14 +1,12 @@
-import type { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import type { NextMiddlewareResult } from "next/dist/server/web/types";
 import type { NemoEvent } from "./event";
 import type { StorageAdapter } from "./storage/adapter";
 
-export type NextMiddlewareResult =
-  | NextResponse
-  | Response
-  | null
-  | undefined
-  | void;
+// Re-export NextMiddlewareResult from Next.js for compatibility
+export type { NextMiddlewareResult } from "next/dist/server/web/types";
 
+// NextMiddleware uses NemoEvent instead of NextFetchEvent for enhanced functionality
 export type NextMiddleware = (
   request: NextRequest,
   event: NemoEvent,

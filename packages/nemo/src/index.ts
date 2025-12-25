@@ -25,7 +25,7 @@ export * from "./utils";
 type NextMiddlewareFunction = (
   request: NextRequest,
   event: NextFetchEvent,
-) => Promise<Response | NextResponse | null | undefined | void>;
+) => Promise<NextMiddlewareResult>;
 
 export class NEMO {
   private readonly config: NemoConfig;
