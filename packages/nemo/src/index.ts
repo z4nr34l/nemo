@@ -13,9 +13,14 @@ import {
   type NextMiddleware,
   type NextMiddlewareResult,
   type NextMiddlewareWithMeta,
-  type ProxyConfig,
 } from "./types";
-import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
+import {
+  NextFetchEvent,
+  NextRequest,
+  NextResponse,
+  type MiddlewareConfig,
+  type ProxyConfig,
+} from "next/server";
 
 export { NemoMiddlewareError } from "./errors";
 export { NemoEvent } from "./event";
@@ -29,7 +34,7 @@ type NextMiddlewareFunction = (
 
 export class NEMO {
   private readonly config: NemoConfig;
-  private readonly middlewares: ProxyConfig;
+  private readonly middlewares: ProxyConfig | MiddlewareConfig;
   private readonly globalMiddleware?: GlobalMiddlewareConfig;
   private readonly logger: Logger;
   private readonly storage: StorageAdapter;
