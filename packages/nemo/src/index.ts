@@ -7,15 +7,16 @@ import { MemoryStorageAdapter } from "./storage/adapters/memory";
 import {
   type GlobalMiddlewareConfig,
   type MiddlewareChain,
+  type MiddlewareConfig,
   type MiddlewareConfigValue,
   type MiddlewareMetadata,
   type NemoConfig,
   type NextMiddleware,
   type NextMiddlewareResult,
   type NextMiddlewareWithMeta,
+  type ProxyConfig,
 } from "./types";
 import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
-import type { MiddlewareConfig, ProxyConfig } from "./types";
 
 export { NemoMiddlewareError } from "./errors";
 export { NemoEvent } from "./event";
