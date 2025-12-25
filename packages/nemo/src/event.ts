@@ -232,6 +232,12 @@ export class NemoEvent extends NextFetchEvent {
    * Reset skip flag (used internally when transitioning between chain sections)
    * @internal
    */
+  /**
+   * Reset skip flag (used internally when transitioning between chain sections)
+   * Note: Only resets shouldSkipRemaining; shouldSkipAfter persists to honor
+   * the request to skip after-chain middlewares across all chain transitions.
+   * @internal
+   */
   resetSkip(): void {
     this.shouldSkipRemaining = false;
   }
