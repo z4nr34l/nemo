@@ -14,13 +14,8 @@ import {
   type NextMiddlewareResult,
   type NextMiddlewareWithMeta,
 } from "./types";
-import {
-  NextFetchEvent,
-  NextRequest,
-  NextResponse,
-  type MiddlewareConfig,
-  type ProxyConfig,
-} from "next/server";
+import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
+import type { MiddlewareConfig, ProxyConfig } from "./types";
 
 export { NemoMiddlewareError } from "./errors";
 export { NemoEvent } from "./event";
@@ -34,7 +29,7 @@ type NextMiddlewareFunction = (
 
 export class NEMO {
   private readonly config: NemoConfig;
-  private readonly middlewares: ProxyConfig | MiddlewareConfig;
+  private readonly middlewares: MiddlewareConfig;
   private readonly globalMiddleware?: GlobalMiddlewareConfig;
   private readonly logger: Logger;
   private readonly storage: StorageAdapter;
@@ -47,7 +42,7 @@ export class NEMO {
    * @param config - NEMO configuration
    */
   constructor(
-    middlewares: ProxyConfig,
+    middlewares: ProxyConfig | MiddlewareConfig,
     globalMiddleware?: GlobalMiddlewareConfig,
     config?: NemoConfig,
   ) {
@@ -267,8 +262,9 @@ export class NEMO {
 
     // Special case for root path - only process the root middleware for exact root path matches
     // This ensures root middleware only runs for "/" and not for other paths
-    if (this.middlewares["/"] && (pathname === "/" || pathname === "")) {
-      const rootValue = this.middlewares["/"];
+    const rootMiddleware = this.middlewares["/"];
+    if (rootMiddleware && (pathname === "/" || pathname === "")) {
+      const rootValue = rootMiddleware;
       processedPatterns.add("/");
 
       if (typeof rootValue === "function" || Array.isArray(rootValue)) {
@@ -709,7 +705,7 @@ export class NEMO {
  * ```
  */
 export function createMiddleware(
-  middlewares: ProxyConfig,
+  middlewares: ProxyConfig | MiddlewareConfig,
   globalMiddleware?: GlobalMiddlewareConfig,
   config?: NemoConfig,
 ): NextMiddlewareFunction {
@@ -744,7 +740,7 @@ export function createMiddleware(
  * ```
  */
 export function createNEMO(
-  middlewares: ProxyConfig,
+  middlewares: ProxyConfig | MiddlewareConfig,
   globalMiddleware?: GlobalMiddlewareConfig,
   config?: NemoConfig,
 ): NextMiddlewareFunction {
