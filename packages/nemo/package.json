@@ -13,7 +13,11 @@
   "bugs": {
     "url": "https://github.com/z4nr34l/nemo/issues"
   },
-  "repository": "https://github.com/z4nr34l/nemo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/z4nr34l/nemo.git",
+    "directory": "packages/nemo"
+  },
   "license": "MIT",
   "author": "Mateusz Janota <m.janota@zanreal.com>",
   "type": "module",

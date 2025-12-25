@@ -31,7 +31,10 @@
   "publishConfig": {
     "provenance": true
   },
-  "repository": "https://github.com/z4nr34l/nemo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/z4nr34l/nemo.git"
+  },
   "scripts": {
     "build": "turbo build",
     "clean": "turbo clean",
@@ -47,5 +50,6 @@
   "workspaces": [
     "packages/*",
     "apps/docs"
-  ]
+  ],
+  "version": ""
 }
