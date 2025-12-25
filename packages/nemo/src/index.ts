@@ -1,11 +1,3 @@
-import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
-// Support both Next.js 16 (NextProxy) and older versions (NextMiddleware)
-// NextProxy (Next.js 16+) and NextMiddleware (Next.js <16) have the same signature,
-// so we use a compatible function type that works with both
-type NextMiddlewareFunction = (
-  request: NextRequest,
-  event: NextFetchEvent,
-) => Promise<Response | NextResponse | null | undefined | void>;
 import { pathToRegexp } from "path-to-regexp";
 import { NemoMiddlewareError } from "./errors";
 import { NemoEvent } from "./event";
@@ -23,11 +15,17 @@ import {
   type NextMiddlewareWithMeta,
   type ProxyConfig,
 } from "./types";
+import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 
 export { NemoMiddlewareError } from "./errors";
 export { NemoEvent } from "./event";
 export * from "./types";
 export * from "./utils";
+
+type NextMiddlewareFunction = (
+  request: NextRequest,
+  event: NextFetchEvent,
+) => Promise<Response | NextResponse | null | undefined | void>;
 
 export class NEMO {
   private readonly config: NemoConfig;
@@ -604,7 +602,7 @@ export class NEMO {
   }
 
   private async handleMiddlewareError(
-    error: any,
+    error: unknown,
     middleware: NextMiddlewareWithMeta,
   ): Promise<NextMiddlewareResult> {
     this.logger.error("Middleware execution failed:", {
@@ -683,8 +681,8 @@ export class NEMO {
 }
 
 /**
- * @deprecated This function is going to be deprecated as it's named just like many other packages and can cause conflicts. Use `new NEMO()` instead. 
- * 
+ * @deprecated This function is going to be deprecated as it's named just like many other packages and can cause conflicts. Use `new NEMO()` instead.
+ *
  * Example for Next.js 16+: `export const proxy = createNEMO(middlewares, globalMiddleware, config)`
  * Example for Next.js <16: `export const middleware = createNEMO(middlewares, globalMiddleware, config)`
  *
@@ -719,7 +717,7 @@ export function createMiddleware(
 
 /**
  * Creates a new NEMO instance with the given middlewares and optional configurations.
- * 
+ *
  * Compatible with both Next.js <16 (middleware.ts) and Next.js 16+ (proxy.ts).
  *
  * @param middlewares - Middleware configuration (MiddlewareConfig or ProxyConfig)
