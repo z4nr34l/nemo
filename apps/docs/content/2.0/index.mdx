@@ -50,10 +50,10 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
         ```typescript title="proxy.ts"
         import { createNEMO } from '@rescale/nemo';
 
-        export const middleware = createNEMO(/* your functions will go here */); // [!code ++]
+        export const proxy = createNEMO(/* your functions will go here */); // [!code ++]
 
         // [...]
-
+        
         ```
       </Tab>
       <Tab value="Older Next.js">
@@ -85,8 +85,8 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
           ], // [!code ++]
         }; // [!code ++]
 
-        export const middleware = createNEMO(/* your functions will go here */); // [!code --]
-        export const middleware = createNEMO(middlewares); // [!code ++]
+        export const proxy = createNEMO(/* your functions will go here */); // [!code --]
+        export const proxy = createNEMO(middlewares); // [!code ++]
 
         // [...]
 
@@ -174,7 +174,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
           ],
         } satisfies MiddlewareConfig;
 
-        export const middleware = createNEMO(middlewares);
+        export const proxy = createNEMO(middlewares);
 
         export const config = {
           matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],

@@ -8,8 +8,8 @@ import { ReactElement } from "react";
 
 export default function HomePage(): ReactElement {
   return (
-    <main className="px-4 xl:px-0 py-[150px]">
-      <div className="relative max-w-5xl mx-auto border bg-background divide-y divide-border">
+    <main className="px-4 xl:px-0 py-[150px] bg-muted">
+      <div className="relative max-w-5xl mx-auto border divide-y divide-border">
         <Hero />
 
         <VercelOssProgram />
@@ -17,17 +17,17 @@ export default function HomePage(): ReactElement {
         <Comparizon />
 
         <div className="grid lg:grid-cols-3 bg-border gap-px">
-          <div className="p-8 lg:px-10 lg:py-14 bg-background flex flex-col items-start justify-start gap-6">
+          <div className="p-8 lg:px-10 lg:py-14 bg-background flex flex-col items-start justify-start gap-6 lg:border-r">
             <h2 className="text-4xl font-bold text-muted-foreground">
               <span className="text-foreground">Simplify</span> your middlewares{" "}
               <span className="text-foreground">now</span>!
             </h2>
-            <Button className="rounded-full" asChild>
+            <Button className="rounded-full border" asChild>
               <Link href="/docs">Get started</Link>
             </Button>
           </div>
 
-          <div className="p-8 lg:px-8 lg:py-12 bg-background flex flex-col items-start justify-start gap-6">
+          <div className="p-8 lg:px-8 lg:py-12 bg-background flex flex-col items-start justify-start gap-6 lg:border-r">
             <h2 className="text-3xl font-bold text-muted-foreground">
               Supports
             </h2>
@@ -101,7 +101,7 @@ export default function HomePage(): ReactElement {
             <Button
               variant="secondary"
               size="lg"
-              className="rounded-full flex items-center justify-center gap-x-4"
+              className="rounded-full flex items-center justify-center gap-x-4 border"
               asChild
             >
               <Link href="https://github.com/z4nr34l/nemo" target="_blank">
@@ -117,7 +117,7 @@ export default function HomePage(): ReactElement {
           Handcrafted by&nbsp;
           <Button variant="link" className="p-0" asChild>
             <Link href="https://zanreal.com" target="_blank">
-              ZANREAL
+              ZanReal
             </Link>
           </Button>
         </p>

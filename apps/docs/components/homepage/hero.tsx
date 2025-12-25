@@ -100,132 +100,132 @@ function Globe() {
         <circle
           cx="400"
           cy="400"
-          fill="hsl(var(--background))"
+          fill="var(--background)"
           r="400"
         ></circle>
         <path
           d="M 400 800 A -400 400 0 0 0 400 0"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M 400 800 A -266.667 400 0 0 0 400 0"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M 400 800 A -133.333 400 0 0 0 400 0"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M 400 800 A 0 400 0 0 0 400 0"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M 400 0 A 133.333 400 0 0 0 400 800"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M 400 0 A 266.667 400 0 0 0 400 800"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M 400 0 A 400 400 0 0 0 400 800"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M178.892,66.667 h442.217"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M101.858,133.333 h596.285"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M53.59,200 h692.82"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M22.876,266.667 h754.247"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M5.595,333.333 h788.811"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M0,400 h800"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M5.595,466.667 h788.811"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M22.876,533.333 h754.247"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M53.59,600 h692.82"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M101.858,666.667 h596.285"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
         <path
           d="M178.892,733.333 h442.217"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         ></path>
@@ -315,11 +315,11 @@ function Globe() {
             id="llullldl34-gradient"
             r="0"
           >
-            <stop offset="0" stopColor="hsl(var(--foreground))"></stop>
-            <stop offset="0.4" stopColor="hsl(var(--foreground))"></stop>
+            <stop offset="0" stopColor="var(--foreground)"></stop>
+            <stop offset="0.4" stopColor="var(--foreground)"></stop>
             <stop
               offset="1"
-              stopColor="hsl(var(--foreground))"
+              stopColor="var(--foreground)"
               stopOpacity="0"
             ></stop>
             <animate
@@ -441,11 +441,11 @@ function Globe() {
             id="llddllll33-gradient"
             r="0"
           >
-            <stop offset="0" stopColor="hsl(var(--foreground))"></stop>
-            <stop offset="0.4" stopColor="hsl(var(--foreground))"></stop>
+            <stop offset="0" stopColor="var(--foreground)"></stop>
+            <stop offset="0.4" stopColor="var(--foreground)"></stop>
             <stop
               offset="1"
-              stopColor="hsl(var(--foreground))"
+              stopColor="var(--foreground)"
               stopOpacity="0"
             ></stop>
             <animate
@@ -567,11 +567,11 @@ function Globe() {
             id="llullll32-gradient"
             r="0"
           >
-            <stop offset="0" stopColor="hsl(var(--foreground))"></stop>
-            <stop offset="0.4" stopColor="hsl(var(--foreground))"></stop>
+            <stop offset="0" stopColor="var(--foreground)"></stop>
+            <stop offset="0.4" stopColor="var(--foreground)"></stop>
             <stop
               offset="1"
-              stopColor="hsl(var(--foreground))"
+              stopColor="var(--foreground)"
               stopOpacity="0"
             ></stop>
             <animate
@@ -613,8 +613,8 @@ function Globe() {
           y1="0"
           y2="400"
         >
-          <stop offset="0%" stopColor="hsl(var(--border))"></stop>
-          <stop offset="100%" stopColor="hsl(var(--border))"></stop>
+          <stop offset="0%" stopColor="var(--border)"></stop>
+          <stop offset="100%" stopColor="var(--border)"></stop>
         </linearGradient>
       </defs>
     </svg>

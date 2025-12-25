@@ -42,7 +42,7 @@ Just skip the part of setting up the middleware and follow the steps below.
           ],
         };
 
-        export const middleware = createNEMO(middlewares, globalMiddlewares);
+        export const proxy = createNEMO(middlewares, globalMiddlewares);
 
         export const config = {
           matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],

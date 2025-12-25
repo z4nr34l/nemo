@@ -87,7 +87,7 @@ We will only make one small change to make it work with NEMO.
           ],
         };
 
-        export const middleware = createNEMO(middlewares, globalMiddlewares);
+        export const proxy = createNEMO(middlewares, globalMiddlewares);
 
         export const config = {
           matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
