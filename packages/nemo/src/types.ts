@@ -34,10 +34,6 @@ export type MiddlewareConfigValue =
 
 export type MiddlewareConfig = Record<string, MiddlewareConfigValue>;
 
-// ProxyConfig is an alias for MiddlewareConfig to support both middleware.ts and proxy.ts naming
-// In Next.js 16+, ProxyConfig is the same as MiddlewareConfig
-export type ProxyConfig = MiddlewareConfig;
-
 export type GlobalMiddlewareConfig = Partial<
   Record<"before" | "after", MiddlewareChain>
 >;

@@ -14,7 +14,6 @@ import {
   type NextMiddleware,
   type NextMiddlewareResult,
   type NextMiddlewareWithMeta,
-  type ProxyConfig,
 } from "./types";
 import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 
@@ -38,12 +37,12 @@ export class NEMO {
   /**
    * NEMO Middleware/Proxy
    * Compatible with both Next.js <16 (middleware.ts) and Next.js 16+ (proxy.ts)
-   * @param middlewares - Middleware configuration (MiddlewareConfig or ProxyConfig)
+   * @param middlewares - Middleware configuration
    * @param globalMiddleware - Global middleware configuration
    * @param config - NEMO configuration
    */
   constructor(
-    middlewares: ProxyConfig | MiddlewareConfig,
+    middlewares: MiddlewareConfig,
     globalMiddleware?: GlobalMiddlewareConfig,
     config?: NemoConfig,
   ) {
@@ -706,7 +705,7 @@ export class NEMO {
  * ```
  */
 export function createMiddleware(
-  middlewares: ProxyConfig | MiddlewareConfig,
+  middlewares: MiddlewareConfig,
   globalMiddleware?: GlobalMiddlewareConfig,
   config?: NemoConfig,
 ): NextMiddlewareFunction {
@@ -722,7 +721,7 @@ export function createMiddleware(
  *
  * Compatible with both Next.js <16 (middleware.ts) and Next.js 16+ (proxy.ts).
  *
- * @param middlewares - Middleware configuration (MiddlewareConfig or ProxyConfig)
+ * @param middlewares - Middleware configuration
  * @param globalMiddleware - Global middleware configuration
  * @param config - Optional Nemo configuration
  * @returns NextMiddleware (compatible with both Next.js <16 NextMiddleware and Next.js 16+ NextProxy)
@@ -741,7 +740,7 @@ export function createMiddleware(
  * ```
  */
 export function createNEMO(
-  middlewares: ProxyConfig | MiddlewareConfig,
+  middlewares: MiddlewareConfig,
   globalMiddleware?: GlobalMiddlewareConfig,
   config?: NemoConfig,
 ): NextMiddlewareFunction {

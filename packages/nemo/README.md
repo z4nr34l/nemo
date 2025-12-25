@@ -125,14 +125,13 @@ type NextMiddleware = (
 
 The standard middleware function signature used in NEMO, compatible with Next.js native middleware.
 
-#### `MiddlewareConfig` / `ProxyConfig`
+#### `MiddlewareConfig`
 
 ```typescript
 type MiddlewareConfig = Record<string, MiddlewareConfigValue>;
-type ProxyConfig = MiddlewareConfig; // Alias for Next.js 16+ compatibility
 ```
 
-A configuration object that maps route patterns to middleware functions or arrays of middleware functions. `ProxyConfig` is an alias for `MiddlewareConfig` to support both `middleware.ts` (Next.js <16) and `proxy.ts` (Next.js 16+) naming conventions.
+A configuration object that maps route patterns to middleware functions or arrays of middleware functions. Compatible with both `middleware.ts` (Next.js <16) and `proxy.ts` (Next.js 16+) naming conventions.
 
 #### `GlobalMiddlewareConfig`
 
@@ -150,7 +149,7 @@ Configuration for global middleware that runs before or after route-specific mid
 
 ```typescript
 function createNEMO(
-  middlewares: MiddlewareConfig | ProxyConfig,
+  middlewares: MiddlewareConfig,
   globalMiddleware?: GlobalMiddlewareConfig,
   config?: NemoConfig
 ): NextMiddleware

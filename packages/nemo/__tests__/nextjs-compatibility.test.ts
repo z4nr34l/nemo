@@ -4,7 +4,7 @@
  */
 
 import { describe, expect, it } from "bun:test";
-import { createNEMO, type MiddlewareConfig, type ProxyConfig } from "../src";
+import { createNEMO, type MiddlewareConfig } from "../src";
 import { NextRequest, NextResponse } from "next/server";
 import { NemoEvent } from "../src/event";
 
@@ -77,9 +77,9 @@ describe("Next.js Version Compatibility", () => {
     });
   });
 
-  describe("ProxyConfig (Next.js 16+) compatibility", () => {
-    it("should work with ProxyConfig type for proxy.ts", async () => {
-      const proxyConfig: ProxyConfig = {
+  describe("MiddlewareConfig (Next.js 16+) compatibility", () => {
+    it("should work with MiddlewareConfig type for proxy.ts", async () => {
+      const proxyConfig: MiddlewareConfig = {
         "/api": async (request) => {
           return NextResponse.next();
         },
@@ -94,8 +94,8 @@ describe("Next.js Version Compatibility", () => {
       expect(result).toBeDefined();
     });
 
-    it("should work with nested ProxyConfig", async () => {
-      const proxyConfig: ProxyConfig = {
+    it("should work with nested MiddlewareConfig", async () => {
+      const proxyConfig: MiddlewareConfig = {
         "/api": {
           middleware: async (request) => {
             return NextResponse.next();
@@ -115,8 +115,8 @@ describe("Next.js Version Compatibility", () => {
       expect(result).toBeDefined();
     });
 
-    it("should work with array of middleware functions in ProxyConfig", async () => {
-      const proxyConfig: ProxyConfig = {
+    it("should work with array of middleware functions in MiddlewareConfig", async () => {
+      const proxyConfig: MiddlewareConfig = {
         "/api": [
           async (request) => {
             return NextResponse.next();
@@ -138,14 +138,14 @@ describe("Next.js Version Compatibility", () => {
   });
 
   describe("Cross-compatibility", () => {
-    it("should accept both MiddlewareConfig and ProxyConfig types", async () => {
+    it("should accept MiddlewareConfig type for both middleware.ts and proxy.ts", async () => {
       const middlewareConfig: MiddlewareConfig = {
         "/api": async (request) => {
           return NextResponse.next();
         },
       };
 
-      const proxyConfig: ProxyConfig = {
+      const proxyConfig: MiddlewareConfig = {
         "/api": async (request) => {
           return NextResponse.next();
         },
@@ -190,14 +190,14 @@ describe("Next.js Version Compatibility", () => {
       expect(result).toBeDefined();
     });
 
-    it("should handle root path middleware for both config types", async () => {
+    it("should handle root path middleware for both middleware.ts and proxy.ts", async () => {
       const middlewareConfig: MiddlewareConfig = {
         "/": async (request) => {
           return NextResponse.next();
         },
       };
 
-      const proxyConfig: ProxyConfig = {
+      const proxyConfig: MiddlewareConfig = {
         "/": async (request) => {
           return NextResponse.next();
         },
@@ -214,30 +214,6 @@ describe("Next.js Version Compatibility", () => {
 
       expect(middlewareResult).toBeDefined();
       expect(proxyResult).toBeDefined();
-    });
-  });
-
-  describe("Type compatibility", () => {
-    it("should export ProxyConfig type that is compatible with MiddlewareConfig", () => {
-      const middlewareConfig: MiddlewareConfig = {
-        "/api": async () => NextResponse.next(),
-      };
-
-      // ProxyConfig should accept MiddlewareConfig values
-      const proxyConfig: ProxyConfig = middlewareConfig;
-
-      expect(proxyConfig).toEqual(middlewareConfig);
-    });
-
-    it("should allow using ProxyConfig where MiddlewareConfig is expected", () => {
-      const proxyConfig: ProxyConfig = {
-        "/api": async () => NextResponse.next(),
-      };
-
-      // MiddlewareConfig should accept ProxyConfig values
-      const middlewareConfig: MiddlewareConfig = proxyConfig;
-
-      expect(middlewareConfig).toEqual(proxyConfig);
     });
   });
 
@@ -269,7 +245,7 @@ describe("Next.js Version Compatibility", () => {
     });
 
     it("should return compatible function signature for Next.js 16+", async () => {
-      const config: ProxyConfig = {
+      const config: MiddlewareConfig = {
         "/api": async (request) => {
           return NextResponse.next();
         },
