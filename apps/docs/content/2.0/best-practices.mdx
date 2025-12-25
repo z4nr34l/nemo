@@ -67,15 +67,30 @@ Build a custom adapter to cache data between requests using for example redis, V
 **Warning!** Keep this as fast as possible, as longer the middleware executes the longer the TTFB will be.
 </Callout>
 
-```ts title="middleware.ts"
-import { createNEMO } from '@rescale/nemo';
-import { RedisAdapter } from "@/lib/nemo/redis";
+<Tabs items={["Next.js 16", "Older Next.js"]}>
+  <Tab value="Next.js 16">
+    ```ts title="proxy.ts"
+    import { createNEMO } from '@rescale/nemo';
+    import { RedisAdapter } from "@/lib/nemo/redis";
 
-export const middleware = createNEMO(middlewares, globalMiddleware, {
-  storage: () => new RedisAdapter()
-});
+    export const proxy = createNEMO(middlewares, globalMiddleware, {
+      storage: () => new RedisAdapter()
+    });
 
-```
+    ```
+  </Tab>
+  <Tab value="Older Next.js">
+    ```ts title="middleware.ts"
+    import { createNEMO } from '@rescale/nemo';
+    import { RedisAdapter } from "@/lib/nemo/redis";
+
+    export const middleware = createNEMO(middlewares, globalMiddleware, {
+      storage: () => new RedisAdapter()
+    });
+
+    ```
+  </Tab>
+</Tabs>
 
 ## Security
 
@@ -83,30 +98,60 @@ export const middleware = createNEMO(middlewares, globalMiddleware, {
 
 Implement rate limiting in your middleware to protect your application from abuse and potential DoS attacks. Rate limiting can be applied globally or to specific routes.
 
-```ts title="middleware.ts"
-import { createNEMO, NextMiddleware } from '@rescale/nemo';
-import { RateLimiter } from '@/lib/rate-limiter';
+<Tabs items={["Next.js 16", "Older Next.js"]}>
+  <Tab value="Next.js 16">
+    ```ts title="proxy.ts"
+    import { createNEMO, NextMiddleware } from '@rescale/nemo';
+    import { RateLimiter } from '@/lib/rate-limiter';
 
-const rateLimiter: NextMiddleware = async (request, { storage }) => {
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
-  const limiter = new RateLimiter();
-  
-  const { success, limit, remaining, reset } = await limiter.check(ip);
-  
-  if (!success) {
-    return new Response('Too Many Requests', {
-      status: 429,
-      headers: {
-        'X-RateLimit-Limit': limit.toString(),
-        'X-RateLimit-Remaining': remaining.toString(),
-        'X-RateLimit-Reset': reset.toString()
+    const rateLimiter: NextMiddleware = async (request, { storage }) => {
+      const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+      const limiter = new RateLimiter();
+      
+      const { success, limit, remaining, reset } = await limiter.check(ip);
+      
+      if (!success) {
+        return new Response('Too Many Requests', {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': limit.toString(),
+            'X-RateLimit-Remaining': remaining.toString(),
+            'X-RateLimit-Reset': reset.toString()
+          }
+        });
       }
-    });
-  }
-};
+    };
 
-export const middleware = createNEMO([rateLimiter, ...otherMiddlewares]);
-```
+    export const proxy = createNEMO([rateLimiter, ...otherMiddlewares]);
+    ```
+  </Tab>
+  <Tab value="Older Next.js">
+    ```ts title="middleware.ts"
+    import { createNEMO, NextMiddleware } from '@rescale/nemo';
+    import { RateLimiter } from '@/lib/rate-limiter';
+
+    const rateLimiter: NextMiddleware = async (request, { storage }) => {
+      const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+      const limiter = new RateLimiter();
+      
+      const { success, limit, remaining, reset } = await limiter.check(ip);
+      
+      if (!success) {
+        return new Response('Too Many Requests', {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': limit.toString(),
+            'X-RateLimit-Remaining': remaining.toString(),
+            'X-RateLimit-Reset': reset.toString()
+          }
+        });
+      }
+    };
+
+    export const middleware = createNEMO([rateLimiter, ...otherMiddlewares]);
+    ```
+  </Tab>
+</Tabs>
 
 ### Authentication
 
@@ -154,20 +199,157 @@ export const adminOnly: NextMiddleware = (request, { storage }) => {
 };
 ```
 
+### Header forwarding
+
+When you need to pass data from middleware to your page components, use header forwarding instead of storing everything in cookies or query parameters.
+
+**Best practices:**
+- Use descriptive header names with prefixes (e.g., `x-app-locale`, `x-user-id`)
+- Forward headers early in the middleware chain
+- Keep forwarded headers minimal - only pass essential data
+- Use storage for data that doesn't need to reach the page component
+
+**Example:**
+
+```ts title="middleware.ts"
+import { NextMiddleware, NextResponse } from '@rescale/nemo';
+
+const localeMiddleware: NextMiddleware = async (request) => {
+  const locale = detectLocale(request);
+  
+  // Forward locale to page components
+  return NextResponse.next({
+    request: {
+      headers: new Headers({
+        ...Object.fromEntries(request.headers),
+        'x-locale': locale,
+      }),
+    },
+  });
+};
+
+const userMiddleware: NextMiddleware = async (request, { storage }) => {
+  const user = await getUser(request);
+  
+  // Store user in storage for other middlewares
+  storage.set('user', user);
+  
+  // Forward only user ID to page (not full user object)
+  return NextResponse.next({
+    request: {
+      headers: new Headers({
+        ...Object.fromEntries(request.headers),
+        'x-user-id': user.id,
+      }),
+    },
+  });
+};
+```
+
+**In your page component:**
+
+```ts title="app/page.tsx"
+import { headers } from 'next/headers';
+
+export default async function Page() {
+  const headersList = await headers();
+  const locale = headersList.get('x-locale');
+  const userId = headersList.get('x-user-id');
+  
+  // Use the forwarded headers
+  return <div>Locale: {locale}, User ID: {userId}</div>;
+}
+```
+
+### Skipping middlewares
+
+Use `event.skip()` to conditionally skip remaining middlewares in the current chain section without returning a terminating response. This is useful for performance optimization and conditional execution.
+
+**When to use skip():**
+- Early exit when a condition is met (but you still want after-chain to run)
+- Conditional middleware execution based on request properties
+- Performance optimization by skipping unnecessary processing
+- Skip cleanup logic when not needed
+
+**Basic usage:**
+
+```ts title="middleware.ts"
+import { NextMiddleware, NextResponse } from '@rescale/nemo';
+
+const cacheCheck: NextMiddleware = async (request, { storage, event }) => {
+  const cacheKey = request.nextUrl.pathname;
+  const cached = storage.get(cacheKey);
+  
+  if (cached) {
+    // Skip remaining middlewares, but allow after chain to run for cleanup
+    event.skip();
+    return NextResponse.next({
+      headers: {
+        'x-cached': 'true',
+      },
+    });
+  }
+  
+  // Continue with processing if not cached
+};
+
+const expensiveOperation: NextMiddleware = async (request) => {
+  // This will not execute if skip() was called in cacheCheck
+  await performExpensiveOperation();
+};
+```
+
+**Skip with after chain:**
+
+You can also skip the `after` chain by passing the `skipAfter` option:
+
+```ts title="middleware.ts"
+import { NextMiddleware, NextResponse } from '@rescale/nemo';
+
+const earlyExit: NextMiddleware = async (request, { event }) => {
+  if (request.headers.get('x-skip-all') === 'true') {
+    // Skip remaining middlewares AND after chain (no cleanup needed)
+    event.skip({ skipAfter: true });
+    return NextResponse.next();
+  }
+  
+  // Continue with normal processing
+};
+```
+
+**When to use `skipAfter: true`:**
+- When you want to completely bypass cleanup logic in the after chain
+- When the request doesn't need any post-processing
+- Performance optimization when you know no cleanup is needed
+
 ## Reliability
 
 ### Monitoring
 
 NEMO provides built-in performance monitoring that you can easily enable through configuration options:
 
-```ts title="middleware.ts"
-import { createNEMO } from '@rescale/nemo';
+<Tabs items={["Next.js 16", "Older Next.js"]}>
+  <Tab value="Next.js 16">
+    ```ts title="proxy.ts"
+    import { createNEMO } from '@rescale/nemo';
 
-export const middleware = createNEMO(middlewares, globalMiddleware, {
-  debug: true,        // Enable detailed logs
-  enableTiming: true  // Enable performance measurements
-});
-```
+    export const proxy = createNEMO(middlewares, globalMiddleware, {
+      debug: true,        // Enable detailed logs
+      enableTiming: true  // Enable performance measurements
+    });
+    ```
+  </Tab>
+  <Tab value="Older Next.js">
+    ```ts title="middleware.ts"
+    import { createNEMO } from '@rescale/nemo';
+
+    export const middleware = createNEMO(middlewares, globalMiddleware, {
+      debug: true,        // Enable detailed logs
+      enableTiming: true  // Enable performance measurements
+    });
+    ```
+  </Tab>
+</Tabs>
 
 When `enableTiming` is enabled, NEMO will automatically:
 - Track execution time for each middleware function
@@ -178,51 +360,102 @@ When `enableTiming` is enabled, NEMO will automatically:
 
 Implement structured logging in your middleware for better debugging and traceability.
 
-```ts title="middleware.ts"
-import { createNEMO, NextMiddleware } from '@rescale/nemo';
-import { logger } from '@/lib/logger';
+<Tabs items={["Next.js 16", "Older Next.js"]}>
+  <Tab value="Next.js 16">
+    ```ts title="proxy.ts"
+    import { createNEMO, NextMiddleware } from '@rescale/nemo';
+    import { logger } from '@/lib/logger';
 
-const loggingMiddleware: NextMiddleware = async (request, { next, storage }) => {
-  const requestId = crypto.randomUUID();
-  const start = Date.now();
-  
-  // Add request ID to storage for cross-middleware correlation
-  storage.set('requestId', requestId);
-  
-  logger.info({
-    message: 'Request received',
-    requestId,
-    method: request.method,
-    path: request.nextUrl.pathname,
-    userAgent: request.headers.get('user-agent')
-  });
-  
-  try {
-    const response = await next();
-    
-    logger.info({
-      message: 'Request completed',
-      requestId,
-      status: response.status,
-      duration: Date.now() - start
-    });
-    
-    return response;
-  } catch (error) {
-    logger.error({
-      message: 'Request failed',
-      requestId,
-      error: error.message,
-      stack: error.stack,
-      duration: Date.now() - start
-    });
-    
-    throw error;
-  }
-};
+    const loggingMiddleware: NextMiddleware = async (request, { next, storage }) => {
+      const requestId = crypto.randomUUID();
+      const start = Date.now();
+      
+      // Add request ID to storage for cross-middleware correlation
+      storage.set('requestId', requestId);
+      
+      logger.info({
+        message: 'Request received',
+        requestId,
+        method: request.method,
+        path: request.nextUrl.pathname,
+        userAgent: request.headers.get('user-agent')
+      });
+      
+      try {
+        const response = await next();
+        
+        logger.info({
+          message: 'Request completed',
+          requestId,
+          status: response.status,
+          duration: Date.now() - start
+        });
+        
+        return response;
+      } catch (error) {
+        logger.error({
+          message: 'Request failed',
+          requestId,
+          error: error.message,
+          stack: error.stack,
+          duration: Date.now() - start
+        });
+        
+        throw error;
+      }
+    };
 
-export const middleware = createNEMO([loggingMiddleware, ...otherMiddlewares]);
-```
+    export const proxy = createNEMO([loggingMiddleware, ...otherMiddlewares]);
+    ```
+  </Tab>
+  <Tab value="Older Next.js">
+    ```ts title="middleware.ts"
+    import { createNEMO, NextMiddleware } from '@rescale/nemo';
+    import { logger } from '@/lib/logger';
+
+    const loggingMiddleware: NextMiddleware = async (request, { next, storage }) => {
+      const requestId = crypto.randomUUID();
+      const start = Date.now();
+      
+      // Add request ID to storage for cross-middleware correlation
+      storage.set('requestId', requestId);
+      
+      logger.info({
+        message: 'Request received',
+        requestId,
+        method: request.method,
+        path: request.nextUrl.pathname,
+        userAgent: request.headers.get('user-agent')
+      });
+      
+      try {
+        const response = await next();
+        
+        logger.info({
+          message: 'Request completed',
+          requestId,
+          status: response.status,
+          duration: Date.now() - start
+        });
+        
+        return response;
+      } catch (error) {
+        logger.error({
+          message: 'Request failed',
+          requestId,
+          error: error.message,
+          stack: error.stack,
+          duration: Date.now() - start
+        });
+        
+        throw error;
+      }
+    };
+
+    export const middleware = createNEMO([loggingMiddleware, ...otherMiddlewares]);
+    ```
+  </Tab>
+</Tabs>
 
 ### Testing
 

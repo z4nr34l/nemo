@@ -1,9 +1,3 @@
-import {
-  NextFetchEvent,
-  NextMiddleware as NextMiddlewareFunction,
-  NextRequest,
-  NextResponse,
-} from "next/server";
 import { pathToRegexp } from "path-to-regexp";
 import { NemoMiddlewareError } from "./errors";
 import { NemoEvent } from "./event";
@@ -11,6 +5,7 @@ import { Logger } from "./logger";
 import { StorageAdapter } from "./storage/adapter";
 import { MemoryStorageAdapter } from "./storage/adapters/memory";
 import {
+  type ChainType,
   type GlobalMiddlewareConfig,
   type MiddlewareChain,
   type MiddlewareConfig,
@@ -21,21 +16,29 @@ import {
   type NextMiddlewareResult,
   type NextMiddlewareWithMeta,
 } from "./types";
+import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 
 export { NemoMiddlewareError } from "./errors";
 export { NemoEvent } from "./event";
 export * from "./types";
 export * from "./utils";
 
+type NextMiddlewareFunction = (
+  request: NextRequest,
+  event: NextFetchEvent,
+) => Promise<NextMiddlewareResult>;
+
 export class NEMO {
   private readonly config: NemoConfig;
   private readonly middlewares: MiddlewareConfig;
   private readonly globalMiddleware?: GlobalMiddlewareConfig;
   private readonly logger: Logger;
-  private readonly storage: StorageAdapter;
+  private readonly storage: StorageAdapter | (() => StorageAdapter);
+  private readonly storageFactory: boolean;
 
   /**
-   * NEMO Middleware
+   * NEMO Middleware/Proxy
+   * Compatible with both Next.js <16 (middleware.ts) and Next.js 16+ (proxy.ts)
    * @param middlewares - Middleware configuration
    * @param globalMiddleware - Global middleware configuration
    * @param config - NEMO configuration
@@ -55,24 +58,37 @@ export class NEMO {
     this.globalMiddleware = globalMiddleware;
     this.logger = new Logger(this.config.debug || false);
 
-    // Initialize storage
+    // Store storage configuration - if it's a function, we'll call it per request
+    // This ensures proper isolation between requests, especially important for edge runtime
     if (this.config.storage) {
-      this.storage =
-        typeof this.config.storage === "function"
-          ? this.config.storage()
-          : this.config.storage;
+      if (typeof this.config.storage === "function") {
+        this.storage = this.config.storage;
+        this.storageFactory = true;
+      } else {
+        this.storage = this.config.storage;
+        this.storageFactory = false;
+      }
     } else {
       this.storage = new MemoryStorageAdapter();
+      this.storageFactory = false;
     }
 
     // Log initialization
+    // For factory functions, we don't call it here to avoid creating unnecessary instances
+    // The factory will be called per request for proper isolation
+    const storageInstance = this.storageFactory
+      ? undefined // Don't create instance during construction if it's a factory
+      : (this.storage as StorageAdapter);
     this.logger.log("Initialized with config:", {
       debug: this.config.debug,
       silent: this.config.silent,
       enableTiming: this.config.enableTiming,
       middlewareCount: Object.keys(middlewares).length,
       hasGlobalMiddleware: !!globalMiddleware,
-      storageAdapter: this.storage.constructor.name,
+      storageAdapter: storageInstance
+        ? storageInstance.constructor.name
+        : "factory function",
+      storageIsFactory: this.storageFactory,
     });
   }
 
@@ -261,8 +277,9 @@ export class NEMO {
 
     // Special case for root path - only process the root middleware for exact root path matches
     // This ensures root middleware only runs for "/" and not for other paths
-    if (this.middlewares["/"] && (pathname === "/" || pathname === "")) {
-      const rootValue = this.middlewares["/"];
+    const rootMiddleware = this.middlewares["/"];
+    if (rootMiddleware && (pathname === "/" || pathname === "")) {
+      const rootValue = rootMiddleware;
       processedPatterns.add("/");
 
       if (typeof rootValue === "function" || Array.isArray(rootValue)) {
@@ -504,24 +521,121 @@ export class NEMO {
     return this.config.enableTiming ? { before: 0, main: 0, after: 0 } : null;
   }
 
+  private shouldSkipMiddleware(
+    middlewareChain: ChainType | undefined,
+    currentChain: ChainType | undefined,
+    skipCurrentChain: boolean,
+    event: NemoEvent,
+  ): boolean {
+    if (skipCurrentChain && middlewareChain === currentChain) {
+      return true;
+    }
+
+    if (middlewareChain === "after" && event.shouldSkipAfterChain()) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private handleChainTransition(
+    middlewareChain: ChainType | undefined,
+    currentChain: ChainType | undefined,
+    event: NemoEvent,
+  ): {
+    newChain: ChainType | undefined;
+    shouldResetSkip: boolean;
+  } {
+    if (!middlewareChain || middlewareChain === currentChain) {
+      return { newChain: currentChain, shouldResetSkip: false };
+    }
+
+    if (currentChain !== undefined) {
+      event.resetSkip();
+      return { newChain: middlewareChain, shouldResetSkip: true };
+    }
+
+    return { newChain: middlewareChain, shouldResetSkip: false };
+  }
+
+  private processMiddlewareResult(
+    result: NextMiddlewareResult,
+    request: NextRequest,
+    event: NemoEvent,
+    middlewareChain: ChainType | undefined,
+  ): Promise<{ shouldTerminate: boolean; shouldSkipChain: boolean }> {
+    if (this.isTerminatingResult(result)) {
+      return Promise.resolve({ shouldTerminate: true, shouldSkipChain: false });
+    }
+
+    this.applyHeadersToRequest(result, request);
+
+    if (event.shouldSkip()) {
+      this.logger.log("Skipping remaining middlewares in chain:", {
+        chain: middlewareChain,
+      });
+      return Promise.resolve({
+        shouldTerminate: false,
+        shouldSkipChain: true,
+      });
+    }
+
+    return Promise.resolve({ shouldTerminate: false, shouldSkipChain: false });
+  }
+
   private async executeMiddlewareChain(
     queue: NextMiddlewareWithMeta[],
     request: NextRequest,
     event: NemoEvent,
     chainTiming: { before: number; main: number; after: number } | null,
   ): Promise<NextMiddlewareResult> {
+    let currentChain: ChainType | undefined = undefined;
+    let skipCurrentChain = false;
+
     for (const middleware of queue) {
       try {
+        const middlewareChain = middleware.__nemo?.chain;
+
+        const transition = this.handleChainTransition(
+          middlewareChain,
+          currentChain,
+          event,
+        );
+        currentChain = transition.newChain;
+        if (transition.shouldResetSkip) {
+          skipCurrentChain = false;
+        }
+
+        if (
+          this.shouldSkipMiddleware(
+            middlewareChain,
+            currentChain,
+            skipCurrentChain,
+            event,
+          )
+        ) {
+          continue;
+        }
+
         const result = await this.executeMiddleware(
           middleware,
           request,
           event,
           chainTiming,
         );
-        if (this.isTerminatingResult(result)) {
+        const processResult = await this.processMiddlewareResult(
+          result,
+          request,
+          event,
+          middlewareChain,
+        );
+
+        if (processResult.shouldTerminate) {
           return result;
         }
-        this.applyHeadersToRequest(result, request);
+        if (processResult.shouldSkipChain) {
+          skipCurrentChain = true;
+        }
       } catch (error) {
         const errorResult = await this.handleMiddlewareError(error, middleware);
         if (errorResult) {
@@ -580,7 +694,15 @@ export class NEMO {
   ): void {
     if (result instanceof NextResponse) {
       result.headers.forEach((value, key) => {
-        if (!key.startsWith("x-middleware-")) {
+        // Extract headers from x-middleware-request-* format
+        // When NextResponse.next({ request: { headers } }) is used,
+        // Next.js stores these headers as x-middleware-request-{header-name}
+        if (key.startsWith("x-middleware-request-")) {
+          // Remove the x-middleware-request- prefix and apply to request
+          const headerName = key.replace("x-middleware-request-", "");
+          request.headers.set(headerName, value);
+        } else if (!key.startsWith("x-middleware-")) {
+          // Apply other non-middleware headers directly
           request.headers.set(key, value);
         }
       });
@@ -601,7 +723,7 @@ export class NEMO {
   }
 
   private async handleMiddlewareError(
-    error: any,
+    error: unknown,
     middleware: NextMiddlewareWithMeta,
   ): Promise<NextMiddlewareResult> {
     this.logger.error("Middleware execution failed:", {
@@ -653,14 +775,20 @@ export class NEMO {
     const headerDiff = this.getHeadersDiff(initialHeaders, finalHeaders);
     this.logger.log("Headers modified:", headerDiff);
 
+    // Pass headers diff for response headers and request headers for forwarding
+    // This ensures both response headers and request headers (from x-middleware-request-*)
+    // are properly handled
     return NextResponse.next({
       headers: new Headers(headerDiff),
-      request,
+      request: {
+        headers: finalHeaders,
+      },
     });
   }
 
   /**
-   * Middleware
+   * Middleware/Proxy handler
+   * Compatible with both Next.js <16 (middleware.ts) and Next.js 16+ (proxy.ts)
    * @param request - The request to process the middleware for.
    * @param event - The fetch event to process the middleware for.
    * @returns The result of the middleware processing.
@@ -669,8 +797,14 @@ export class NEMO {
     request: NextRequest,
     event: NextFetchEvent,
   ): Promise<NextMiddlewareResult> => {
-    // Create NemoEvent with empty initial context
-    const nemoEvent = NemoEvent.from(event as never);
+    // Get storage instance - if it's a factory function, call it per request
+    // This ensures proper isolation between requests, especially important for edge runtime
+    const storageInstance = this.storageFactory
+      ? (this.storage as () => StorageAdapter)()
+      : (this.storage as StorageAdapter);
+
+    // Create NemoEvent with empty initial context and custom storage
+    const nemoEvent = NemoEvent.from(event as never, {}, storageInstance);
 
     const queue: NextMiddlewareWithMeta[] = this.propagateQueue(request);
 
@@ -679,17 +813,22 @@ export class NEMO {
 }
 
 /**
- * @deprecated This function is going to be deprecated as it's named just like many other packages and can cause conflicts. Use `new NEMO()` instead. Example: `export const middleware = createNEMO(middlewares, globalMiddleware, config)`.
+ * @deprecated This function is going to be deprecated as it's named just like many other packages and can cause conflicts. Use `new NEMO()` instead.
+ *
+ * Example for Next.js 16+: `export const proxy = createNEMO(middlewares, globalMiddleware, config)`
+ * Example for Next.js <16: `export const middleware = createNEMO(middlewares, globalMiddleware, config)`
  *
  * @param middlewares - Middleware configuration
  * @param globalMiddleware - Global middleware configuration
- * @returns NextMiddleware
+ * @returns NextMiddleware (compatible with both Next.js <16 NextMiddleware and Next.js 16+ NextProxy)
  *
  * @example
  * ```ts
  * import { createNEMO } from "@rescale/nemo";
  *
- * const middleware = createNEMO({
+ * // Next.js 16+: export const proxy = createNEMO({...})
+ * // Next.js <16: export const middleware = createNEMO({...})
+ * const proxy = createNEMO({
  *  "/api/:path*": (req, event) => {
  *    console.log("API request:", req.nextUrl.pathname);
  *  },
@@ -711,16 +850,20 @@ export function createMiddleware(
 /**
  * Creates a new NEMO instance with the given middlewares and optional configurations.
  *
+ * Compatible with both Next.js <16 (middleware.ts) and Next.js 16+ (proxy.ts).
+ *
  * @param middlewares - Middleware configuration
  * @param globalMiddleware - Global middleware configuration
  * @param config - Optional Nemo configuration
- * @returns NextMiddleware
+ * @returns NextMiddleware (compatible with both Next.js <16 NextMiddleware and Next.js 16+ NextProxy)
  *
  * @example
  * ```ts
  * import { createNEMO } from "@rescale/nemo";
  *
- * const middleware = createNEMO({
+ * // Next.js 16+: export const proxy = createNEMO({...})
+ * // Next.js <16: export const middleware = createNEMO({...})
+ * const proxy = createNEMO({
  *  "/api/:path*": (req, event) => {
  *    console.log("API request:", req.nextUrl.pathname);
  *  },

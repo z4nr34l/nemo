@@ -2,6 +2,8 @@
 
 A middleware composition library for Next.js applications that allows you to organize and chain middleware functions based on URL patterns.
 
+> **Next.js 16+ Compatibility:** This library is fully compatible with Next.js 16+ where `middleware.ts` has been renamed to `proxy.ts`. Use `export const proxy = createNEMO(...)` for Next.js 16+ and `export const middleware = createNEMO(...)` for Next.js <16.
+
 [![codecov](https://codecov.io/gh/z4nr34l/nemo/graph/badge.svg?token=10CXWSP5BA)](https://codecov.io/gh/z4nr34l/nemo)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=z4nr34l_nemo&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=z4nr34l_nemo)
 
@@ -37,12 +39,16 @@ bun add @rescale/nemo
 
 ## Middleware Composition
 
+> **Note:** In Next.js 16+, use `proxy.ts` and export `proxy`. For Next.js <16, use `middleware.ts` and export `middleware`.
+
 This example shows all possible options of NEMO usage and middlewares compositions, including nested routes:
 
 ```typescript
 import { createNEMO } from '@rescale/nemo';
 
-export default createNEMO({
+// Next.js 16+: export const proxy = createNEMO(...)
+// Next.js <16: export const middleware = createNEMO(...)
+export const proxy = createNEMO({
   // Simple route with middleware chain
   '/api': [
     // First middleware in the chain
@@ -125,7 +131,7 @@ The standard middleware function signature used in NEMO, compatible with Next.js
 type MiddlewareConfig = Record<string, MiddlewareConfigValue>;
 ```
 
-A configuration object that maps route patterns to middleware functions or arrays of middleware functions.
+A configuration object that maps route patterns to middleware functions or arrays of middleware functions. Compatible with both `middleware.ts` (Next.js <16) and `proxy.ts` (Next.js 16+) naming conventions.
 
 #### `GlobalMiddlewareConfig`
 
@@ -148,6 +154,8 @@ function createNEMO(
   config?: NemoConfig
 ): NextMiddleware
 ```
+
+> **Note:** The return type is compatible with both Next.js <16 `NextMiddleware` and Next.js 16+ `NextProxy` types, as they share the same function signature.
 
 Creates a composed middleware function with enhanced features:
 
@@ -316,10 +324,14 @@ const nemo = new NEMO({
 
 ### Basic Path-Based Middleware
 
+> **Note:** In Next.js 16+, the file should be named `proxy.ts` instead of `middleware.ts`, and you should export `proxy` instead of `middleware`. For Next.js <16, use `middleware.ts` and export `middleware`.
+
 ```typescript
 import { createNEMO } from '@rescale/nemo';
 
-export const middleware = createNEMO({
+// Next.js 16+: export const proxy = createNEMO(...)
+// Next.js <16: export const middleware = createNEMO(...)
+export const proxy = createNEMO({
   // Simple route
   '/api': async (request) => {
     // Handle API routes
@@ -351,7 +363,9 @@ export const middleware = createNEMO({
 ```typescript
 import { createNEMO } from '@rescale/nemo';
 
-export default createNEMO({
+// Next.js 16+: export const proxy = createNEMO(...)
+// Next.js <16: export const middleware = createNEMO(...)
+export const proxy = createNEMO({
   '/api{/*path}': apiMiddleware,
 },
 {
@@ -367,7 +381,9 @@ The Storage API allows you to share data between middleware executions:
 ```typescript
 import { createNEMO } from '@rescale/nemo';
 
-export default createNEMO({
+// Next.js 16+: export const proxy = createNEMO(...)
+// Next.js <16: export const middleware = createNEMO(...)
+export const proxy = createNEMO({
   '/': [
     async (req, { storage }) => {
       // Set values
@@ -397,7 +413,9 @@ Access URL parameters through the event's params property:
 ```typescript
 import { createNEMO } from '@rescale/nemo';
 
-export default createNEMO({
+// Next.js 16+: export const proxy = createNEMO(...)
+// Next.js <16: export const middleware = createNEMO(...)
+export const proxy = createNEMO({
   '/users/:userId': async (request, event) => {
     const { userId } = event.params;
     console.log(`Processing request for user: ${userId}`);
@@ -412,7 +430,9 @@ NEMO provides built-in logging capabilities through the event object that mainta
 ```typescript
 import { createNEMO } from '@rescale/nemo';
 
-export default createNEMO({
+// Next.js 16+: export const proxy = createNEMO(...)
+// Next.js <16: export const middleware = createNEMO(...)
+export const proxy = createNEMO({
   '/api': async (request, event) => {
     // Debug logs (only shown when debug: true in config)
     event.log('Processing API request', request.nextUrl.pathname);

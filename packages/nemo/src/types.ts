@@ -2,6 +2,7 @@ import type { NextRequest, NextResponse } from "next/server";
 import type { NemoEvent } from "./event";
 import type { StorageAdapter } from "./storage/adapter";
 
+// Public-compatible type matching documented middleware return types
 export type NextMiddlewareResult =
   | NextResponse
   | Response
@@ -9,6 +10,7 @@ export type NextMiddlewareResult =
   | undefined
   | void;
 
+// NextMiddleware uses NemoEvent instead of NextFetchEvent for enhanced functionality
 export type NextMiddleware = (
   request: NextRequest,
   event: NemoEvent,
@@ -53,8 +55,10 @@ export interface NemoConfig {
   storage?: StorageAdapter | (() => StorageAdapter); // Updated storage type
 }
 
+export type ChainType = "before" | "main" | "after";
+
 export interface MiddlewareMetadata {
-  chain: "before" | "main" | "after";
+  chain: ChainType;
   index: number;
   pathname: string;
   routeKey: string;

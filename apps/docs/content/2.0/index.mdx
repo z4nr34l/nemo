@@ -18,51 +18,100 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
 
   </Step>
   <Step>
-    ### Import the package inside middleware.ts file.
+    ### Import the package inside your middleware/proxy file.
 
     (or create it if you don't have one yet)
 
-    ```typescript title="middleware.ts"
-    import { createNEMO } from '@rescale/nemo';  // [!code ++]
+    <Tabs items={["Next.js 16", "Older Next.js"]}>
+      <Tab value="Next.js 16">
+        ```typescript title="proxy.ts"
+        import { createNEMO } from '@rescale/nemo';  // [!code ++]
 
-    // [...]
-    
-    ```
+        // [...]
+        
+        ```
+      </Tab>
+      <Tab value="Older Next.js">
+        ```typescript title="middleware.ts"
+        import { createNEMO } from '@rescale/nemo';  // [!code ++]
+
+        // [...]
+        
+        ```
+      </Tab>
+    </Tabs>
 
   </Step>
   <Step>
     ### Use the createNEMO function to create a middleware helper.
 
-    ```typescript title="middleware.ts"
-    import { createNEMO } from '@rescale/nemo';
+    <Tabs items={["Next.js 16", "Older Next.js"]}>
+      <Tab value="Next.js 16">
+        ```typescript title="proxy.ts"
+        import { createNEMO } from '@rescale/nemo';
 
-    export const middleware = createNEMO(/* your functions will go here */); // [!code ++]
+        export const proxy = createNEMO(/* your functions will go here */); // [!code ++]
 
-    // [...]
+        // [...]
+        
+        ```
+      </Tab>
+      <Tab value="Older Next.js">
+        ```typescript title="middleware.ts"
+        import { createNEMO } from '@rescale/nemo';
 
-    ```
+        export const middleware = createNEMO(/* your functions will go here */); // [!code ++]
+
+        // [...]
+
+        ```
+      </Tab>
+    </Tabs>
 
   </Step>
   <Step>
     ### Define your middlewares config and update the createNEMO function parameters.
 
-    ```typescript title="middleware.ts"
-    import { createNEMO, type MiddlewareConfig } from '@rescale/nemo'; // [!code ++]
+    <Tabs items={["Next.js 16", "Older Next.js"]}>
+      <Tab value="Next.js 16">
+        ```typescript title="proxy.ts"
+        import { createNEMO, type MiddlewareConfig } from '@rescale/nemo'; // [!code ++]
 
-    const middlewares: MiddlewareConfig = { // [!code ++]
-      '/': [ // [!code ++]
-        async (request) => { // [!code ++]
-          console.log('There is NEMO', request.nextUrl.pathname); // [!code ++]
-        }, // [!code ++]
-      ], // [!code ++]
-    }; // [!code ++]
+        const middlewares: MiddlewareConfig = { // [!code ++]
+          '/': [ // [!code ++]
+            async (request) => { // [!code ++]
+              console.log('There is NEMO', request.nextUrl.pathname); // [!code ++]
+            }, // [!code ++]
+          ], // [!code ++]
+        }; // [!code ++]
 
-    export const middleware = createNEMO(/* your functions will go here */); // [!code --]
-    export const middleware = createNEMO(middlewares); // [!code ++]
+        export const proxy = createNEMO(/* your functions will go here */); // [!code --]
+        export const proxy = createNEMO(middlewares); // [!code ++]
 
-    // [...]
+        // [...]
 
-    ```
+        ```
+      </Tab>
+      <Tab value="Older Next.js">
+        ```typescript title="middleware.ts"
+        import { createNEMO, type MiddlewareConfig } from '@rescale/nemo'; // [!code ++]
+
+        const middlewares: MiddlewareConfig = { // [!code ++]
+          '/': [ // [!code ++]
+            async (request) => { // [!code ++]
+              console.log('There is NEMO', request.nextUrl.pathname); // [!code ++]
+            }, // [!code ++]
+          ], // [!code ++]
+        }; // [!code ++]
+
+        export const middleware = createNEMO(/* your functions will go here */); // [!code --]
+        export const middleware = createNEMO(middlewares); // [!code ++]
+
+        // [...]
+
+        ```
+      </Tab>
+    </Tabs>
 
     After that step, you should see an `There is NEMO` message in your console for every request made to your application.
 
@@ -73,16 +122,30 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
 
   </Step>
   <Step>
-    ### Optimize your middleware execution to not execute it on every signle request.
+    ### Optimize your middleware execution to not execute it on every single request.
 
-    ```typescript title="middleware.ts"
-    // [...]
+    <Tabs items={["Next.js 16", "Older Next.js"]}>
+      <Tab value="Next.js 16">
+        ```typescript title="proxy.ts"
+        // [...]
 
-    export const config = { // [!code ++]
-      matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'], // [!code ++]
-    }; // [!code ++]
+        export const config = { // [!code ++]
+          matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'], // [!code ++]
+        }; // [!code ++]
 
-    ```
+        ```
+      </Tab>
+      <Tab value="Older Next.js">
+        ```typescript title="middleware.ts"
+        // [...]
+
+        export const config = { // [!code ++]
+          matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'], // [!code ++]
+        }; // [!code ++]
+
+        ```
+      </Tab>
+    </Tabs>
 
     That will prevent your middleware from executing on routes:
     1. `/_next/` (Next.js internals)
@@ -98,26 +161,50 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
   <Step>
     ### Finally, let's put it all together.
 
-    ```typescript twoslash title="middleware.ts"
-    import { createNEMO, type MiddlewareConfig } from '@rescale/nemo';
+    <Tabs items={["Next.js 16", "Older Next.js"]}>
+      <Tab value="Next.js 16">
+        ```typescript twoslash title="proxy.ts"
+        import { createNEMO, type MiddlewareConfig } from '@rescale/nemo';
 
-    const middlewares = {
-      '/': [
-        async (request) => {
-          console.log('There is NEMO', request.nextUrl.pathname);
-        },
-      ],
-    } satisfies MiddlewareConfig;
+        const middlewares = {
+          '/': [
+            async (request) => {
+              console.log('There is NEMO', request.nextUrl.pathname);
+            },
+          ],
+        } satisfies MiddlewareConfig;
 
-    export const middleware = createNEMO(middlewares);
+        export const proxy = createNEMO(middlewares);
 
-    export const config = {
-      matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
-    };
+        export const config = {
+          matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+        };
 
-    ```
+        ```
+      </Tab>
+      <Tab value="Older Next.js">
+        ```typescript twoslash title="middleware.ts"
+        import { createNEMO, type MiddlewareConfig } from '@rescale/nemo';
 
-    That's how should your `middleware.ts` file looks like after all steps.
+        const middlewares = {
+          '/': [
+            async (request) => {
+              console.log('There is NEMO', request.nextUrl.pathname);
+            },
+          ],
+        } satisfies MiddlewareConfig;
+
+        export const middleware = createNEMO(middlewares);
+
+        export const config = {
+          matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+        };
+
+        ```
+      </Tab>
+    </Tabs>
+
+    That's how your file should look after all steps.
 
   </Step>
 </Steps>

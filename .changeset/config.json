@@ -5,11 +5,7 @@
   "changelog": "@changesets/cli/changelog",
   "fixed": [],
   "ignore": [
-    "docs",
-    "basic-example",
-    "cookies-example",
-    "headers-example",
-    "next-auth-example"
+    "docs"
   ],
   "linked": [],
   "updateInternalDependencies": "patch"

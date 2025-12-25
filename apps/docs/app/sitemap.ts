@@ -11,13 +11,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 1,
     },
-    ...source.getPages().map<MetadataRoute.Sitemap[number]>((page) => ({
-      url: url(page.url),
-      lastModified: page.data.lastModified
-        ? new Date(page.data.lastModified)
-        : undefined,
+    ...source.getPages().map<MetadataRoute.Sitemap[number]>((page) => {
+      const pageData = page.data as { lastModified?: Date | string };
+      return {
+        url: url(page.url),
+        lastModified: pageData.lastModified
+          ? new Date(pageData.lastModified)
+          : undefined,
       changeFrequency: "weekly",
       priority: 0.5,
-    })),
+      };
+    }),
   ];
 }
