@@ -60,6 +60,7 @@ describe("Header Forwarding in Middlewares", () => {
 
       expect(result).toBeDefined();
       expect(result instanceof NextResponse).toBe(true);
+      if (!result) return; // Type guard
 
       // When NextResponse.next({ request: { headers } }) is used,
       // Next.js stores these in x-middleware-request-* headers in the response
@@ -91,6 +92,7 @@ describe("Header Forwarding in Middlewares", () => {
 
       expect(result).toBeDefined();
       expect(result instanceof NextResponse).toBe(true);
+      if (!result) return; // Type guard
 
       // Check that the header was forwarded
       const forwardedHeader = result.headers.get("x-middleware-request-x-nemo-header");
@@ -121,6 +123,7 @@ describe("Header Forwarding in Middlewares", () => {
 
       expect(result).toBeDefined();
       expect(result instanceof NextResponse).toBe(true);
+      if (!result) return; // Type guard
 
       // Check that all headers were forwarded
       expect(result.headers.get("x-middleware-request-x-nemo-header-1")).toBe("value1");
@@ -165,6 +168,7 @@ describe("Header Forwarding in Middlewares", () => {
 
       expect(result).toBeDefined();
       expect(result instanceof NextResponse).toBe(true);
+      if (!result) return; // Type guard
 
       // Both headers should be forwarded in the final response
       expect(result.headers.get("x-middleware-request-x-first-middleware")).toBe("first");
@@ -216,6 +220,7 @@ describe("Header Forwarding in Middlewares", () => {
 
       expect(result).toBeDefined();
       expect(result instanceof NextResponse).toBe(true);
+      if (!result) return; // Type guard
 
       // Both headers should be forwarded in the final response
       expect(result.headers.get("x-middleware-request-x-global-before")).toBe("global-before-value");
@@ -245,6 +250,7 @@ describe("Header Forwarding in Middlewares", () => {
 
       expect(result).toBeDefined();
       expect(result instanceof NextResponse).toBe(true);
+      if (!result) return; // Type guard
 
       // Header should be forwarded
       expect(result.headers.get("x-middleware-request-x-global-after")).toBe("global-after-value");
@@ -274,6 +280,7 @@ describe("Header Forwarding in Middlewares", () => {
 
       expect(result).toBeDefined();
       expect(result instanceof NextResponse).toBe(true);
+      if (!result) return; // Type guard
       expect(result.headers.has("x-middleware-request-x-nemo-header")).toBe(true);
     });
 
@@ -299,6 +306,7 @@ describe("Header Forwarding in Middlewares", () => {
 
       expect(result).toBeDefined();
       expect(result instanceof NextResponse).toBe(true);
+      if (!result) return; // Type guard
       // Rewrite responses are terminating, so headers forwarding works differently
       expect(result.headers.has("x-middleware-rewrite")).toBe(true);
     });
@@ -309,11 +317,8 @@ describe("Header Forwarding in Middlewares", () => {
           async (request) => {
             const newHeaders = new Headers(request.headers);
             newHeaders.set("x-nemo-header", "hello world");
-            return NextResponse.redirect(new URL("/redirected", request.url), {
-              request: {
-                headers: newHeaders,
-              },
-            });
+            // Redirect doesn't support request headers forwarding, use next() instead
+            return NextResponse.redirect(new URL("/redirected", request.url));
           },
         ],
       });
@@ -325,6 +330,7 @@ describe("Header Forwarding in Middlewares", () => {
 
       expect(result).toBeDefined();
       expect(result instanceof NextResponse).toBe(true);
+      if (!result) return; // Type guard
       // Redirect responses are terminating
       expect(result.headers.has("Location")).toBe(true);
     });
@@ -345,7 +351,7 @@ describe("Header Forwarding in Middlewares", () => {
 
       const middlewares = {
         "/": [
-          async (_request) => {
+          async (_request: NextRequest) => {
             // Empty middleware that just passes through
           },
         ],
@@ -364,6 +370,7 @@ describe("Header Forwarding in Middlewares", () => {
 
       expect(result).toBeDefined();
       expect(result instanceof NextResponse).toBe(true);
+      if (!result) return; // Type guard
 
       // The header should be forwarded in x-middleware-request-* format
       // This is what Next.js does when you use NextResponse.next({ request: { headers } })
@@ -394,6 +401,7 @@ describe("Header Forwarding in Middlewares", () => {
 
       expect(result).toBeDefined();
       expect(result instanceof NextResponse).toBe(true);
+      if (!result) return; // Type guard
 
       // Headers should be forwarded so they can be accessed in page.tsx
       // Next.js stores them as x-middleware-request-* and then makes them available
@@ -451,6 +459,7 @@ describe("Header Forwarding in Middlewares", () => {
 
       expect(result).toBeDefined();
       expect(result instanceof NextResponse).toBe(true);
+      if (!result) return; // Type guard
 
       // Both headers should be forwarded
       expect(result.headers.get("x-middleware-request-x-existing-header")).toBe("existing-value");
@@ -488,6 +497,7 @@ describe("Header Forwarding in Middlewares", () => {
 
       expect(result).toBeDefined();
       expect(result instanceof NextResponse).toBe(true);
+      if (!result) return; // Type guard
 
       // Last value should win
       expect(result.headers.get("x-middleware-request-x-test-header")).toBe("second-value");

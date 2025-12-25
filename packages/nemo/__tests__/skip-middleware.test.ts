@@ -234,6 +234,7 @@ describe("Skip Middleware Chain", () => {
       expect(executionOrder).toEqual(["first"]);
       expect(result).toBeDefined();
       expect(result instanceof NextResponse).toBe(true);
+      if (!result) return; // Type guard
       expect(result.headers.get("x-skipped")).toBe("true");
     });
 
@@ -343,6 +344,7 @@ describe("Skip Middleware Chain", () => {
       expect(executionOrder).toEqual(["first"]);
       expect(result).toBeDefined();
       expect(result instanceof NextResponse).toBe(true);
+      if (!result) return; // Type guard
       expect(result.headers.get("Location")).toBe("https://example.com/");
     });
   });
