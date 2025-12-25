@@ -520,6 +520,68 @@ export class NEMO {
     return this.config.enableTiming ? { before: 0, main: 0, after: 0 } : null;
   }
 
+  private shouldSkipMiddleware(
+    middlewareChain: "before" | "main" | "after" | undefined,
+    currentChain: "before" | "main" | "after" | undefined,
+    skipCurrentChain: boolean,
+    event: NemoEvent,
+  ): boolean {
+    if (skipCurrentChain && middlewareChain === currentChain) {
+      return true;
+    }
+
+    if (middlewareChain === "after" && event.shouldSkipAfterChain()) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private handleChainTransition(
+    middlewareChain: "before" | "main" | "after" | undefined,
+    currentChain: "before" | "main" | "after" | undefined,
+    event: NemoEvent,
+  ): {
+    newChain: "before" | "main" | "after" | undefined;
+    shouldResetSkip: boolean;
+  } {
+    if (!middlewareChain || middlewareChain === currentChain) {
+      return { newChain: currentChain, shouldResetSkip: false };
+    }
+
+    if (currentChain !== undefined) {
+      event.resetSkip();
+      return { newChain: middlewareChain, shouldResetSkip: true };
+    }
+
+    return { newChain: middlewareChain, shouldResetSkip: false };
+  }
+
+  private processMiddlewareResult(
+    result: NextMiddlewareResult,
+    request: NextRequest,
+    event: NemoEvent,
+    middlewareChain: "before" | "main" | "after" | undefined,
+  ): Promise<{ shouldTerminate: boolean; shouldSkipChain: boolean }> {
+    if (this.isTerminatingResult(result)) {
+      return Promise.resolve({ shouldTerminate: true, shouldSkipChain: false });
+    }
+
+    this.applyHeadersToRequest(result, request);
+
+    if (event.shouldSkip()) {
+      this.logger.log("Skipping remaining middlewares in chain:", {
+        chain: middlewareChain,
+      });
+      return Promise.resolve({
+        shouldTerminate: false,
+        shouldSkipChain: true,
+      });
+    }
+
+    return Promise.resolve({ shouldTerminate: false, shouldSkipChain: false });
+  }
+
   private async executeMiddlewareChain(
     queue: NextMiddlewareWithMeta[],
     request: NextRequest,
@@ -531,26 +593,26 @@ export class NEMO {
 
     for (const middleware of queue) {
       try {
-        // Reset skip flag when moving to a new chain section (before/main/after)
-        // This allows skip() to only affect the current chain section
         const middlewareChain = middleware.__nemo?.chain;
-        if (middlewareChain && middlewareChain !== currentChain) {
-          // Reset skip flag when transitioning between chain sections
-          // This allows skip() in one section (e.g., main) to not affect other sections (e.g., after)
-          if (currentChain !== undefined) {
-            event.resetSkip();
-            skipCurrentChain = false;
-          }
-          currentChain = middlewareChain;
+
+        const transition = this.handleChainTransition(
+          middlewareChain,
+          currentChain,
+          event,
+        );
+        currentChain = transition.newChain;
+        if (transition.shouldResetSkip) {
+          skipCurrentChain = false;
         }
 
-        // Skip middleware if skip() was called in the current chain section
-        if (skipCurrentChain && middlewareChain === currentChain) {
-          continue;
-        }
-
-        // Skip middleware if it's in after chain and skipAfter() was called
-        if (middlewareChain === "after" && event.shouldSkipAfterChain()) {
+        if (
+          this.shouldSkipMiddleware(
+            middlewareChain,
+            currentChain,
+            skipCurrentChain,
+            event,
+          )
+        ) {
           continue;
         }
 
@@ -560,16 +622,17 @@ export class NEMO {
           event,
           chainTiming,
         );
-        if (this.isTerminatingResult(result)) {
+        const processResult = await this.processMiddlewareResult(
+          result,
+          request,
+          event,
+          middlewareChain,
+        );
+
+        if (processResult.shouldTerminate) {
           return result;
         }
-        this.applyHeadersToRequest(result, request);
-
-        // Check if skip was called - if so, mark to skip remaining middlewares in this chain section
-        if (event.shouldSkip()) {
-          this.logger.log("Skipping remaining middlewares in chain:", {
-            chain: middlewareChain,
-          });
+        if (processResult.shouldSkipChain) {
           skipCurrentChain = true;
         }
       } catch (error) {
