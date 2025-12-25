@@ -320,9 +320,9 @@ describe("Custom Storage Adapter Integration", () => {
       await nemo.middleware(mockRequest(), mockEvent);
       await nemo.middleware(mockRequest(), mockEvent);
 
-      // Factory should be called during NEMO construction, not per request
-      // But we verify it was called at least once
-      expect(factoryCallCount).toBeGreaterThan(0);
+      // Factory should be called per request to ensure proper isolation
+      // This is especially important for edge runtime environments
+      expect(factoryCallCount).toBe(2);
     });
   });
 

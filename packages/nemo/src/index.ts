@@ -32,7 +32,8 @@ export class NEMO {
   private readonly middlewares: MiddlewareConfig;
   private readonly globalMiddleware?: GlobalMiddlewareConfig;
   private readonly logger: Logger;
-  private readonly storage: StorageAdapter;
+  private readonly storage: StorageAdapter | (() => StorageAdapter);
+  private readonly storageFactory: boolean;
 
   /**
    * NEMO Middleware/Proxy
@@ -56,24 +57,37 @@ export class NEMO {
     this.globalMiddleware = globalMiddleware;
     this.logger = new Logger(this.config.debug || false);
 
-    // Initialize storage
+    // Store storage configuration - if it's a function, we'll call it per request
+    // This ensures proper isolation between requests, especially important for edge runtime
     if (this.config.storage) {
-      this.storage =
-        typeof this.config.storage === "function"
-          ? this.config.storage()
-          : this.config.storage;
+      if (typeof this.config.storage === "function") {
+        this.storage = this.config.storage;
+        this.storageFactory = true;
+      } else {
+        this.storage = this.config.storage;
+        this.storageFactory = false;
+      }
     } else {
       this.storage = new MemoryStorageAdapter();
+      this.storageFactory = false;
     }
 
     // Log initialization
+    // For factory functions, we don't call it here to avoid creating unnecessary instances
+    // The factory will be called per request for proper isolation
+    const storageInstance = this.storageFactory
+      ? undefined // Don't create instance during construction if it's a factory
+      : (this.storage as StorageAdapter);
     this.logger.log("Initialized with config:", {
       debug: this.config.debug,
       silent: this.config.silent,
       enableTiming: this.config.enableTiming,
       middlewareCount: Object.keys(middlewares).length,
       hasGlobalMiddleware: !!globalMiddleware,
-      storageAdapter: this.storage.constructor.name,
+      storageAdapter: storageInstance
+        ? storageInstance.constructor.name
+        : "factory function",
+      storageIsFactory: this.storageFactory,
     });
   }
 
@@ -719,8 +733,14 @@ export class NEMO {
     request: NextRequest,
     event: NextFetchEvent,
   ): Promise<NextMiddlewareResult> => {
+    // Get storage instance - if it's a factory function, call it per request
+    // This ensures proper isolation between requests, especially important for edge runtime
+    const storageInstance = this.storageFactory
+      ? (this.storage as () => StorageAdapter)()
+      : (this.storage as StorageAdapter);
+
     // Create NemoEvent with empty initial context and custom storage
-    const nemoEvent = NemoEvent.from(event as never, {}, this.storage);
+    const nemoEvent = NemoEvent.from(event as never, {}, storageInstance);
 
     const queue: NextMiddlewareWithMeta[] = this.propagateQueue(request);
 
