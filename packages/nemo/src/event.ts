@@ -15,7 +15,7 @@ const responseSymbol = Symbol.for("response");
 const passThroughSymbol = Symbol.for("passThrough");
 const waitUntilSymbol = Symbol.for("waitUntil");
 
-export class FetchEvent implements Event {
+export class FetchEvent implements Omit<Event, 'composedPath'> {
   // (this means removing `FetchEventResult.waitUntil` which also requires a builder change)
   readonly [waitUntilSymbol]:
     | { kind: "internal"; promises: Promise<any>[] }
@@ -125,6 +125,8 @@ export class NemoEvent extends NextFetchEvent {
   storage: StorageAdapter;
   private currentMetadata?: MiddlewareMetadata;
   private readonly logger: Logger;
+  private shouldSkipRemaining: boolean = false;
+  private shouldSkipAfter: boolean = false;
 
   constructor(params: {
     request: NextRequest;
@@ -171,6 +173,73 @@ export class NemoEvent extends NextFetchEvent {
    */
   setCurrentMetadata(metadata: MiddlewareMetadata): void {
     this.currentMetadata = metadata;
+  }
+
+  /**
+   * Skip the remaining middlewares in the current chain (before/main/after)
+   * This allows a middleware to stop the execution of subsequent middlewares
+   * without returning a terminating response (like redirect/rewrite).
+   * 
+   * @param options - Optional configuration for skip behavior
+   * @param options.skipAfter - If true, also skip all after chain middlewares
+   * 
+   * @example
+   * ```ts
+   * // Skip remaining middlewares in current chain only
+   * async (request, event) => {
+   *   if (someCondition) {
+   *     event.skip();
+   *     // Remaining middlewares in this chain will not execute
+   *   }
+   * }
+   * ```
+   * 
+   * @example
+   * ```ts
+   * // Skip remaining middlewares and after chain
+   * async (request, event) => {
+   *   if (someCondition) {
+   *     event.skip({ skipAfter: true });
+   *     // Remaining middlewares in this chain AND after chain will not execute
+   *   }
+   * }
+   * ```
+   */
+  skip(options?: { skipAfter?: boolean }): void {
+    this.shouldSkipRemaining = true;
+    if (options?.skipAfter) {
+      this.shouldSkipAfter = true;
+    }
+  }
+
+  /**
+   * Check if skip was called
+   * @internal
+   */
+  shouldSkip(): boolean {
+    return this.shouldSkipRemaining;
+  }
+
+  /**
+   * Check if skipAfter was called
+   * @internal
+   */
+  shouldSkipAfterChain(): boolean {
+    return this.shouldSkipAfter;
+  }
+
+  /**
+   * Reset skip flag (used internally when transitioning between chain sections)
+   * @internal
+   */
+  /**
+   * Reset skip flag (used internally when transitioning between chain sections)
+   * Note: Only resets shouldSkipRemaining; shouldSkipAfter persists to honor
+   * the request to skip after-chain middlewares across all chain transitions.
+   * @internal
+   */
+  resetSkip(): void {
+    this.shouldSkipRemaining = false;
   }
 
   /**

@@ -41,7 +41,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       )}
       suppressHydrationWarning
     >
-      <body>
+      <body className="flex flex-col min-h-screen">
         {process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" && (
           <Banner variant="rainbow">
             This is `canary` version of documentation. It&apos;s still under

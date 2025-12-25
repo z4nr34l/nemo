@@ -17,36 +17,70 @@ Just skip the part of setting up the middleware and follow the steps below.
   <Step>
     ### Replace `middleware.ts` code
 
-    We need to edit primary `middleware.ts` file to use the new middleware function.
+    We need to edit primary middleware/proxy file to use the new middleware function.
 
-    ```typescript title="@/middleware.ts"
-    import { auth as authMiddleware } from "@/auth";
-    import { type MiddlewareConfig, type GlobalMiddlewareConfig, createNEMO } from '@rescale/nemo';
+    <Tabs items={["Next.js 16", "Older Next.js"]}>
+      <Tab value="Next.js 16">
+        ```typescript title="@/proxy.ts"
+        import { auth as authMiddleware } from "@/auth";
+        import { type MiddlewareConfig, type GlobalMiddlewareConfig, createNEMO } from '@rescale/nemo';
 
-    const globalMiddlewares: GlobalMiddlewareConfig = {
-      before: async (request, event) => {
-        await authMiddleware((_request, _event) => {
-          const { auth } = _request;
-          event.storage.set("user", auth?.user);
-        })(request, event);
-      }
-    }
+        const globalMiddlewares: GlobalMiddlewareConfig = {
+          before: async (request, event) => {
+            await authMiddleware((_request, _event) => {
+              const { auth } = _request;
+              event.storage.set("user", auth?.user);
+            })(request, event);
+          }
+        }
 
-    const middlewares: MiddlewareConfig = {
-      '/': [
-        async (request, event) => {
-          console.log('There is NEMO', event.storage.get("user"));
-        },
-      ],
-    };
+        const middlewares: MiddlewareConfig = {
+          '/': [
+            async (request, event) => {
+              console.log('There is NEMO', event.storage.get("user"));
+            },
+          ],
+        };
 
-    export const middleware = createNEMO(middlewares, globalMiddlewares);
+        export const proxy = createNEMO(middlewares, globalMiddlewares);
 
-    export const config = {
-      matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
-    };
+        export const config = {
+          matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+        };
 
-    ```
+        ```
+      </Tab>
+      <Tab value="Older Next.js">
+        ```typescript title="@/middleware.ts"
+        import { auth as authMiddleware } from "@/auth";
+        import { type MiddlewareConfig, type GlobalMiddlewareConfig, createNEMO } from '@rescale/nemo';
+
+        const globalMiddlewares: GlobalMiddlewareConfig = {
+          before: async (request, event) => {
+            await authMiddleware((_request, _event) => {
+              const { auth } = _request;
+              event.storage.set("user", auth?.user);
+            })(request, event);
+          }
+        }
+
+        const middlewares: MiddlewareConfig = {
+          '/': [
+            async (request, event) => {
+              console.log('There is NEMO', event.storage.get("user"));
+            },
+          ],
+        };
+
+        export const middleware = createNEMO(middlewares, globalMiddlewares);
+
+        export const config = {
+          matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+        };
+
+        ```
+      </Tab>
+    </Tabs>
   </Step>
 
   <Step>

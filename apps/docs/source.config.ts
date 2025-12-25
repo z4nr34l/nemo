@@ -15,15 +15,16 @@ import { remarkInstall } from "fumadocs-docgen";
 import { defineConfig, defineDocs } from "fumadocs-mdx/config";
 import { transformerTwoslash } from "fumadocs-twoslash";
 
-export const { docs, meta } = defineDocs({
+export const docs = defineDocs({
   dir: "content",
 });
 
 export default defineConfig({
-  lastModifiedTime: "git",
   mdxOptions: {
     remarkPlugins: [remarkInstall, remarkImage, remarkStructure],
     rehypeCodeOptions: {
+      ...rehypeCodeDefaultOptions,
+      lazy: false, // Disable lazy loading to ensure all languages are available
       transformers: [
         ...(rehypeCodeDefaultOptions.transformers as never),
         transformerTwoslash(),
