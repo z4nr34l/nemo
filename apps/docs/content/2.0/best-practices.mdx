@@ -199,6 +199,105 @@ export const adminOnly: NextMiddleware = (request, { storage }) => {
 };
 ```
 
+### Header forwarding
+
+When you need to pass data from middleware to your page components, use header forwarding instead of storing everything in cookies or query parameters.
+
+**Best practices:**
+- Use descriptive header names with prefixes (e.g., `x-app-locale`, `x-user-id`)
+- Forward headers early in the middleware chain
+- Keep forwarded headers minimal - only pass essential data
+- Use storage for data that doesn't need to reach the page component
+
+**Example:**
+
+```ts title="middleware.ts"
+import { NextMiddleware, NextResponse } from '@rescale/nemo';
+
+const localeMiddleware: NextMiddleware = async (request) => {
+  const locale = detectLocale(request);
+  
+  // Forward locale to page components
+  return NextResponse.next({
+    request: {
+      headers: new Headers({
+        ...Object.fromEntries(request.headers),
+        'x-locale': locale,
+      }),
+    },
+  });
+};
+
+const userMiddleware: NextMiddleware = async (request, { storage }) => {
+  const user = await getUser(request);
+  
+  // Store user in storage for other middlewares
+  storage.set('user', user);
+  
+  // Forward only user ID to page (not full user object)
+  return NextResponse.next({
+    request: {
+      headers: new Headers({
+        ...Object.fromEntries(request.headers),
+        'x-user-id': user.id,
+      }),
+    },
+  });
+};
+```
+
+**In your page component:**
+
+```ts title="app/page.tsx"
+import { headers } from 'next/headers';
+
+export default async function Page() {
+  const headersList = await headers();
+  const locale = headersList.get('x-locale');
+  const userId = headersList.get('x-user-id');
+  
+  // Use the forwarded headers
+  return <div>Locale: {locale}, User ID: {userId}</div>;
+}
+```
+
+### Skipping middlewares
+
+Use `event.skip()` to conditionally skip remaining middlewares in the current chain section without returning a terminating response. This is useful for performance optimization and conditional execution.
+
+**When to use skip():**
+- Early exit when a condition is met (but you still want after-chain to run)
+- Conditional middleware execution based on request properties
+- Performance optimization by skipping unnecessary processing
+
+**Example:**
+
+```ts title="middleware.ts"
+import { NextMiddleware, NextResponse } from '@rescale/nemo';
+
+const cacheCheck: NextMiddleware = async (request, { storage, event }) => {
+  const cacheKey = request.nextUrl.pathname;
+  const cached = storage.get(cacheKey);
+  
+  if (cached) {
+    // Skip remaining middlewares, but allow after chain to run for cleanup
+    event.skip();
+    return NextResponse.next({
+      headers: {
+        'x-cached': 'true',
+      },
+    });
+  }
+  
+  // Continue with processing if not cached
+};
+
+const expensiveOperation: NextMiddleware = async (request) => {
+  // This will not execute if skip() was called in cacheCheck
+  await performExpensiveOperation();
+};
+```
+
 ## Reliability
 
 ### Monitoring

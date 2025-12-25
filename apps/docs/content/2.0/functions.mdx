@@ -37,6 +37,72 @@ That's a user middleware's request passed to middleware and can be later **updat
 
 This props cookies will only deffer from the original user's request if you've forwarded any response it in the chain.
 
+#### Header forwarding
+
+You can forward headers to subsequent middlewares and to your page components using `NextResponse.next()` with the `request` option:
+
+```ts
+const middleware: NextMiddleware = async (request) => {
+  const newHeaders = new Headers(request.headers);
+  newHeaders.set('x-custom-header', 'value');
+  
+  return NextResponse.next({
+    request: {
+      headers: newHeaders,
+    },
+  });
+};
+```
+
+**How it works:**
+- Headers set via `NextResponse.next({ request: { headers } })` are forwarded to subsequent middlewares in the chain
+- These headers are automatically available in your page components via Next.js `headers()` function
+- Headers are preserved through the entire middleware chain until they reach your page
+
+**Example with multiple middlewares:**
+
+```ts
+const addLocale: NextMiddleware = async (request) => {
+  const locale = detectLocale(request);
+  const newHeaders = new Headers(request.headers);
+  newHeaders.set('x-locale', locale);
+  
+  return NextResponse.next({
+    request: {
+      headers: newHeaders,
+    },
+  });
+};
+
+const addUser: NextMiddleware = async (request) => {
+  // The x-locale header from previous middleware is available here
+  const locale = request.headers.get('x-locale');
+  
+  const user = await getUser(request);
+  const newHeaders = new Headers(request.headers);
+  newHeaders.set('x-user-id', user.id);
+  
+  return NextResponse.next({
+    request: {
+      headers: newHeaders,
+    },
+  });
+};
+
+// In your page.tsx
+export default async function Page() {
+  const headersList = await headers();
+  const locale = headersList.get('x-locale'); // Available!
+  const userId = headersList.get('x-user-id'); // Available!
+  
+  return <div>Locale: {locale}, User: {userId}</div>;
+}
+```
+
+<Callout type="info">
+**Important**: Headers forwarded via `NextResponse.next({ request: { headers } })` are different from response headers. They are specifically for forwarding data through the middleware chain to your page components. Use `NextResponse.next({ headers: { ... } })` for response headers that are sent to the client.
+</Callout>
+
 ### Prop:&nbsp;&nbsp;`event`
 
 Type: `NemoEvent` extends [NextFetchEvent](https://nextjs.org/docs/app/building-your-application/routing/middleware#waituntil-and-nextfetchevent)
@@ -66,3 +132,53 @@ event.warn("Deprecated feature used", featureName);
 ```
 
 These logger methods maintain the "[NEMO]" prefix for consistent logging throughout your middleware chain.
+
+#### Skip remaining middlewares
+
+You can skip the remaining middlewares in the current chain section (before/main/after) without returning a terminating response:
+
+```ts
+const middleware: NextMiddleware = async (request, event) => {
+  // Do some processing
+  if (someCondition) {
+    event.skip(); // Skip remaining middlewares in this chain section
+    // You can still return a response if needed
+    return NextResponse.next();
+  }
+  
+  // This code will execute if skip() was not called
+};
+```
+
+<Callout type="info">
+**Chain sections**: The skip functionality works per chain section. If you call `event.skip()` in the `main` chain, it will only skip remaining middlewares in the `main` chain, but `after` chain middlewares will still execute. This allows you to have cleanup logic in the `after` chain that always runs.
+</Callout>
+
+**Use cases:**
+- Early exit when a condition is met without redirecting
+- Conditional middleware execution based on request properties
+- Performance optimization by skipping unnecessary middleware processing
+
+**Example:**
+
+```ts
+const authCheck: NextMiddleware = async (request, event) => {
+  const token = request.cookies.get('auth-token');
+  
+  if (!token) {
+    // Skip remaining auth middlewares, but allow after chain to run
+    event.skip();
+    return NextResponse.next();
+  }
+  
+  // Continue with authentication logic
+};
+
+const adminCheck: NextMiddleware = async (request, event) => {
+  // This will not execute if skip() was called in authCheck
+  const user = storage.get('user');
+  if (!user?.isAdmin) {
+    return NextResponse.redirect('/unauthorized');
+  }
+};
+```
