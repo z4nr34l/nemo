@@ -2,7 +2,7 @@ import { Comparizon } from "@/components/homepage/comparizon";
 import { Hero } from "@/components/homepage/hero";
 import { VercelOssProgram } from "@/components/homepage/vercel-oss-program";
 import { Button } from "@/components/ui/button";
-import { Activity, Github, Globe, Link2, PackageOpen } from "lucide-react";
+import { Activity, Check, Github, Globe, Link2, PackageOpen } from "lucide-react";
 import Link from "next/link";
 import { ReactElement } from "react";
 
@@ -88,29 +88,120 @@ export default function HomePage(): ReactElement {
         </div>
 
         <div className="grid bg-border gap-x-px">
-          <div className="p-8 lg:px-12 lg:py-12 bg-background flex flex-col md:flex-row items-start md:items-center justify-start gap-6">
-            <div className="flex flex-col flex-1 gap-2">
-              <h3 className="font-bold text-3xl">
-                Want to help with this project?
-              </h3>
-              <p className="text-muted-foreground max-w-[75vw]">
-                Review existing issues, make an PR&apos;s with what&apos;s
-                missing!
-              </p>
+           <div className="p-8 lg:px-12 lg:py-12 bg-background flex flex-col md:flex-row items-start md:items-center justify-start gap-6">
+             <div className="flex flex-col flex-1 gap-2">
+               <h3 className="font-bold text-3xl">
+                 Want to help with this project?
+               </h3>
+               <p className="text-muted-foreground max-w-[75vw]">
+                 Review existing issues, make an PR&apos;s with what&apos;s
+                 missing!
+               </p>
+             </div>
+             <Button
+               variant="secondary"
+               size="lg"
+               className="rounded-full flex items-center justify-center gap-x-4 border"
+               asChild
+             >
+               <Link href="https://github.com/z4nr34l/nemo" target="_blank">
+                 <Github className="w-6 h-6" />
+                 GitHub
+               </Link>
+             </Button>
+           </div>
+
+            <div className="h-6 bg-background border-t" />
+
+            <div className="p-8 lg:px-12 lg:py-12 bg-background flex flex-col md:flex-row items-start md:items-center justify-start gap-6 border-t">
+              <div className="flex flex-col flex-1 gap-2">
+                <h3 className="font-bold text-3xl">
+                  Need implementation or enterprise support?
+                </h3>
+                <p className="text-muted-foreground max-w-[75vw]">
+                  If you&apos;re having issues with deployment, need NBD (Next Business Day) or 24h enterprise SLA, we&apos;re ready to help!
+                </p>
+              </div>
+              <Button
+                variant="secondary"
+                size="lg"
+                className="rounded-full flex items-center justify-center gap-x-4 border"
+                asChild
+              >
+                <Link href="https://zanreal.com/contact?interest=software-development" target="_blank">
+                  Get Support
+                </Link>
+              </Button>
             </div>
-            <Button
-              variant="secondary"
-              size="lg"
-              className="rounded-full flex items-center justify-center gap-x-4 border"
-              asChild
-            >
-              <Link href="https://github.com/z4nr34l/nemo" target="_blank">
-                <Github className="w-6 h-6" />
-                GitHub
-              </Link>
-            </Button>
+
+            <div className="grid lg:grid-cols-3 bg-border gap-px border-t">
+              <div className="p-8 lg:px-8 lg:py-12 bg-background flex flex-col items-start justify-start gap-6 lg:border-r">
+                <div>
+                  <h3 className="text-2xl font-bold text-foreground">Community</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Free</p>
+                </div>
+                <div className="flex flex-col gap-3 w-full">
+                  <div className="flex items-start gap-3">
+                    <Check className="h-5 w-5 min-w-5 text-foreground mt-0.5" />
+                    <p className="text-sm text-muted-foreground">Support on GitHub</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Check className="h-5 w-5 min-w-5 text-foreground mt-0.5" />
+                    <p className="text-sm text-muted-foreground">Community-driven help</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Check className="h-5 w-5 min-w-5 text-foreground mt-0.5" />
+                    <p className="text-sm text-muted-foreground">No SLA guarantee</p>
+                  </div>
+                </div>
+              </div>
+
+               <div className="p-8 lg:px-8 lg:py-12 bg-muted flex flex-col items-start justify-start gap-6 lg:border-r relative">
+                 <div className="bg-brand text-white text-xs font-semibold px-3 py-1 absolute top-0 left-0 w-full font-mono uppercase">
+                   Most Popular
+                 </div>
+                 <div>
+                   <h3 className="text-2xl font-bold text-foreground">Pro</h3>
+                   <p className="text-sm text-muted-foreground mt-1">$20/month</p>
+                 </div>
+                <div className="flex flex-col gap-3 w-full">
+                  <div className="flex items-start gap-3">
+                    <Check className="h-5 w-5 min-w-5 text-foreground mt-0.5" />
+                    <p className="text-sm text-muted-foreground">Email support</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Check className="h-5 w-5 min-w-5 text-foreground mt-0.5" />
+                    <p className="text-sm text-muted-foreground">3-5 business days response</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Check className="h-5 w-5 min-w-5 text-foreground mt-0.5" />
+                    <p className="text-sm text-muted-foreground">Priority handling</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-8 lg:px-8 lg:py-12 bg-background flex flex-col items-start justify-start gap-6">
+                <div>
+                  <h3 className="text-2xl font-bold text-foreground">Enterprise</h3>
+                  <p className="text-sm text-muted-foreground mt-1">From $200/month</p>
+                </div>
+                <div className="flex flex-col gap-3 w-full">
+                  <div className="flex items-start gap-3">
+                    <Check className="h-5 w-5 min-w-5 text-foreground mt-0.5" />
+                    <p className="text-sm text-muted-foreground">24h response time SLA</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Check className="h-5 w-5 min-w-5 text-foreground mt-0.5" />
+                    <p className="text-sm text-muted-foreground">Dedicated communication channel</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Check className="h-5 w-5 min-w-5 text-foreground mt-0.5" />
+                    <p className="text-sm text-muted-foreground">Direct team access</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
       </div>
       <div className="relative max-w-5xl mx-auto">
         <p className="text-muted-foreground text-xs text-right">
