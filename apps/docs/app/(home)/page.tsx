@@ -118,14 +118,13 @@ export default function HomePage(): ReactElement {
                 <h3 className="font-bold text-3xl">
                   Need implementation or enterprise support?
                 </h3>
-                <p className="text-muted-foreground max-w-[75vw]">
+                <p className="text-muted-foreground max-w-[75vw] text-balance">
                   If you&apos;re having issues with deployment, need NBD (Next Business Day) or 24h enterprise SLA, we&apos;re ready to help!
                 </p>
               </div>
               <Button
-                variant="secondary"
                 size="lg"
-                className="rounded-full flex items-center justify-center gap-x-4 border"
+                className="rounded-full flex items-center justify-center gap-x-4"
                 asChild
               >
                 <Link href="https://zanreal.com/contact?interest=software-development" target="_blank">
