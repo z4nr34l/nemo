@@ -2,7 +2,7 @@ import { CodeBlock } from "@/components/code-block";
 
 export function Comparizon() {
   return (
-    <>
+    <div className="max-w-full">
       <div className="p-8 md:p-14">
         <h2 className="text-center font-bold text-2xl">
           First, let&apos;s let the code get the word out...
@@ -14,7 +14,7 @@ export function Comparizon() {
           VS
         </span>
         <div className="grid md:grid-cols-2 divide-x-px">
-          <div className="relative flex flex-col">
+          <div className="relative flex flex-col overflow-x-auto">
             <span className="absolute top-1.5 right-3 text-sm text-muted-foreground z-10">
               before
             </span>
@@ -31,7 +31,7 @@ export function Comparizon() {
               }}
             />
           </div>
-          <div className="relative flex flex-col">
+          <div className="relative flex flex-col overflow-x-auto">
             <span className="absolute top-1.5 right-3 text-sm text-muted-foreground z-10">
               after
             </span>
@@ -56,7 +56,7 @@ export function Comparizon() {
           Do you feel the difference?
         </h2>
       </div>
-    </>
+    </div>
   );
 }
 
