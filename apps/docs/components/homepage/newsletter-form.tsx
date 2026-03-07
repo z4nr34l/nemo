@@ -1,10 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
-import { ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
-import { newsletterSchema } from "@/components/homepage/newsletter-schema";
+import { type NewsletterFormData, newsletterSchema } from "./newsletter-schema";
 
 type ErrorReason = "network" | "server";
 
@@ -20,68 +22,101 @@ interface NewsletterFormProps {
   variant?: "chat" | "inline";
 }
 
+function strings(locale: string) {
+  const pl = {
+    emailPlaceholder: "Twój e-mail",
+    subscribe: "Zapisz się",
+    successMessage: "Dzięki! Sprawdź skrzynkę, żeby potwierdzić subskrypcję.",
+    alreadySubscribed: "Już jesteś zapisany/a.",
+    chatSending: "Wysyłam…",
+    chatRead: "Wysłano",
+    chatFailedNetwork: "Błąd sieci",
+    chatFailedServer: "Błąd serwera",
+  };
+
+  const en = {
+    emailPlaceholder: "Your email",
+    subscribe: "Subscribe",
+    successMessage: "Thanks! Check your inbox to confirm.",
+    alreadySubscribed: "You're already subscribed.",
+    chatSending: "Sending…",
+    chatRead: "Sent",
+    chatFailedNetwork: "Network error",
+    chatFailedServer: "Server error",
+  };
+
+  return locale === "pl" ? pl : en;
+}
+
 function useNewsletterForm(locale: string) {
-  const [submitState, setSubmitState] = useState<SubmitState>({ type: "idle" });
-  const [email, setEmail] = useState<string>("");
+  const [submitState, setSubmitState] = useState<SubmitState>({
+    type: "idle",
+  });
 
-  const handleSubmit = async () => {
-    const parsed = newsletterSchema.safeParse({ email });
-    if (!parsed.success) return;
-
-    setSubmitState({ type: "sending", email });
+  const handleSubmit = async (data: NewsletterFormData) => {
+    setSubmitState({ type: "sending", email: data.email });
 
     try {
       const response = await fetch("/api/newsletter/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, locale }),
+        body: JSON.stringify({ ...data, locale }),
       });
-
       const result = (await response.json().catch(() => null)) as
-        | { status?: "success" | "already_subscribed" | "error"; message?: string }
+        | { status?: "success" | "already_subscribed" | "error" }
         | null;
 
-      if (response.ok && result?.status === "success") {
-        setSubmitState({ type: "success", email });
-        setEmail("");
-        return;
+      if (result?.status === "success") {
+        setSubmitState({ type: "success", email: data.email });
+      } else if (result?.status === "already_subscribed") {
+        setSubmitState({ type: "already_subscribed", email: data.email });
+      } else {
+        setSubmitState({ type: "error", email: data.email, reason: "server" });
       }
-
-      if (response.ok && result?.status === "already_subscribed") {
-        setSubmitState({ type: "already_subscribed", email });
-        setEmail("");
-        return;
-      }
-
-      setSubmitState({ type: "error", email, reason: "server" });
     } catch {
-      setSubmitState({ type: "error", email, reason: "network" });
+      setSubmitState({ type: "error", email: data.email, reason: "network" });
     }
   };
 
-  return { submitState, setSubmitState, email, setEmail, handleSubmit };
+  return { submitState, setSubmitState, handleSubmit };
 }
 
-function ChatStatusIndicator({ state }: { state: SubmitState }) {
-  if (state.type === "sending") return <span className="animate-pulse">Sending…</span>;
-  if (state.type === "success" || state.type === "already_subscribed")
-    return <span>Read</span>;
-  if (state.type === "error")
-    return <span>{state.reason === "network" ? "Failed to send" : "Server error"}</span>;
+function ChatStatusIndicator({ locale, state }: { locale: string; state: SubmitState }) {
+  const t = strings(locale);
+
+  if (state.type === "sending") {
+    return <span className="animate-pulse">{t.chatSending}</span>;
+  }
+  if (state.type === "success" || state.type === "already_subscribed") {
+    return <span>{t.chatRead}</span>;
+  }
+  if (state.type === "error") {
+    return (
+      <span>
+        {state.reason === "network" ? t.chatFailedNetwork : t.chatFailedServer}
+      </span>
+    );
+  }
   return null;
 }
 
 function InlineForm({ locale }: { locale: string }) {
-  const { submitState, email, setEmail, handleSubmit } = useNewsletterForm(locale);
+  const t = strings(locale);
+  const { submitState, handleSubmit } = useNewsletterForm(locale);
 
-  if (submitState.type === "success" || submitState.type === "already_subscribed") {
+  const [email, setEmail] = useState<string>("");
+
+  if (
+    submitState.type === "success" ||
+    submitState.type === "already_subscribed"
+  ) {
     return (
       <div className="flex items-center gap-2 py-2 text-sm">
-        <CheckCircle2 className="size-5 shrink-0 text-green-600" />
+        <CheckCircle2 className="size-5 shrink-0 text-green-600 dark:text-green-500" />
         <span>
           {submitState.type === "success"
-            ? "Dzięki! Sprawdź skrzynkę, żeby potwierdzić subskrypcję."
-            : "Już jesteś zapisany/a."}
+            ? t.successMessage
+            : t.alreadySubscribed}
         </span>
       </div>
     );
@@ -96,26 +131,31 @@ function InlineForm({ locale }: { locale: string }) {
       noValidate
       onSubmit={(e) => {
         e.preventDefault();
-        void handleSubmit();
+        const parsed = newsletterSchema.safeParse({ email });
+        if (!parsed.success) return;
+        void handleSubmit({ email: parsed.data.email });
       }}
     >
-      <input
-        aria-label="Email"
-        className="h-10 w-full rounded-full border border-input bg-background px-4 text-sm"
+      <Input
+        aria-label={t.emailPlaceholder}
+        className="rounded-full border-0"
         disabled={isSubmitting}
-        placeholder="Twój e-mail"
+        placeholder={t.emailPlaceholder}
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
-
-      <Button className="group shrink-0 rounded-full" disabled={isSubmitting || !isValid} type="submit">
-        Zapisz się
-        <span className="ml-2 flex size-8 items-center justify-center rounded-full bg-background text-foreground">
+      <Button
+        className="group shrink-0 py-1 pr-1"
+        disabled={isSubmitting || !isValid}
+        type="submit"
+      >
+        {t.subscribe}
+        <span className="rounded-full bg-background p-1">
           {isSubmitting ? (
-            <Loader2 className="size-4 animate-spin" />
+            <Spinner className="size-5 text-foreground" />
           ) : (
-            <ArrowRight className="size-4 -rotate-45 transition-transform group-hover:rotate-0" />
+            <ArrowRight className="size-5 -rotate-45 text-foreground transition-transform group-hover:rotate-0" />
           )}
         </span>
       </Button>
@@ -124,7 +164,9 @@ function InlineForm({ locale }: { locale: string }) {
 }
 
 function ChatForm({ locale }: { locale: string }) {
-  const { submitState, setSubmitState, email, setEmail, handleSubmit } = useNewsletterForm(locale);
+  const t = strings(locale);
+  const { submitState, setSubmitState, handleSubmit } = useNewsletterForm(locale);
+  const [email, setEmail] = useState<string>("");
 
   const showInput = submitState.type === "idle" || submitState.type === "error";
 
@@ -141,17 +183,18 @@ function ChatForm({ locale }: { locale: string }) {
               submitState.type === "error" ? "text-red-500" : "text-muted-foreground"
             )}
           >
-            <ChatStatusIndicator state={submitState} />
+            <ChatStatusIndicator locale={locale} state={submitState} />
           </div>
         </div>
       )}
 
-      {(submitState.type === "success" || submitState.type === "already_subscribed") && (
+      {(submitState.type === "success" ||
+        submitState.type === "already_subscribed") && (
         <div className="px-4 pb-3">
           <div className="w-fit max-w-[80%] animate-[fadeSlideIn_0.4s_ease-out_0.6s_both] rounded-2xl rounded-bl-sm bg-muted px-4 py-2.5 text-sm">
             {submitState.type === "success"
-              ? "Thanks! Check your inbox to confirm."
-              : "You're already subscribed."}
+              ? t.successMessage
+              : t.alreadySubscribed}
           </div>
         </div>
       )}
@@ -162,23 +205,28 @@ function ChatForm({ locale }: { locale: string }) {
           noValidate
           onSubmit={(e) => {
             e.preventDefault();
-            void handleSubmit();
+            const parsed = newsletterSchema.safeParse({ email });
+            if (!parsed.success) return;
+            void handleSubmit({ email: parsed.data.email });
           }}
         >
           <input
-            aria-label="Email"
+            aria-label={t.emailPlaceholder}
             className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-            placeholder="Twój e-mail"
+            placeholder={t.emailPlaceholder}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             onFocus={
-              submitState.type === "error" ? () => setSubmitState({ type: "idle" }) : undefined
+              submitState.type === "error"
+                ? () => setSubmitState({ type: "idle" })
+                : undefined
             }
           />
           <button
             className="flex size-8 shrink-0 items-center justify-center rounded-full bg-foreground text-background transition-opacity hover:opacity-80"
             type="submit"
+            disabled={submitState.type === "sending"}
           >
             <ArrowRight className="size-4" />
           </button>
@@ -188,7 +236,9 @@ function ChatForm({ locale }: { locale: string }) {
   );
 }
 
-export function NewsletterForm({ locale, variant = "inline" }: NewsletterFormProps) {
-  if (variant === "inline") return <InlineForm locale={locale} />;
+export function NewsletterForm({ locale, variant = "chat" }: NewsletterFormProps) {
+  if (variant === "inline") {
+    return <InlineForm locale={locale} />;
+  }
   return <ChatForm locale={locale} />;
 }
