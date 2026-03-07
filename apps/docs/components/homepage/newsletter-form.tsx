@@ -169,6 +169,7 @@ function ChatForm({ locale }: { locale: string }) {
   const [email, setEmail] = useState<string>("");
 
   const showInput = submitState.type === "idle" || submitState.type === "error";
+  const isSubmitting = submitState.type === "sending";
 
   return (
     <div className="flex flex-col">
@@ -226,7 +227,7 @@ function ChatForm({ locale }: { locale: string }) {
           <button
             className="flex size-8 shrink-0 items-center justify-center rounded-full bg-foreground text-background transition-opacity hover:opacity-80"
             type="submit"
-            disabled={submitState.type === "sending"}
+            disabled={isSubmitting}
           >
             <ArrowRight className="size-4" />
           </button>
