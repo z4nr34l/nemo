@@ -1,3 +1,4 @@
+import { checkBotId } from "botid/server";
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 
@@ -8,10 +9,19 @@ const bodySchema = z.object({
   locale: z.string().optional(),
 });
 
-export async function POST(req: NextRequest): Promise<NextResponse> {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const json = await req.json();
-    const parsed = bodySchema.safeParse(json);
+    const verification = await checkBotId();
+
+    if (verification.isBot) {
+      return NextResponse.json(
+        { status: "error", message: "Access denied" },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json();
+    const parsed = bodySchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -20,36 +30,42 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const upstream = await fetch("https://zanreal.com/api/newsletter/subscribe", {
+    const token = process.env.VERCEL_OIDC_TOKEN;
+    if (!token) {
+      return NextResponse.json(
+        {
+          status: "error",
+          message:
+            "Missing VERCEL_OIDC_TOKEN env (OIDC). Configure Vercel OIDC token for nemo.",
+        },
+        { status: 500 }
+      );
+    }
+
+    const upstreamUrl =
+      process.env.NEWSLETTER_SUBSCRIBE_URL ??
+      "https://api.zanreal.com/api/v1/internal/newsletter/subscribe";
+
+    const upstream = await fetch(upstreamUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // Basic forward headers (do not forward cookies)
-        "User-Agent": "nemo-docs-newsletter-proxy",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         email: parsed.data.email,
-        locale: parsed.data.locale ?? "en",
+        locale: parsed.data.locale ?? "pl",
       }),
-      // Avoid caching at any layer
       cache: "no-store",
     });
 
     const text = await upstream.text();
-
-    // Pass through JSON if possible, otherwise wrap.
     const contentType = upstream.headers.get("content-type") ?? "";
-    if (contentType.includes("application/json")) {
-      return new NextResponse(text, {
-        status: upstream.status,
-        headers: { "content-type": contentType },
-      });
-    }
 
-    return NextResponse.json(
-      upstream.ok ? { status: "success" } : { status: "error", message: text },
-      { status: upstream.status }
-    );
+    return new NextResponse(text, {
+      status: upstream.status,
+      headers: { "content-type": contentType || "application/json" },
+    });
   } catch (err) {
     return NextResponse.json(
       {
