@@ -2,6 +2,7 @@ import { baseUrl, createMetadata } from "@/lib/metadata";
 import { cn } from "@/lib/utils";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { NewsletterSection } from "@/components/homepage/newsletter-section";
 import { Banner } from "fumadocs-ui/components/banner";
 import { RootProvider } from "fumadocs-ui/provider";
 import { GeistMono } from "geist/font/mono";
@@ -56,6 +57,10 @@ export default function Layout({ children }: { children: ReactNode }) {
           }}
         >
           {children}
+
+          <div className="mt-10 border-t">
+            <NewsletterSection locale="pl" />
+          </div>
         </RootProvider>
         <Analytics />
         <SpeedInsights />
