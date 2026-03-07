@@ -29,7 +29,8 @@ export async function subscribeToNewsletterAction(
 
   const url =
     process.env.MARKETING_NEWSLETTER_SUBSCRIBE_URL ??
-    "https://zanreal.com/api/internal/newsletter/subscribe";
+    process.env.NEWSLETTER_SUBSCRIBE_URL ??
+    "https://api.zanreal.com/api/v1/internal/newsletter/subscribe";
 
   const res = await fetch(url, {
     method: "POST",
