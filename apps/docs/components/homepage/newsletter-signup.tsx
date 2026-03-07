@@ -137,6 +137,7 @@ export function NewsletterSignup({ className }: { className?: string }) {
             className="underline underline-offset-2"
             href="https://zanreal.com"
             target="_blank"
+            rel="noopener noreferrer"
           >
             polityka prywatności
           </Link>
@@ -145,6 +146,7 @@ export function NewsletterSignup({ className }: { className?: string }) {
             className="underline underline-offset-2"
             href="https://zanreal.com/newsletter"
             target="_blank"
+            rel="noopener noreferrer"
           >
             newsletter
           </Link>

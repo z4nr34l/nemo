@@ -2,7 +2,6 @@ import { checkBotId } from "botid/server";
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 
-export const dynamic = "force-dynamic";
 
 const bodySchema = z.object({
   email: z.string().min(1).email(),
@@ -20,7 +19,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const body = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { status: "error", message: "Malformed JSON" },
+        { status: 400 }
+      );
+    }
+
     const parsed = bodySchema.safeParse(body);
 
     if (!parsed.success) {
@@ -35,8 +43,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         {
           status: "error",
-          message:
-            "Missing VERCEL_OIDC_TOKEN env (OIDC). Configure Vercel OIDC token for nemo.",
+          message: "Server not configured",
         },
         { status: 500 }
       );
