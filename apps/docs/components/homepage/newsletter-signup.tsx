@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { z } from "zod";
+import { subscribeToNewsletterAction } from "@/app/(home)/newsletter-actions";
 
 const newsletterSchema = z.object({
   email: z.string().min(1).email(),
@@ -19,8 +20,9 @@ type SubmitState =
 
 export function NewsletterSignup({ className }: { className?: string }) {
   const [state, setState] = useState<SubmitState>({ type: "idle", email: "" });
+  const [isPending, startTransition] = useTransition();
 
-  const isSubmitting = state.type === "sending";
+  const isSubmitting = state.type === "sending" || isPending;
 
   const canSubmit = useMemo(() => {
     if (isSubmitting) return false;
@@ -42,34 +44,30 @@ export function NewsletterSignup({ className }: { className?: string }) {
 
     setState((s) => ({ type: "sending", email: s.email }));
 
-    try {
-      const res = await fetch("/api/newsletter/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: parsed.data.email, locale: "pl" }),
-      });
+    startTransition(async () => {
+      try {
+        const result = await subscribeToNewsletterAction({
+          email: parsed.data.email,
+        });
 
-      const json = (await res.json().catch(() => null)) as
-        | { status?: string; message?: string }
-        | null;
+        if (result.status === "error") {
+          setState((s) => ({
+            type: "error",
+            email: s.email,
+            message: result.message ?? "Coś poszło nie tak. Spróbuj ponownie.",
+          }));
+          return;
+        }
 
-      if (!res.ok || json?.status === "error") {
+        setState((s) => ({ type: "success", email: s.email }));
+      } catch {
         setState((s) => ({
           type: "error",
           email: s.email,
-          message: json?.message ?? "Coś poszło nie tak. Spróbuj ponownie.",
+          message: "Błąd sieci. Spróbuj ponownie.",
         }));
-        return;
       }
-
-      setState((s) => ({ type: "success", email: s.email }));
-    } catch {
-      setState((s) => ({
-        type: "error",
-        email: s.email,
-        message: "Błąd sieci. Spróbuj ponownie.",
-      }));
-    }
+    });
   }
 
   return (
