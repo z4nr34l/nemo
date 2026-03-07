@@ -59,7 +59,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           {children}
 
           <div className="mt-10 border-t">
-            <NewsletterSection locale="pl" />
+            <NewsletterSection locale="en" />
           </div>
         </RootProvider>
         <Analytics />
