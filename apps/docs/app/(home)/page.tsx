@@ -113,7 +113,7 @@ export default function HomePage(): ReactElement {
           </div>
         </div>
 
-        <div className="grid bg-border gap-x-px">
+        <div className="grid bg-background">
           <NewsletterSection />
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { ArrowRight, Bot } from "lucide-react";
 import Link from "next/link";
 import { NewsletterForm } from "./newsletter-form";
@@ -26,7 +27,7 @@ export function NewsletterSection() {
   const t = copy();
 
   return (
-    <div className="-ml-px flex flex-col md:flex-row">
+    <div className="-ml-px flex flex-col bg-background md:flex-row">
       {/* Left side — title & description */}
       <div className="flex flex-col gap-4 border-b p-6 md:w-1/2 md:border-r md:border-b-0 md:p-10">
         <Bot className="size-12" />
@@ -36,15 +37,16 @@ export function NewsletterSection() {
         <p className="text-balance text-muted-foreground text-sm leading-relaxed">
           {t.heroDescription}
         </p>
-        <Link
-          className="inline-flex w-fit items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium hover:bg-accent"
-          href="https://zanreal.com/weekly-ai"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {t.cta}
-          <ArrowRight className="size-4" />
-        </Link>
+        <Button asChild className="w-fit" variant="outline">
+          <Link
+            href="https://zanreal.com/weekly-ai"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t.cta}
+            <ArrowRight className="size-4" />
+          </Link>
+        </Button>
       </div>
 
       {/* Right side — chat */}
