@@ -700,10 +700,14 @@ export class NEMO {
         if (key.startsWith("x-middleware-request-")) {
           // Remove the x-middleware-request- prefix and apply to request
           const headerName = key.replace("x-middleware-request-", "");
-          request.headers.append(headerName, value);
+          request.headers.set(headerName, value);
         } else if (!key.startsWith("x-middleware-")) {
           // Apply other non-middleware headers directly
-          request.headers.append(key, value);
+          if (key.toLowerCase() === "set-cookie") {
+            request.headers.append(key, value);
+          } else {
+            request.headers.set(key, value);
+          }
         }
       });
     }
