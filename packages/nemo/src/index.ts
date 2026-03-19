@@ -703,7 +703,11 @@ export class NEMO {
           request.headers.set(headerName, value);
         } else if (!key.startsWith("x-middleware-")) {
           // Apply other non-middleware headers directly
-          request.headers.set(key, value);
+          if (key.toLowerCase() === "set-cookie") {
+            request.headers.append(key, value);
+          } else {
+            request.headers.set(key, value);
+          }
         }
       });
     }
