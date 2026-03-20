@@ -1,5 +1,11 @@
 # NEMO
 
+## 2.2.0
+
+### Minor Changes
+
+- 9dc114b: Minor version bump
+
 ## 2.1.1
 
 ### Patch Changes
