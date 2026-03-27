@@ -1,5 +1,6 @@
 import { Comparizon } from "@/components/homepage/comparizon";
 import { Hero } from "@/components/homepage/hero";
+import { NewsletterSection } from "@/components/homepage/newsletter-section";
 import { VercelOssProgram } from "@/components/homepage/vercel-oss-program";
 import { Button } from "@/components/ui/button";
 import { Activity, Check, Github, Globe, Link2, PackageOpen } from "lucide-react";
@@ -202,6 +203,10 @@ export default function HomePage(): ReactElement {
                </Link>
              </Button>
            </div>
+        </div>
+
+        <div className="grid bg-background">
+          <NewsletterSection />
         </div>
       </div>
       <div className="relative max-w-5xl mx-auto">
