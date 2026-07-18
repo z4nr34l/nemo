@@ -158,7 +158,8 @@ Implement rate limiting in your middleware to protect your application from abus
 Implement authentication checks early in your middleware chain to protect routes. Use storage to avoid redundant authentication checks in subsequent middleware functions.
 
 ```ts title="/app/auth/_middleware.ts"
-import { NextMiddleware, NextResponse } from '@zanreal/nemo';
+import type { NextMiddleware } from '@zanreal/nemo';
+import { NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
 
 export const auth: NextMiddleware = async (request, { storage }) => {
@@ -188,7 +189,8 @@ export const auth: NextMiddleware = async (request, { storage }) => {
 Run authorization checks in middleware to control access to protected resources based on user roles and permissions.
 
 ```ts title="/app/admin/_middleware.ts"
-import { NextMiddleware, NextResponse } from '@zanreal/nemo';
+import type { NextMiddleware } from '@zanreal/nemo';
+import { NextResponse } from 'next/server';
 
 export const adminOnly: NextMiddleware = (request, { storage }) => {
   const user = storage.get('user');
@@ -212,7 +214,8 @@ When you need to pass data from middleware to your page components, use header f
 **Example:**
 
 ```ts title="middleware.ts"
-import { NextMiddleware, NextResponse } from '@zanreal/nemo';
+import type { NextMiddleware } from '@zanreal/nemo';
+import { NextResponse } from 'next/server';
 
 const localeMiddleware: NextMiddleware = async (request) => {
   const locale = detectLocale(request);
@@ -274,7 +277,8 @@ Use `event.skip()` to conditionally skip remaining middlewares in the current ch
 **Basic usage:**
 
 ```ts title="middleware.ts"
-import { NextMiddleware, NextResponse } from '@zanreal/nemo';
+import type { NextMiddleware } from '@zanreal/nemo';
+import { NextResponse } from 'next/server';
 
 const cacheCheck: NextMiddleware = async (request, { storage, event }) => {
   const cacheKey = request.nextUrl.pathname;
@@ -304,7 +308,8 @@ const expensiveOperation: NextMiddleware = async (request) => {
 You can also skip the `after` chain by passing the `skipAfter` option:
 
 ```ts title="middleware.ts"
-import { NextMiddleware, NextResponse } from '@zanreal/nemo';
+import type { NextMiddleware } from '@zanreal/nemo';
+import { NextResponse } from 'next/server';
 
 const earlyExit: NextMiddleware = async (request, { event }) => {
   if (request.headers.get('x-skip-all') === 'true') {

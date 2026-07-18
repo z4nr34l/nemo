@@ -11,10 +11,11 @@ and nothing more. It exists so you do not have to trust a find and replace acros
 npx @zanreal/nemo-codemod
 ```
 
-Preview first if you'd rather look before you leap:
+Preview first if you'd rather look before you leap. `--dry` reports what would change without
+writing anything; add `--print` to see the transformed source:
 
 ```bash
-npx @zanreal/nemo-codemod --dry
+npx @zanreal/nemo-codemod --dry --print
 ```
 
 Then reinstall so your lockfile picks up the new package:
@@ -41,8 +42,8 @@ npm install   # or pnpm install / yarn / bun install
 + export * from '@zanreal/nemo/storage';
 ```
 
-…including dynamic `import()`, `jest.mock()` / `vi.mock()`, `declare module`, and
-`typeof import()`. Subpaths are preserved.
+…including dynamic `import()`, `require.resolve()`, `jest.mock()` / `vi.mock()`,
+`declare module`, and `typeof import()`. Subpaths are preserved.
 
 **Dependencies**, in every `package.json` it finds (skipping `node_modules` and build output):
 
@@ -58,11 +59,18 @@ The entry keeps its position in the object so the diff stays small. If you alrea
 
 ## What it does not change
 
-It is an AST transform, not a text substitution, so it only rewrites real module specifiers.
-A `@rescale/nemo` in a comment, a docs string, or a changelog is left exactly as it was —
-usually what you want, since those are describing history.
+It is an AST transform, not a text substitution, so it only rewrites specifier positions. A
+`@rescale/nemo` in a comment, a docs string, or a changelog is left exactly as it was — usually
+what you want, since those are describing history.
 
-Lockfiles are also left alone. Run your package manager's install afterwards.
+One caveat: the transform matches `require(...)` and `require.resolve(...)` by shape, not by
+resolved binding. If you have shadowed `require` with your own local function, a call to it with
+the string `'@rescale/nemo'` will be rewritten too. Rare, but worth knowing before you skim the
+diff.
+
+Lockfiles are also left alone — run your package manager's install afterwards. And if any file
+fails to transform, the codemod stops before touching `package.json` and exits non-zero, rather
+than renaming the dependency out from under sources that still import the old name.
 
 ## Options
 
@@ -72,7 +80,7 @@ Lockfiles are also left alone. Run your package manager's install afterwards.
 | `--print` | off | Print the transformed source of each changed file |
 | `--dep-range <range>` | `^3.0.0` | Semver range recorded for the renamed dependency |
 | `--extensions <list>` | `js,jsx,ts,tsx,mjs,cjs,mts,cts` | Which files to visit |
-| `--ignore-pattern <glob>` | — | Skip paths; repeatable |
+| `--ignore-pattern <glob>` | — | Skip paths, sources and manifests alike; repeatable |
 | `--skip-manifests` | off | Only touch source files |
 
 Paths can be passed positionally, defaulting to the current directory:

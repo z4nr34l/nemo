@@ -44,6 +44,17 @@ function parseArgs(argv) {
     help: false,
   };
 
+  // Reads the value that follows a flag. A missing value used to become `undefined` and flow
+  // all the way into the manifest rewrite, where JSON.stringify drops undefined values — so
+  // `--dep-range` at the end of argv silently deleted the dependency instead of renaming it.
+  const value = (flag, i) => {
+    const next = argv[i];
+    if (next === undefined || next.startsWith("-")) {
+      throw new Error(`Option ${flag} requires a value`);
+    }
+    return next;
+  };
+
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     switch (arg) {
@@ -61,13 +72,13 @@ function parseArgs(argv) {
         options.skipManifests = true;
         break;
       case "--dep-range":
-        options.depRange = argv[++i];
+        options.depRange = value(arg, ++i);
         break;
       case "--extensions":
-        options.extensions = argv[++i];
+        options.extensions = value(arg, ++i);
         break;
       case "--ignore-pattern":
-        options.ignorePattern.push(argv[++i]);
+        options.ignorePattern.push(value(arg, ++i));
         break;
       default:
         if (arg.startsWith("-")) throw new Error(`Unknown option: ${arg}`);
@@ -99,12 +110,51 @@ function findManifests(root, found = []) {
   return found;
 }
 
-function migrateManifests(paths, { depRange, dry }) {
+// Turns a glob into a matcher. Deliberately small — it only has to cover the shapes people pass
+// to --ignore-pattern, and it is applied to manifests as well as sources so the flag means the
+// same thing for both. A globstar spans path segments; a single star stays inside one.
+function globToRegExp(pattern) {
+  let re = "";
+  for (let i = 0; i < pattern.length; i++) {
+    const char = pattern[i];
+    if (char === "*") {
+      if (pattern[i + 1] === "*") {
+        i += 1;
+        if (pattern[i + 1] === "/") {
+          i += 1;
+          re += "(?:.*/)?"; // any number of leading segments, including none
+        } else {
+          re += ".*"; // trailing globstar: everything below this point
+        }
+      } else {
+        re += "[^/]*";
+      }
+    } else if (char === "?") {
+      re += "[^/]";
+    } else if (".+^${}()|[]\\".includes(char)) {
+      re += `\\${char}`;
+    } else {
+      re += char;
+    }
+  }
+  return new RegExp(`^${re}$`);
+}
+
+function migrateManifests(paths, { depRange, dry, ignorePattern = [] }) {
+  const ignores = ignorePattern.map(globToRegExp);
+  const ignored = (file) => {
+    const rel = path.relative(process.cwd(), file).split(path.sep).join("/");
+    return ignores.some((re) => re.test(rel) || re.test(file));
+  };
+
   const targets = new Set();
   for (const target of paths) {
     const stat = fs.statSync(target);
     if (stat.isDirectory()) findManifests(target).forEach((f) => targets.add(f));
     else if (path.basename(target) === "package.json") targets.add(target);
+  }
+  for (const target of [...targets]) {
+    if (ignored(target)) targets.delete(target);
   }
 
   const touched = [];
@@ -161,6 +211,17 @@ async function main() {
 
   console.log(`  ${stats.ok} file(s) updated, ${stats.nochange} unchanged, ${stats.error} error(s)`);
 
+  // Renaming the dependency while some sources still import the old specifier would leave the
+  // project unresolvable — worse than not having run at all. Stop before touching manifests.
+  if (stats.error > 0) {
+    console.error(
+      `\n${stats.error} file(s) could not be transformed, so package.json was left untouched.`,
+    );
+    console.error("Re-run with --print to see the failures, or exclude those files with");
+    console.error("--ignore-pattern and migrate them by hand.");
+    process.exit(1);
+  }
+
   let manifests = [];
   if (!options.skipManifests) {
     console.log("\nUpdating package.json files…");
@@ -186,10 +247,9 @@ async function main() {
   }
 
   console.log("\nDone. Next steps:");
-  console.log("  1. Reinstall dependencies so the lockfile picks up @zanreal/nemo");
+  console.log("  1. Reinstall dependencies with your package manager so the lockfile picks up");
+  console.log("     @zanreal/nemo (npm install / pnpm install / yarn / bun install)");
   console.log("  2. Review the diff and run your test suite");
-
-  if (stats.error > 0) process.exit(1);
 }
 
 if (require.main === module) {

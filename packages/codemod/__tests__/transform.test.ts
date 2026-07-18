@@ -60,6 +60,11 @@ describe("import rewriting", () => {
     expect(out).toContain(`require("@zanreal/nemo")`);
   });
 
+  it("rewrites require.resolve", () => {
+    const out = apply(`const p = require.resolve("@rescale/nemo");`, "input.js");
+    expect(out).toContain(`require.resolve("@zanreal/nemo")`);
+  });
+
   it("rewrites test-runner module mocks", () => {
     expect(apply(`jest.mock("@rescale/nemo");`)).toContain(`jest.mock("@zanreal/nemo")`);
     expect(apply(`vi.mock("@rescale/nemo/storage");`)).toContain(`"@zanreal/nemo/storage"`);

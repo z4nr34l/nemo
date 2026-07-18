@@ -57,6 +57,18 @@ describe("parseArgs", () => {
     expect(parseArgs(["-h"]).help).toBe(true);
     expect(parseArgs(["--help"]).help).toBe(true);
   });
+
+  // A missing value used to become `undefined`, reach migratePackageJson, and get dropped by
+  // JSON.stringify — deleting the dependency instead of renaming it.
+  it("rejects a value-taking flag with no value", () => {
+    expect(() => parseArgs(["--dep-range"])).toThrow("--dep-range requires a value");
+    expect(() => parseArgs(["--extensions"])).toThrow("--extensions requires a value");
+    expect(() => parseArgs(["--ignore-pattern"])).toThrow("--ignore-pattern requires a value");
+  });
+
+  it("rejects a value-taking flag followed by another flag", () => {
+    expect(() => parseArgs(["--dep-range", "--dry"])).toThrow("--dep-range requires a value");
+  });
 });
 
 describe("findManifests", () => {
@@ -102,6 +114,24 @@ describe("migrateManifests", () => {
       JSON.stringify({ dependencies: { "@rescale/nemo": "^2.0.0" } }, null, 2),
     );
     expect(migrateManifests([manifest], { depRange: "^3.0.0", dry: false })).toHaveLength(1);
+  });
+
+  it("honours --ignore-pattern when discovering manifests", () => {
+    write("package.json", JSON.stringify({ dependencies: { "@rescale/nemo": "^2.0.0" } }, null, 2));
+    write(
+      "fixtures/app/package.json",
+      JSON.stringify({ dependencies: { "@rescale/nemo": "^2.0.0" } }, null, 2),
+    );
+
+    const touched = migrateManifests([fixture], {
+      depRange: "^3.0.0",
+      dry: false,
+      ignorePattern: ["**/fixtures/**"],
+    });
+
+    expect(touched).toHaveLength(1);
+    expect(read("fixtures/app/package.json")).toContain("@rescale/nemo");
+    expect(read("package.json")).toContain("@zanreal/nemo");
   });
 
   it("warns and continues past an unparseable manifest", () => {

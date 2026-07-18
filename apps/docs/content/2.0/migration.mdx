@@ -17,15 +17,18 @@ A codemod does the whole thing — imports and `package.json` — in one pass:
 npx @zanreal/nemo-codemod
 ```
 
-Then reinstall so your lockfile picks up the new package:
+Then reinstall with your own package manager so the lockfile picks up the new package —
+`npm install`, `pnpm install`, `yarn` or `bun install`.
+
+Want to look before you leap? `--dry` reports what would change without writing; add `--print` to
+see the transformed source:
 
 ```bash
-npm install
+npx @zanreal/nemo-codemod --dry --print
 ```
 
-Pass `--dry` first if you want to see the changes before they are written. The codemod is an AST
-transform, so it only rewrites real module specifiers — mentions of `@rescale/nemo` in comments or
-strings are left alone. Full options are in the
+The codemod is an AST transform, so it only rewrites real module specifiers — mentions of
+`@rescale/nemo` in comments or strings are left alone. Full options are in the
 [codemod README](https://github.com/zanreal-labs/nemo/tree/main/packages/codemod).
 
 ## Manual migration
@@ -69,12 +72,19 @@ That's it. No code changes, no config changes.
 
 ## Do I have to migrate right now?
 
-No. `@rescale/nemo` is still published — as of v3.0.0 it is a thin alias that re-exports
-`@zanreal/nemo`, so your existing installs keep working and keep receiving upstream fixes
-transitively.
+No. Your existing install keeps working exactly as it does today — nothing about it changes.
 
-It is, however, **deprecated**. `npm install` will print a deprecation notice, and the alias
-will eventually stop being published. Treat it as a grace period, not a permanent home.
+Be aware of what the alias does and does not give you, though. The alias starts at **v3.0.0**,
+which is a major, so a `^2` range will not pick it up: projects on `@rescale/nemo` 2.x stay on 2.x
+and do **not** receive upstream fixes automatically. To keep getting fixes without changing your
+imports yet, move to `@rescale/nemo@3`, which re-exports `@zanreal/nemo`:
+
+```bash
+npm install @rescale/nemo@^3
+```
+
+That is a stopgap. The alias is **deprecated** — installing it prints a deprecation notice, and it
+will eventually stop being published. Migrating to `@zanreal/nemo` is the destination.
 
 <Callout type="info">
   Both packages resolve to the same code at runtime, so a dependency tree containing both — for

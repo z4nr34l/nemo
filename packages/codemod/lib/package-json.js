@@ -23,6 +23,20 @@ function migratePackageJson(source, range) {
   const manifest = JSON.parse(source);
   const changes = [];
 
+  // peerDependenciesMeta is keyed by package name. Leaving it behind would mark the renamed
+  // peer as required again, because npm only treats a peer as optional when the meta key
+  // matches the dependency name.
+  const meta = manifest.peerDependenciesMeta;
+  if (meta && typeof meta === "object" && OLD in meta) {
+    const rebuiltMeta = {};
+    for (const [name, value] of Object.entries(meta)) {
+      if (name !== OLD) rebuiltMeta[name] = value;
+      else if (!(NEW in meta)) rebuiltMeta[NEW] = value;
+    }
+    manifest.peerDependenciesMeta = rebuiltMeta;
+    changes.push(`peerDependenciesMeta: ${OLD} -> ${NEW}`);
+  }
+
   for (const field of DEPENDENCY_FIELDS) {
     const block = manifest[field];
     if (!block || typeof block !== "object" || !(OLD in block)) continue;
@@ -48,13 +62,16 @@ function migratePackageJson(source, range) {
 
   if (changes.length === 0) return { source, changes };
 
-  // Match the file's own indentation and trailing newline so the diff is limited to the
-  // dependency lines.
-  const indentMatch = source.match(/\n(\s+)"/);
+  // Match the file's own indentation, line endings and trailing newline so the diff is limited
+  // to the dependency lines rather than reformatting the whole manifest.
+  const indentMatch = source.match(/\r?\n([ \t]+)"/);
   const indent = indentMatch ? indentMatch[1] : "  ";
-  const trailingNewline = source.endsWith("\n") ? "\n" : "";
+  const trailingNewline = /\r?\n$/.test(source) ? (source.includes("\r\n") ? "\r\n" : "\n") : "";
 
-  return { source: JSON.stringify(manifest, null, indent) + trailingNewline, changes };
+  let out = JSON.stringify(manifest, null, indent);
+  if (source.includes("\r\n")) out = out.replace(/\n/g, "\r\n");
+
+  return { source: out + trailingNewline, changes };
 }
 
 module.exports = { migratePackageJson, DEPENDENCY_FIELDS, OLD, NEW };

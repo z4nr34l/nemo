@@ -36,6 +36,15 @@ function isSpecifierCall(node) {
   if (
     callee.type === "MemberExpression" &&
     callee.object.type === "Identifier" &&
+    callee.object.name === "require" &&
+    callee.property.type === "Identifier" &&
+    callee.property.name === "resolve"
+  ) {
+    return true;
+  }
+  if (
+    callee.type === "MemberExpression" &&
+    callee.object.type === "Identifier" &&
     ["jest", "vi"].includes(callee.object.name) &&
     callee.property.type === "Identifier" &&
     ["mock", "unmock", "doMock", "requireActual", "importActual"].includes(callee.property.name)
