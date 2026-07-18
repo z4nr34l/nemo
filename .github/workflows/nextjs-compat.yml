@@ -1,0 +1,59 @@
+name: Next.js compatibility
+
+# NEMO declares `next` as a peer dependency, so the version consumers actually install is not
+# the one pinned in this repo. This job builds and tests the library against the Next.js release
+# stream — stable today, preview for what is coming — so a breaking change surfaces here rather
+# than in someone's application.
+#
+# The scheduled run matters as much as the PR run: a preview release published after a PR merged
+# would otherwise go unnoticed until a user reported it.
+
+on:
+  pull_request:
+  push:
+    branches: [main, canary]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: next@${{ matrix.next }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        next: [latest, preview]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Install next@${{ matrix.next }}
+        run: bun add --dev next@${{ matrix.next }}
+        working-directory: packages/nemo
+
+      - name: Report resolved version
+        run: |
+          echo "next: $(bun pm ls 2>/dev/null | grep -o 'next@[0-9][^ ]*' | head -1)" >> "$GITHUB_STEP_SUMMARY"
+        working-directory: packages/nemo
+
+      # Filter by path, not package name, so this keeps working across package renames.
+      - name: Build
+        run: bun run build --filter=./packages/nemo
+
+      - name: Test
+        run: bun test
