@@ -9,7 +9,28 @@ Starting with **v3.0.0**, NEMO is published as `@zanreal/nemo`.
 The API did not change. Same exports, same signatures, same behaviour — only the package name
 is different. For most projects this is a two-line migration.
 
-## What you need to do
+## Automatic migration
+
+A codemod does the whole thing — imports and `package.json` — in one pass:
+
+```bash
+npx @zanreal/nemo-codemod
+```
+
+Then reinstall so your lockfile picks up the new package:
+
+```bash
+npm install
+```
+
+Pass `--dry` first if you want to see the changes before they are written. The codemod is an AST
+transform, so it only rewrites real module specifiers — mentions of `@rescale/nemo` in comments or
+strings are left alone. Full options are in the
+[codemod README](https://github.com/zanreal-labs/nemo/tree/main/packages/codemod).
+
+## Manual migration
+
+It is a rename, so doing it by hand is fine too.
 
 <Steps>
   <Step>
@@ -41,8 +62,6 @@ is different. For most projects this is a two-line migration.
     import { MemoryStorageAdapter } from '@zanreal/nemo/storage'; // [!code ++]
     ```
 
-    A project-wide find and replace of `@rescale/nemo` → `@zanreal/nemo` is safe.
-
   </Step>
 </Steps>
 
@@ -65,11 +84,11 @@ will eventually stop being published. Treat it as a grace period, not a permanen
 
 ## Why the move
 
-NEMO is built and maintained by [ZanReal](https://zanreal.com). The package now lives under the
-organisation's own npm scope, alongside the rest of its open source work, and the repository has
-moved to the [zanreal-labs](https://github.com/zanreal-labs) GitHub organisation.
-
+NEMO is now maintained by [ZanReal](https://zanreal.com) as a company project rather than one
+person's side project, so the package and the repository moved to the organisation's own scope.
 Nothing about the licence (MIT), the maintainers, or the project's direction changes.
+
+[Project stewardship](/docs/2.0/stewardship) has the longer version.
 
 ## Still on v1.4?
 

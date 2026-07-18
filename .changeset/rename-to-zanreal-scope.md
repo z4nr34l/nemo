@@ -10,11 +10,14 @@ signatures, same behaviour — only the package name is different.
 
 `@rescale/nemo` continues to be published as a deprecated alias that re-exports
 `@zanreal/nemo`, so existing installs keep working. It will not receive features or fixes of
-its own, so please migrate:
+its own, so please migrate — a codemod does it for you:
 
 ```bash
-npm uninstall @rescale/nemo && npm install @zanreal/nemo
+npx @zanreal/nemo-codemod
+npm install
 ```
+
+Or by hand:
 
 ```diff
 - import { createNEMO } from '@rescale/nemo';

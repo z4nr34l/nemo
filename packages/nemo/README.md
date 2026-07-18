@@ -8,7 +8,8 @@ A middleware composition library for Next.js applications that allows you to org
 > **This package moved from `@rescale/nemo` to `@zanreal/nemo` in v3.0.0.**
 > The API is unchanged — only the package name is different. `@rescale/nemo` is now a
 > deprecated alias that re-exports this package, so existing installs keep working, but it
-> will stop receiving updates. See the [migration guide](https://nemo.zanreal.com/docs/2.0/migration).
+> will stop receiving updates. Migrate with `npx @zanreal/nemo-codemod`, or read the
+> [migration guide](https://nemo.zanreal.com/docs/2.0/migration).
 
 [![codecov](https://codecov.io/gh/z4nr34l/nemo/graph/badge.svg?token=10CXWSP5BA)](https://codecov.io/gh/z4nr34l/nemo)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=z4nr34l_nemo&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=z4nr34l_nemo)

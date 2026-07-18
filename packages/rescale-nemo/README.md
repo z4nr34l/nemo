@@ -7,11 +7,18 @@
 
 ## Migrate
 
+A codemod handles the imports and your `package.json` in one pass:
+
+```bash
+npx @zanreal/nemo-codemod
+npm install
+```
+
+Or do it by hand — it is only a rename:
+
 ```bash
 npm uninstall @rescale/nemo && npm install @zanreal/nemo
 ```
-
-Then update your imports:
 
 ```diff
 - import { createNEMO } from '@rescale/nemo';
