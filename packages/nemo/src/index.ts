@@ -828,7 +828,7 @@ export class NEMO {
  *
  * @example
  * ```ts
- * import { createNEMO } from "@rescale/nemo";
+ * import { createNEMO } from "@zanreal/nemo";
  *
  * // Next.js 16+: export const proxy = createNEMO({...})
  * // Next.js <16: export const middleware = createNEMO({...})
@@ -863,7 +863,7 @@ export function createMiddleware(
  *
  * @example
  * ```ts
- * import { createNEMO } from "@rescale/nemo";
+ * import { createNEMO } from "@zanreal/nemo";
  *
  * // Next.js 16+: export const proxy = createNEMO({...})
  * // Next.js <16: export const middleware = createNEMO({...})

@@ -57,10 +57,10 @@ function Content() {
       <div className="col-span-12 md:col-span-8 flex flex-col mt-6 md:mt-0 w-full h-full gap-4 md:flex-row md:items-end justify-start lg:gap-8">
         <div className="backdrop-blur-xl pr-4 pl-6 py-2 border rounded-full flex items-center justify-center gap-x-4 w-full md:w-auto bg-foreground text-background">
           <code>
-            <pre>bun add @rescale/nemo</pre>
+            <pre>bun add @zanreal/nemo</pre>
           </code>
           <CopyButton
-            value="bun add @rescale/nemo"
+            value="bun add @zanreal/nemo"
             className="relative top-0 right-0 text-muted hover:text-background"
           />
         </div>

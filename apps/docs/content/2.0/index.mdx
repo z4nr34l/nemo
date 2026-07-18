@@ -13,7 +13,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
     ### Paste installation command into your terminal to install package.
 
     ```package-install
-    @rescale/nemo
+    @zanreal/nemo
     ```
 
   </Step>
@@ -25,7 +25,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
     <Tabs items={["Next.js 16", "Older Next.js"]}>
       <Tab value="Next.js 16">
         ```typescript title="proxy.ts"
-        import { createNEMO } from '@rescale/nemo';  // [!code ++]
+        import { createNEMO } from '@zanreal/nemo';  // [!code ++]
 
         // [...]
         
@@ -33,7 +33,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
       </Tab>
       <Tab value="Older Next.js">
         ```typescript title="middleware.ts"
-        import { createNEMO } from '@rescale/nemo';  // [!code ++]
+        import { createNEMO } from '@zanreal/nemo';  // [!code ++]
 
         // [...]
         
@@ -48,7 +48,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
     <Tabs items={["Next.js 16", "Older Next.js"]}>
       <Tab value="Next.js 16">
         ```typescript title="proxy.ts"
-        import { createNEMO } from '@rescale/nemo';
+        import { createNEMO } from '@zanreal/nemo';
 
         export const proxy = createNEMO(/* your functions will go here */); // [!code ++]
 
@@ -58,7 +58,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
       </Tab>
       <Tab value="Older Next.js">
         ```typescript title="middleware.ts"
-        import { createNEMO } from '@rescale/nemo';
+        import { createNEMO } from '@zanreal/nemo';
 
         export const middleware = createNEMO(/* your functions will go here */); // [!code ++]
 
@@ -75,7 +75,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
     <Tabs items={["Next.js 16", "Older Next.js"]}>
       <Tab value="Next.js 16">
         ```typescript title="proxy.ts"
-        import { createNEMO, type MiddlewareConfig } from '@rescale/nemo'; // [!code ++]
+        import { createNEMO, type MiddlewareConfig } from '@zanreal/nemo'; // [!code ++]
 
         const middlewares: MiddlewareConfig = { // [!code ++]
           '/': [ // [!code ++]
@@ -94,7 +94,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
       </Tab>
       <Tab value="Older Next.js">
         ```typescript title="middleware.ts"
-        import { createNEMO, type MiddlewareConfig } from '@rescale/nemo'; // [!code ++]
+        import { createNEMO, type MiddlewareConfig } from '@zanreal/nemo'; // [!code ++]
 
         const middlewares: MiddlewareConfig = { // [!code ++]
           '/': [ // [!code ++]
@@ -164,7 +164,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
     <Tabs items={["Next.js 16", "Older Next.js"]}>
       <Tab value="Next.js 16">
         ```typescript twoslash title="proxy.ts"
-        import { createNEMO, type MiddlewareConfig } from '@rescale/nemo';
+        import { createNEMO, type MiddlewareConfig } from '@zanreal/nemo';
 
         const middlewares = {
           '/': [
@@ -184,7 +184,7 @@ import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
       </Tab>
       <Tab value="Older Next.js">
         ```typescript twoslash title="middleware.ts"
-        import { createNEMO, type MiddlewareConfig } from '@rescale/nemo';
+        import { createNEMO, type MiddlewareConfig } from '@zanreal/nemo';
 
         const middlewares = {
           '/': [

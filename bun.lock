@@ -4,9 +4,6 @@
   "workspaces": {
     "": {
       "name": "nemo",
-      "dependencies": {
-        "next": "^16.1.1",
-      },
       "devDependencies": {
         "@changesets/cli": "^2.29.8",
         "@commitlint/cli": "^19.7.1",
@@ -22,10 +19,10 @@
       "version": "0.0.0",
       "dependencies": {
         "@radix-ui/react-slot": "^1.0.2",
-        "@rescale/nemo": "workspace:*",
         "@types/flexsearch": "^0.7.6",
         "@vercel/analytics": "^1.5.0",
         "@vercel/speed-insights": "^1.2.0",
+        "@zanreal/nemo": "workspace:*",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.1.0",
         "fumadocs-core": "^16.0.14",
@@ -71,8 +68,8 @@
       },
     },
     "packages/nemo": {
-      "name": "@rescale/nemo",
-      "version": "2.0.2",
+      "name": "@zanreal/nemo",
+      "version": "2.1.1",
       "dependencies": {
         "path-to-regexp": "^6.1.0",
       },
@@ -99,6 +96,16 @@
         "tsup": "^8.1.0",
         "typescript": "^5.7.3",
         "typescript-eslint": "^8.24.0",
+      },
+      "peerDependencies": {
+        "next": ">=13.0.0",
+      },
+    },
+    "packages/rescale-nemo": {
+      "name": "@rescale/nemo",
+      "version": "2.1.1",
+      "dependencies": {
+        "@zanreal/nemo": "workspace:^",
       },
       "peerDependencies": {
         "next": ">=13.0.0",
@@ -604,7 +611,7 @@
 
     "@radix-ui/rect": ["@radix-ui/rect@1.1.1", "", {}, "sha512-HPwpGIzkl28mWyZqG52jiqDJ12waP11Pa1lGoiyUkIEuMLBP0oeK/C89esbXrxsky5we7dfd8U58nm0SgAWpVw=="],
 
-    "@rescale/nemo": ["@rescale/nemo@workspace:packages/nemo"],
+    "@rescale/nemo": ["@rescale/nemo@workspace:packages/rescale-nemo"],
 
     "@rollup/rollup-android-arm-eabi": ["@rollup/rollup-android-arm-eabi@4.53.3", "", { "os": "android", "cpu": "arm" }, "sha512-mRSi+4cBjrRLoaal2PnqH82Wqyb+d3HsPUN/W+WslCXsZsyHa9ZeQQX/pQsZaVIWDkPcpV6jJ+3KLbTbgnwv8w=="],
 
@@ -867,6 +874,8 @@
     "@vercel/analytics": ["@vercel/analytics@1.5.0", "", { "peerDependencies": { "@remix-run/react": "^2", "@sveltejs/kit": "^1 || ^2", "next": ">= 13", "react": "^18 || ^19 || ^19.0.0-rc", "svelte": ">= 4", "vue": "^3", "vue-router": "^4" }, "optionalPeers": ["@remix-run/react", "@sveltejs/kit", "next", "react", "svelte", "vue", "vue-router"] }, "sha512-MYsBzfPki4gthY5HnYN7jgInhAZ7Ac1cYDoRWFomwGHWEX7odTEzbtg9kf/QSo7XEsEAqlQugA6gJ2WS2DEa3g=="],
 
     "@vercel/speed-insights": ["@vercel/speed-insights@1.2.0", "", { "peerDependencies": { "@sveltejs/kit": "^1 || ^2", "next": ">= 13", "react": "^18 || ^19 || ^19.0.0-rc", "svelte": ">= 4", "vue": "^3", "vue-router": "^4" }, "optionalPeers": ["@sveltejs/kit", "next", "react", "svelte", "vue", "vue-router"] }, "sha512-y9GVzrUJ2xmgtQlzFP2KhVRoCglwfRQgjyfY607aU0hh0Un6d0OUyrJkjuAlsV18qR4zfoFPs/BiIj9YDS6Wzw=="],
+
+    "@zanreal/nemo": ["@zanreal/nemo@workspace:packages/nemo"],
 
     "JSONStream": ["JSONStream@1.3.5", "", { "dependencies": { "jsonparse": "^1.2.0", "through": ">=2.2.7 <3" }, "bin": { "JSONStream": "./bin.js" } }, "sha512-E+iruNOY8VV9s4JEbe1aNEm6MiszPRr/UfcHMz0TQh1BXSxHK+ASV1R6W4HpjBhSeS+54PIsAMCBmwD06LLsqQ=="],
 

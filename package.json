@@ -1,7 +1,7 @@
 {
   "author": "Mateusz Janota <m.janota@zanreal.com>",
   "bugs": {
-    "url": "https://github.com/z4nr34l/nemo/issues"
+    "url": "https://github.com/zanreal-labs/nemo/issues"
   },
   "overrides": {
     "@types/react": "19.2.7",
@@ -33,14 +33,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/z4nr34l/nemo.git"
+    "url": "git+https://github.com/zanreal-labs/nemo.git"
   },
   "scripts": {
     "build": "turbo build",
     "clean": "turbo clean",
     "dev": "turbo dev --concurrency 20",
     "prepare": "husky",
-    "release": "turbo build --filter='@rescale/nemo' && changeset publish",
+    "release": "turbo build --filter='@zanreal/nemo' && changeset publish",
     "version-packages": "changeset version"
   },
   "trustedDependencies": [

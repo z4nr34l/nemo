@@ -1,5 +1,5 @@
 {
-  "name": "@rescale/nemo",
+  "name": "@zanreal/nemo",
   "version": "2.1.1",
   "keywords": [
     "Next.js",
@@ -11,11 +11,11 @@
   ],
   "homepage": "https://nemo.zanreal.com",
   "bugs": {
-    "url": "https://github.com/z4nr34l/nemo/issues"
+    "url": "https://github.com/zanreal-labs/nemo/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/z4nr34l/nemo.git",
+    "url": "git+https://github.com/zanreal-labs/nemo.git",
     "directory": "packages/nemo"
   },
   "license": "MIT",
@@ -48,9 +48,9 @@
       "import": "./dist/storage/index.js"
     },
     "./storage/adapters/memory": {
-      "types": "./dist/storage/adapters/memory/index.d.ts",
-      "require": "./dist/storage/adapters/memory/index.js",
-      "import": "./dist/storage/adapters/memory/index.js"
+      "types": "./dist/storage/adapters/memory.d.ts",
+      "require": "./dist/storage/adapters/memory.js",
+      "import": "./dist/storage/adapters/memory.js"
     },
     "./package.json": "./package.json"
   },

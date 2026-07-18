@@ -4,6 +4,7 @@
   "pages": [
     "---Getting started---",
     "index",
+    "migration",
     "configuration",
     "matcher",
     "advanced-matching",

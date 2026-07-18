@@ -196,7 +196,7 @@ export default function HomePage(): ReactElement {
                className="rounded-full flex items-center justify-center gap-x-4 border"
                asChild
              >
-               <Link href="https://github.com/z4nr34l/nemo" target="_blank">
+               <Link href="https://github.com/zanreal-labs/nemo" target="_blank">
                  <Github className="size-6" />
                  GitHub
                </Link>

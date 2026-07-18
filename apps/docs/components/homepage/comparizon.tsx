@@ -101,7 +101,7 @@ export const config = {
   matcher: ['/((?!_next/|_static|_vercel|[\\\\w-]+\\\\.\\\\w+).*)'],
 };`;
 
-const codeAfter = `import { createNEMO, type MiddlewareFunctionProps } from '@rescale/nemo';
+const codeAfter = `import { createNEMO, type MiddlewareFunctionProps } from '@zanreal/nemo';
 import { auth } from '@/app/(auth)/auth/_middleware';
 import { team } from '@/app/(team)/team/_middleware';
 
