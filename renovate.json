@@ -1,0 +1,88 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "baseBranches": ["canary"],
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Dependency dashboard",
+  "timezone": "Europe/Warsaw",
+  "schedule": ["before 6am on monday"],
+  "prConcurrentLimit": 6,
+  "labels": ["dependencies"],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on the first day of the month"]
+  },
+  "packageRules": [
+    {
+      "description": "path-to-regexp is a runtime dependency and drives the public matcher syntax. v7 and v8 removed the `:param?`, `:param*`, `:param+` and `(regexp)` forms that NEMO documents and users depend on, so a major bump here is a breaking change for consumers, not a chore. Any upgrade needs a deliberate PR with matcher changes, docs and a major release.",
+      "matchPackageNames": ["path-to-regexp"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "Next.js releases get their own PR as soon as they land, rather than waiting for the weekly window — the compatibility matrix verifies them.",
+      "groupName": "Next.js",
+      "matchPackageNames": [
+        "next",
+        "eslint-config-next",
+        "@next/eslint-plugin-next"
+      ],
+      "schedule": ["at any time"],
+      "addLabels": ["nextjs"]
+    },
+    {
+      "description": "React and its types move together.",
+      "groupName": "React",
+      "matchPackageNames": [
+        "react",
+        "react-dom",
+        "@types/react",
+        "@types/react-dom"
+      ]
+    },
+    {
+      "description": "fumadocs packages are versioned in lockstep and drift between minors.",
+      "groupName": "fumadocs",
+      "matchPackageNames": ["/^fumadocs/"]
+    },
+    {
+      "description": "Linting and formatting tooling, batched — noisy individually. eslint-config-next is excluded on purpose: packageRules are merged in order, so without the exclusion this rule would override the Next.js group set above and split the Next.js packages apart.",
+      "groupName": "lint tooling",
+      "matchPackageNames": [
+        "/^eslint/",
+        "/^@eslint//",
+        "/^typescript-eslint/",
+        "prettier",
+        "globals",
+        "!eslint-config-next"
+      ]
+    },
+    {
+      "description": "Non-major devDependency updates are safe to land on green CI.",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "description": "Never widen or narrow the published peer range automatically — it defines which Next.js versions consumers may use.",
+      "matchDepTypes": ["peerDependencies"],
+      "enabled": false
+    },
+    {
+      "description": "The docs app is not published; keep its churn out of the release notes.",
+      "matchFileNames": ["apps/docs/**"],
+      "addLabels": ["docs"]
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "schedule": ["at any time"]
+  }
+}
