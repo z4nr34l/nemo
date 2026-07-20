@@ -85,20 +85,25 @@ jobs:
       # working across the @rescale -> @zanreal rename.
       - name: Smoke-build a Next app using NEMO as proxy
         run: |
-          set -euo pipefail
+          set -euxo pipefail
           PKG_NAME="$(node -p "require('$GITHUB_WORKSPACE/packages/nemo/package.json').name")"
 
           # Install the packed tarball rather than the workspace folder, so the fixture consumes
-          # exactly what npm would publish (the `files` allowlist included).
-          TARBALL="$(cd "$GITHUB_WORKSPACE/packages/nemo" && npm pack --silent --pack-destination "$RUNNER_TEMP")"
+          # exactly what npm would publish (the `files` allowlist included). The filename is
+          # discovered from disk rather than parsed out of npm's stdout, which varies by version.
+          PACKDIR="$RUNNER_TEMP/pack"
+          rm -rf "$PACKDIR" && mkdir -p "$PACKDIR"
+          (cd "$GITHUB_WORKSPACE/packages/nemo" && npm pack --pack-destination "$PACKDIR")
+          TARBALL="$(find "$PACKDIR" -name '*.tgz' -type f | head -1)"
+          test -n "$TARBALL" || { echo "::error::npm pack produced no tarball"; exit 1; }
 
           APP="$RUNNER_TEMP/nemo-smoke"
           rm -rf "$APP" && mkdir -p "$APP/app"
           cd "$APP"
           npm init -y >/dev/null
           npm pkg set type=module >/dev/null
-          npm install --silent --no-audit --no-fund \
-            "next@${{ matrix.next }}" react react-dom "$RUNNER_TEMP/$TARBALL"
+          npm install --no-audit --no-fund \
+            "next@${{ matrix.next }}" react react-dom "$TARBALL"
 
           # Plain JS on purpose: Next tries to self-install a TypeScript toolchain for a .ts
           # fixture and that install is what breaks, not anything to do with NEMO. The file
