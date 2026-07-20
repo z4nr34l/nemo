@@ -1,6 +1,6 @@
 {
   "name": "@rescale/nemo",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Deprecated alias for @zanreal/nemo. Re-exports the package under its previous name so existing installs keep working. Install @zanreal/nemo instead.",
   "deprecated": "@rescale/nemo has moved to @zanreal/nemo. This alias re-exports @zanreal/nemo and will stop receiving updates — please run `npm install @zanreal/nemo` and update your imports. See https://nemo.zanreal.com/docs/2.0/migration",
   "keywords": [
