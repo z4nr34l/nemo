@@ -154,11 +154,22 @@ jobs:
           JS
 
           echo "Building a Next app with $PKG_NAME wired up as proxy.js…"
-          npx --yes next build 2>&1 | tee "$RUNNER_TEMP/smoke-build.log"
+          npx --yes next build
 
-          # Without this the step would pass even if Next silently stopped discovering the file.
-          if ! grep -qE "Proxy \(Middleware\)|Middleware" "$RUNNER_TEMP/smoke-build.log"; then
-            echo "::error::Next built the app but never compiled proxy.js — the file convention or export validation changed."
+          # Assert against build artifacts, not the CLI's human-readable summary: that wording
+          # changes between releases, which would both fail this job spuriously and let an
+          # unrelated line containing "Middleware" pass it.
+          #
+          # 1. Next emits a proxy/middleware entrypoint only when it discovered and accepted the
+          #    file and its exports.
+          if [ ! -f .next/server/middleware.js ]; then
+            echo "::error::Next produced no proxy entrypoint — proxy.js was not discovered, or its exports were rejected."
             exit 1
           fi
-          echo "- Smoke build: \`proxy.js\` discovered and compiled against next@${{ matrix.next }}" >> "$GITHUB_STEP_SUMMARY"
+          # 2. NEMO's own runtime must actually be bundled into it. `createNEMO` is minified away,
+          #    but the logger prefix is a string literal and survives.
+          if ! grep -rq '\[NEMO\]' .next/server/chunks; then
+            echo "::error::proxy entrypoint was emitted, but NEMO's runtime is not in the bundle."
+            exit 1
+          fi
+          echo "- Smoke build: \`proxy.js\` discovered, and NEMO bundled into the proxy entrypoint (next@${{ matrix.next }})" >> "$GITHUB_STEP_SUMMARY"
