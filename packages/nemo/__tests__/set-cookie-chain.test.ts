@@ -133,4 +133,38 @@ describe("Set-Cookie across the middleware chain (#184)", () => {
 
     expect(cookies).toEqual([]);
   });
+
+  /**
+   * `Response.redirect()` returns headers with an immutable guard, so appending throws
+   * `TypeError: immutable` on Node — which would take the whole chain down rather than lose a
+   * cookie. Bun does not enforce that guard, so the runtime this suite runs on cannot reproduce
+   * it directly; the guard is simulated instead.
+   */
+  test("carries cookies onto a response with immutable headers", async () => {
+    const immutableRedirect = () => {
+      const response = new Response(null, {
+        status: 307,
+        headers: { location: "/login" },
+      });
+      Object.defineProperty(response.headers, "append", {
+        value: () => {
+          throw new TypeError("immutable");
+        },
+        configurable: true,
+      });
+      return response as never;
+    };
+
+    const response = (await createNEMO(
+      {},
+      {
+        before: [plainCookie("ID_1"), immutableRedirect] as NextMiddleware[],
+      },
+    )(new NextRequest("https://example.com/"), event())) as Response;
+
+    expect(response.headers.getSetCookie()).toEqual(["ID_1=value; Path=/"]);
+    // the redirect itself must survive intact
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("/login");
+  });
 });

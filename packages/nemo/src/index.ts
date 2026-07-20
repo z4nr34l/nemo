@@ -705,14 +705,35 @@ export class NEMO {
     if (carried.length === 0) return result;
 
     const present = new Set(result.headers.getSetCookie());
-    for (const cookie of carried) {
-      if (!present.has(cookie)) {
-        result.headers.append("set-cookie", cookie);
-        present.add(cookie);
-      }
-    }
+    const missing = carried.filter((cookie) => !present.has(cookie));
+    if (missing.length === 0) return result;
 
-    return result;
+    try {
+      for (const cookie of missing) {
+        result.headers.append("set-cookie", cookie);
+      }
+      return result;
+    } catch {
+      // `Response.redirect()` returns a response whose headers carry an immutable guard, so
+      // appending throws `TypeError: immutable` and would take down the whole chain rather
+      // than lose a cookie. Rebuild it instead — `new Headers(...)` preserves repeated
+      // set-cookie values, and the dedupe is redone in case the loop above applied some
+      // before throwing.
+      const headers = new Headers(result.headers);
+      const already = new Set(headers.getSetCookie());
+      for (const cookie of missing) {
+        if (!already.has(cookie)) {
+          headers.append("set-cookie", cookie);
+          already.add(cookie);
+        }
+      }
+
+      return new Response(result.body, {
+        status: result.status,
+        statusText: result.statusText,
+        headers,
+      });
+    }
   }
 
   private applyHeadersToRequest(

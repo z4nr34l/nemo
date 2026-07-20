@@ -18,8 +18,15 @@ export function OssProgram() {
           <p>Maintained by ZanReal as part of its OSS Program</p>
         </div>
 
-        <Button variant="link" size="sm" className="p-0 text-white">
-          What that means <ArrowRight className="size-4" />
+        {/*
+          The whole banner is already the link. `asChild` renders this as a <span> so we keep the
+          button styling without nesting a <button> inside the <a>, which is invalid markup and
+          gives the banner two competing interactive targets.
+        */}
+        <Button asChild variant="link" size="sm" className="p-0 text-white">
+          <span>
+            What that means <ArrowRight className="size-4" />
+          </span>
         </Button>
       </div>
     </Link>
