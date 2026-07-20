@@ -1,6 +1,6 @@
 /**
  * Tests for skipping remaining middlewares in the chain
- * Covers discussion #159: https://github.com/z4nr34l/nemo/discussions/159
+ * Covers discussion #159: https://github.com/zanreal-labs/nemo/discussions/159
  * 
  * Feature: Allow middleware to skip the rest of the middleware chain
  * without returning a terminating response (like redirect/rewrite)

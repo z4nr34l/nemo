@@ -2,7 +2,7 @@
  * Tests for header forwarding in middlewares
  * 
  * Covers issue #170: Forwarded request headers in middlewares are missing in final forwarded request
- * https://github.com/z4nr34l/nemo/issues/170
+ * https://github.com/zanreal-labs/nemo/issues/170
  * 
  * Problem:
  * When a middleware returns NextResponse.next({ request: { headers } }), Next.js stores these

@@ -3,7 +3,7 @@
   "access": "public",
   "baseBranch": "main",
   "changelog": "@changesets/cli/changelog",
-  "fixed": [],
+  "fixed": [["@zanreal/nemo", "@rescale/nemo"]],
   "ignore": [
     "docs"
   ],

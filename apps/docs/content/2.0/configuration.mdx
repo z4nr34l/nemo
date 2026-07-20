@@ -19,7 +19,7 @@ The `middlewares` object is a key-value pair where the key is the route path and
 <Tabs items={["Next.js 16", "Older Next.js"]}>
   <Tab value="Next.js 16">
     ```ts twoslash title="proxy.ts"
-    import { type MiddlewareConfig } from "@rescale/nemo";
+    import { type MiddlewareConfig } from "@zanreal/nemo";
 
     const middlewares = {
       "/:path*": async (request, event) => {
@@ -30,7 +30,7 @@ The `middlewares` object is a key-value pair where the key is the route path and
   </Tab>
   <Tab value="Older Next.js">
     ```ts twoslash title="middleware.ts"
-    import { type MiddlewareConfig } from "@rescale/nemo";
+    import { type MiddlewareConfig } from "@zanreal/nemo";
 
     const middlewares = {
       "/:path*": async (request, event) => {
@@ -46,7 +46,7 @@ The `middlewares` object is a key-value pair where the key is the route path and
 The simplest form is a direct function assignment to a route pattern:
 
 ```ts
-import { createNEMO } from "@rescale/nemo";
+import { createNEMO } from "@zanreal/nemo";
 
 const middleware = createNEMO({
   // Simple middleware for /api route
@@ -61,7 +61,7 @@ const middleware = createNEMO({
 You can assign an array of middleware functions to execute in sequence:
 
 ```ts
-import { createNEMO } from "@rescale/nemo";
+import { createNEMO } from "@zanreal/nemo";
 
 const middleware = createNEMO({
   // Multiple middleware functions for /auth route
@@ -84,7 +84,7 @@ const middleware = createNEMO({
 NEMO supports nested route definitions with their own middleware:
 
 ```ts
-import { createNEMO } from "@rescale/nemo";
+import { createNEMO } from "@zanreal/nemo";
 
 const middleware = createNEMO({
   "/admin": {
@@ -113,7 +113,7 @@ When using nested routes, the parent route's middleware executes before any matc
 You can create deeply nested structures with URL parameters:
 
 ```ts
-import { createNEMO } from "@rescale/nemo";
+import { createNEMO } from "@zanreal/nemo";
 
 const middleware = createNEMO({
   "/shop": {
@@ -143,7 +143,7 @@ Global middleware functions are executed for all routes, regardless of the speci
 <Tabs items={["Next.js 16", "Older Next.js"]}>
   <Tab value="Next.js 16">
     ```ts twoslash title="proxy.ts"
-    import { type GlobalMiddlewareConfig } from "@rescale/nemo";
+    import { type GlobalMiddlewareConfig } from "@zanreal/nemo";
 
     const globalMiddlewares = {
       before: async (request, event) => {
@@ -157,7 +157,7 @@ Global middleware functions are executed for all routes, regardless of the speci
   </Tab>
   <Tab value="Older Next.js">
     ```ts twoslash title="middleware.ts"
-    import { type GlobalMiddlewareConfig } from "@rescale/nemo";
+    import { type GlobalMiddlewareConfig } from "@zanreal/nemo";
 
     const globalMiddlewares = {
       before: async (request, event) => {
@@ -336,7 +336,7 @@ The `config` object is a key-value pair where the key is the configuration optio
 <Tabs items={["Next.js 16", "Older Next.js"]}>
   <Tab value="Next.js 16">
     ```ts twoslash title="proxy.ts"
-    import { type NemoConfig } from "@rescale/nemo";
+    import { type NemoConfig } from "@zanreal/nemo";
 
     const config = {
       debug: true,
@@ -351,7 +351,7 @@ The `config` object is a key-value pair where the key is the configuration optio
   </Tab>
   <Tab value="Older Next.js">
     ```ts twoslash title="middleware.ts"
-    import { type NemoConfig } from "@rescale/nemo";
+    import { type NemoConfig } from "@zanreal/nemo";
 
     const config = {
       debug: true,
@@ -380,7 +380,7 @@ The `createNEMO()` constructor is the entry point for the NEMO package. It allow
       type MiddlewareConfig,
       type GlobalMiddlewareConfig,
       type NemoConfig,
-    } from "@rescale/nemo";
+    } from "@zanreal/nemo";
 
     const middlewares = {
       "/:path*": async (request) => {
@@ -424,7 +424,7 @@ The `createNEMO()` constructor is the entry point for the NEMO package. It allow
       type MiddlewareConfig,
       type GlobalMiddlewareConfig,
       type NemoConfig,
-    } from "@rescale/nemo";
+    } from "@zanreal/nemo";
 
     const middlewares = {
       "/:path*": async (request) => {

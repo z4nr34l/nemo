@@ -1,0 +1,62 @@
+{
+  "name": "@rescale/nemo",
+  "version": "2.2.0",
+  "description": "Deprecated alias for @zanreal/nemo. Re-exports the package under its previous name so existing installs keep working. Install @zanreal/nemo instead.",
+  "deprecated": "@rescale/nemo has moved to @zanreal/nemo. This alias re-exports @zanreal/nemo and will stop receiving updates — please run `npm install @zanreal/nemo` and update your imports. See https://nemo.zanreal.com/docs/2.0/migration",
+  "keywords": [
+    "Next.js",
+    "Middleware",
+    "Multiple middleware",
+    "Pathname",
+    "Route",
+    "Path"
+  ],
+  "homepage": "https://nemo.zanreal.com",
+  "bugs": {
+    "url": "https://github.com/zanreal-labs/nemo/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zanreal-labs/nemo.git",
+    "directory": "packages/rescale-nemo"
+  },
+  "license": "MIT",
+  "author": "Mateusz Janota <m.janota@zanreal.com>",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "storage",
+    "README.md",
+    "package.json"
+  ],
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "require": "./index.js",
+      "import": "./index.js"
+    },
+    "./storage": {
+      "types": "./storage/index.d.ts",
+      "require": "./storage/index.js",
+      "import": "./storage/index.js"
+    },
+    "./storage/adapters/memory": {
+      "types": "./storage/adapters/memory/index.d.ts",
+      "require": "./storage/adapters/memory/index.js",
+      "import": "./storage/adapters/memory/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@zanreal/nemo": "workspace:^"
+  },
+  "peerDependencies": {
+    "next": ">=13.0.0"
+  },
+  "publishConfig": {
+    "provenance": true
+  }
+}

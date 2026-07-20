@@ -1,0 +1,33 @@
+# The 100% coverage bar this repo holds is about the library. `bun test` runs from the workspace
+# root, so it instruments every package it loads — which since 3.0.0 includes the codemod CLI and
+# the alias package. Those are published tools rather than the library, and their uncovered lines
+# are argv handling and process-exit paths.
+#
+# Without this, adding a package silently lowers the bar for packages/nemo: the project target is
+# derived from the previous commit, so a diluted average becomes the new baseline and real gaps in
+# the library stop failing the build. Scope the report to the library so the gate keeps meaning
+# what it did.
+ignore:
+  - "packages/codemod/**"
+  - "packages/rescale-nemo/**"
+  - "apps/**"
+
+coverage:
+  status:
+    # Absolute targets rather than `auto`. `auto` compares against the base commit, and the move
+    # to the zanreal-labs organisation reset Codecov's history for this repo — `codecov/patch`
+    # reported "No report found to compare against" and `codecov/project` was not posted at all.
+    # Both are required checks on main, so a status that silently declines to post deadlocks the
+    # release: no base until something lands on main, and nothing can land without the status.
+    #
+    # Stating the target outright also documents the invariant instead of inferring it from
+    # whatever the previous commit happened to score.
+    project:
+      default:
+        target: 100%
+        threshold: 0%
+        if_not_found: success
+    patch:
+      default:
+        target: 100%
+        if_not_found: success
