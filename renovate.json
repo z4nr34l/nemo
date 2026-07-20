@@ -51,14 +51,15 @@
       "matchPackageNames": ["/^fumadocs/"]
     },
     {
-      "description": "Linting and formatting tooling, batched — noisy individually.",
+      "description": "Linting and formatting tooling, batched — noisy individually. eslint-config-next is excluded on purpose: packageRules are merged in order, so without the exclusion this rule would override the Next.js group set above and split the Next.js packages apart.",
       "groupName": "lint tooling",
       "matchPackageNames": [
         "/^eslint/",
         "/^@eslint//",
         "/^typescript-eslint/",
         "prettier",
-        "globals"
+        "globals",
+        "!eslint-config-next"
       ]
     },
     {

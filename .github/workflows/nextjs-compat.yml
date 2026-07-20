@@ -8,10 +8,24 @@ name: Next.js compatibility
 # The scheduled run matters as much as the PR run: a preview release published after a PR merged
 # would otherwise go unnoticed until a user reported it.
 
+# Path filters keep this off pull requests that only touch the docs site or unrelated config.
+# The scheduled run has no filter, so a preview release is still caught even during quiet weeks.
 on:
   pull_request:
+    paths:
+      - "packages/nemo/**"
+      - ".github/workflows/nextjs-compat.yml"
+      - "bun.lock"
+      - "package.json"
+      - "turbo.json"
   push:
     branches: [main, canary]
+    paths:
+      - "packages/nemo/**"
+      - ".github/workflows/nextjs-compat.yml"
+      - "bun.lock"
+      - "package.json"
+      - "turbo.json"
   schedule:
     - cron: "0 6 * * 1"
   workflow_dispatch:
@@ -33,8 +47,11 @@ jobs:
         next: [latest, preview]
 
     steps:
+      # This job runs pull request code, so don't leave the job token in .git/config for it.
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Prepare
         uses: oven-sh/setup-bun@v2
@@ -55,5 +72,69 @@ jobs:
       - name: Build
         run: bun run build --filter=./packages/nemo
 
+      # Scoped to the package: next@${{ matrix.next }} was only installed here, and the other
+      # workspace members have nothing to do with the Next.js version under test.
       - name: Test
         run: bun test
+        working-directory: packages/nemo
+
+      # The unit tests exercise the real next/server runtime, but never the file convention:
+      # Next discovers `proxy.ts` and validates its exports at build time, and that is exactly
+      # the surface a Next release is most likely to change. Build a throwaway app against the
+      # packed library to cover it. The package name is read from the manifest so this keeps
+      # working across the @rescale -> @zanreal rename.
+      - name: Smoke-build a Next app using NEMO as proxy
+        run: |
+          set -euo pipefail
+          PKG_NAME="$(node -p "require('$GITHUB_WORKSPACE/packages/nemo/package.json').name")"
+
+          # Install the packed tarball rather than the workspace folder, so the fixture consumes
+          # exactly what npm would publish (the `files` allowlist included).
+          TARBALL="$(cd "$GITHUB_WORKSPACE/packages/nemo" && npm pack --silent --pack-destination "$RUNNER_TEMP")"
+
+          APP="$RUNNER_TEMP/nemo-smoke"
+          rm -rf "$APP" && mkdir -p "$APP/app"
+          cd "$APP"
+          npm init -y >/dev/null
+          npm pkg set type=module >/dev/null
+          npm install --silent --no-audit --no-fund \
+            "next@${{ matrix.next }}" react react-dom "$RUNNER_TEMP/$TARBALL"
+
+          # Plain JS on purpose: Next tries to self-install a TypeScript toolchain for a .ts
+          # fixture and that install is what breaks, not anything to do with NEMO. The file
+          # convention and export validation are identical either way.
+          cat > app/layout.js <<'JS'
+          export default function RootLayout({ children }) {
+            return (
+              <html lang="en">
+                <body>{children}</body>
+              </html>
+            );
+          }
+          JS
+          cat > app/page.js <<'JS'
+          export default function Page() {
+            return <main>ok</main>;
+          }
+          JS
+          cat > proxy.js <<JS
+          import { createNEMO } from "$PKG_NAME";
+
+          export const proxy = createNEMO({
+            "/api/:path*": async (request, { storage }) => {
+              storage.set("seen", request.nextUrl.pathname);
+            },
+          });
+
+          export const config = { matcher: ["/api/:path*"] };
+          JS
+
+          echo "Building a Next app with $PKG_NAME wired up as proxy.js…"
+          npx --yes next build 2>&1 | tee "$RUNNER_TEMP/smoke-build.log"
+
+          # Without this the step would pass even if Next silently stopped discovering the file.
+          if ! grep -qE "Proxy \(Middleware\)|Middleware" "$RUNNER_TEMP/smoke-build.log"; then
+            echo "::error::Next built the app but never compiled proxy.js — the file convention or export validation changed."
+            exit 1
+          fi
+          echo "- Smoke build: \`proxy.js\` discovered and compiled against next@${{ matrix.next }}" >> "$GITHUB_STEP_SUMMARY"
