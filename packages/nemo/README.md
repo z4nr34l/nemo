@@ -14,11 +14,14 @@ A middleware composition library for Next.js applications that allows you to org
 [![codecov](https://codecov.io/gh/z4nr34l/nemo/graph/badge.svg?token=10CXWSP5BA)](https://codecov.io/gh/z4nr34l/nemo)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=z4nr34l_nemo&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=z4nr34l_nemo)
 
-## Sponsors
+## Maintained by
 
-<a href="https://vercel.com/oss">
-  <img alt="Vercel OSS Program" src="https://vercel.com/oss/program-badge.svg" />
+<a href="https://zanreal.com">
+  <img alt="ZanReal" src="https://cdn.zanreal.com/public/logo.svg" height="32" />
 </a>
+
+NEMO is maintained by [ZanReal](https://zanreal.com) as part of its OSS Program — see
+[project stewardship](https://nemo.zanreal.com/docs/2.0/stewardship) for what that means.
 
 ## Installation
 
