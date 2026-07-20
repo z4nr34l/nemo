@@ -1,5 +1,59 @@
 # NEMO
 
+## 3.0.0
+
+### Major Changes
+
+- 3eb4f5d: Move the package to the `@zanreal` npm scope.
+
+  NEMO is now published as **`@zanreal/nemo`**. The public API is unchanged — same exports, same
+  signatures, same behaviour — so migrating is a rename and nothing more.
+
+  One packaging fix rides along: the `./storage/adapters/memory` subpath export pointed at a file
+  the build never emitted, so `import ... from "@rescale/nemo/storage/adapters/memory"` could not
+  resolve. It now points at the emitted file and works.
+
+  `@rescale/nemo` continues to be published as a deprecated alias that re-exports
+  `@zanreal/nemo`, so existing installs keep working. It will not receive features or fixes of
+  its own, so please migrate — a codemod does it for you:
+
+  ```bash
+  npx @zanreal/nemo-codemod
+  npm install
+  ```
+
+  Or by hand:
+
+  ```diff
+  - import { createNEMO } from '@rescale/nemo';
+  + import { createNEMO } from '@zanreal/nemo';
+  ```
+
+### Patch Changes
+
+- c759d95: Fix `Set-Cookie` being lost across the middleware chain ([#184](https://github.com/zanreal-labs/nemo/issues/184)).
+
+  [#180](https://github.com/zanreal-labs/nemo/pull/180) switched header forwarding to `append`,
+  which fixed one leg of [#178](https://github.com/zanreal-labs/nemo/issues/178), but three
+  defects remained. Each is fixed here:
+
+  - **Only the last cookie survived.** `getHeadersDiff` collapsed headers through
+    `Object.fromEntries`, and `Headers.forEach` yields one entry per `set-cookie` value — so all
+    but the last were discarded. Cookies are now carried onto the final response individually.
+    This also affected a _single_ middleware setting several cookies, which is how chunked
+    Supabase auth tokens are stored.
+  - **Forwarding request headers clobbered earlier cookies.** `NextResponse.next({ request })`
+    serialises the request headers into `x-middleware-request-set-cookie`, a snapshot taken when
+    that middleware ran. Re-applying it with `.set()` overwrote everything appended since. The
+    snapshot is now skipped — the live carrier is append-only and always a superset of it.
+  - **Terminating responses dropped every cookie.** A rewrite or redirect ends the chain and was
+    returned untouched, losing cookies set before it — a session refresh ahead of an i18n rewrite,
+    for example. Accumulated cookies are now carried onto the terminating response, without
+    duplicating any it already sets.
+
+  Reported with a full root-cause analysis and a verified patch by
+  [@stefanofa](https://github.com/stefanofa).
+
 ## 2.2.0
 
 ### Minor Changes
