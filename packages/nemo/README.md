@@ -1,30 +1,40 @@
-# @rescale/nemo
+# @zanreal/nemo
 
 A middleware composition library for Next.js applications that allows you to organize and chain middleware functions based on URL patterns.
 
 > **Next.js 16+ Compatibility:** This library is fully compatible with Next.js 16+ where `middleware.ts` has been renamed to `proxy.ts`. Use `export const proxy = createNEMO(...)` for Next.js 16+ and `export const middleware = createNEMO(...)` for Next.js <16.
 
+> [!IMPORTANT]
+> **This package moved from `@rescale/nemo` to `@zanreal/nemo` in v3.0.0.**
+> The API is unchanged — only the package name is different. `@rescale/nemo` is now a
+> deprecated alias that re-exports this package, so existing installs keep working, but it
+> will stop receiving updates. Migrate with `npx @zanreal/nemo-codemod`, or read the
+> [migration guide](https://nemo.zanreal.com/docs/2.0/migration).
+
 [![codecov](https://codecov.io/gh/z4nr34l/nemo/graph/badge.svg?token=10CXWSP5BA)](https://codecov.io/gh/z4nr34l/nemo)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=z4nr34l_nemo&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=z4nr34l_nemo)
 
-## Sponsors
+## Maintained by
 
-<a href="https://vercel.com/oss">
-  <img alt="Vercel OSS Program" src="https://vercel.com/oss/program-badge.svg" />
+<a href="https://zanreal.com">
+  <img alt="ZanReal" src="https://cdn.zanreal.com/public/logo.svg" height="32" />
 </a>
+
+NEMO is maintained by [ZanReal](https://zanreal.com) as part of its OSS Program — see
+[project stewardship](https://nemo.zanreal.com/docs/2.0/stewardship) for what that means.
 
 ## Installation
 
 ```bash
-npm install @rescale/nemo
+npm install @zanreal/nemo
 ```
 
 ```bash
-pnpm add @rescale/nemo
+pnpm add @zanreal/nemo
 ```
 
 ```bash
-bun add @rescale/nemo
+bun add @zanreal/nemo
 ```
 
 ## Key Features
@@ -44,7 +54,7 @@ bun add @rescale/nemo
 This example shows all possible options of NEMO usage and middlewares compositions, including nested routes:
 
 ```typescript
-import { createNEMO } from '@rescale/nemo';
+import { createNEMO } from '@zanreal/nemo';
 
 // Next.js 16+: export const proxy = createNEMO(...)
 // Next.js <16: export const middleware = createNEMO(...)
@@ -327,7 +337,7 @@ const nemo = new NEMO({
 > **Note:** In Next.js 16+, the file should be named `proxy.ts` instead of `middleware.ts`, and you should export `proxy` instead of `middleware`. For Next.js <16, use `middleware.ts` and export `middleware`.
 
 ```typescript
-import { createNEMO } from '@rescale/nemo';
+import { createNEMO } from '@zanreal/nemo';
 
 // Next.js 16+: export const proxy = createNEMO(...)
 // Next.js <16: export const middleware = createNEMO(...)
@@ -361,7 +371,7 @@ export const proxy = createNEMO({
 ### Using Global Middleware
 
 ```typescript
-import { createNEMO } from '@rescale/nemo';
+import { createNEMO } from '@zanreal/nemo';
 
 // Next.js 16+: export const proxy = createNEMO(...)
 // Next.js <16: export const middleware = createNEMO(...)
@@ -379,7 +389,7 @@ export const proxy = createNEMO({
 The Storage API allows you to share data between middleware executions:
 
 ```typescript
-import { createNEMO } from '@rescale/nemo';
+import { createNEMO } from '@zanreal/nemo';
 
 // Next.js 16+: export const proxy = createNEMO(...)
 // Next.js <16: export const middleware = createNEMO(...)
@@ -411,7 +421,7 @@ export const proxy = createNEMO({
 Access URL parameters through the event's params property:
 
 ```typescript
-import { createNEMO } from '@rescale/nemo';
+import { createNEMO } from '@zanreal/nemo';
 
 // Next.js 16+: export const proxy = createNEMO(...)
 // Next.js <16: export const middleware = createNEMO(...)
@@ -428,7 +438,7 @@ export const proxy = createNEMO({
 NEMO provides built-in logging capabilities through the event object that maintains consistent formatting and respects the debug configuration:
 
 ```typescript
-import { createNEMO } from '@rescale/nemo';
+import { createNEMO } from '@zanreal/nemo';
 
 // Next.js 16+: export const proxy = createNEMO(...)
 // Next.js <16: export const middleware = createNEMO(...)

@@ -26,7 +26,7 @@ Below you can see an example of how to use the storage in your middleware functi
 </Callout>
 
 ```ts title="_middleware.ts"
-import type { NextMiddleware } from "@rescale/nemo";
+import type { NextMiddleware } from "@zanreal/nemo";
 
 const example: NextMiddleware = async (req, { storage }) => {// [!code focus]
   let user = undefined; // [!code focus]
@@ -77,7 +77,7 @@ if (user) {
 You can extend the default in-memory storage with your own storage adapter. To do this, you need to create a class that implements the `StorageAdapter` interface.
 
 ```ts title="StorageAdapter.ts"
-import { StorageAdapter } from "@rescale/nemo";
+import { StorageAdapter } from "@zanreal/nemo/storage";
 
 export class CustomStorageAdapter extends StorageAdapter {
   // Implement required methods
@@ -133,7 +133,7 @@ After creating your storage adapter, you can use it by passing it to the `NEMO` 
 <Tabs items={["Direct instance", "Factory function"]}>
   <Tab value="Direct instance">
     ```ts title="middleware.ts"
-    import { NEMO } from "@rescale/nemo";
+    import { NEMO } from "@zanreal/nemo";
     import { CustomStorageAdapter } from "./StorageAdapter";
 
     export const middleware = createNEMO(middlewares, globalMiddleware, {
@@ -144,7 +144,7 @@ After creating your storage adapter, you can use it by passing it to the `NEMO` 
   </Tab>
   <Tab value="Factory function">
     ```ts title="middleware.ts"
-    import { NEMO } from "@rescale/nemo";
+    import { NEMO } from "@zanreal/nemo";
     import { CustomStorageAdapter } from "./StorageAdapter";
 
     export const middleware = createNEMO(middlewares, globalMiddleware, {

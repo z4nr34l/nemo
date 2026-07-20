@@ -17,7 +17,7 @@ export const viewport: Viewport = {
 export default function RootDocsLayout({ children }: { children: ReactNode }) {
   return (
     <DocsLayout
-      githubUrl="https://github.com/z4nr34l/nemo"
+      githubUrl="https://github.com/zanreal-labs/nemo"
       nav={{
         title: <HeaderLogo />,
       }}

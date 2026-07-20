@@ -1,0 +1,41 @@
+{
+  "name": "@zanreal/nemo-codemod",
+  "version": "0.0.0",
+  "description": "Codemod that migrates a project from @rescale/nemo to @zanreal/nemo",
+  "keywords": [
+    "Next.js",
+    "Middleware",
+    "NEMO",
+    "codemod",
+    "migration"
+  ],
+  "homepage": "https://nemo.zanreal.com/docs/2.0/migration",
+  "bugs": {
+    "url": "https://github.com/zanreal-labs/nemo/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zanreal-labs/nemo.git",
+    "directory": "packages/codemod"
+  },
+  "license": "MIT",
+  "author": "Mateusz Janota <m.janota@zanreal.com>",
+  "bin": {
+    "nemo-codemod": "./bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "transforms",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "jscodeshift": "^17.1.2"
+  },
+  "publishConfig": {
+    "provenance": true
+  }
+}

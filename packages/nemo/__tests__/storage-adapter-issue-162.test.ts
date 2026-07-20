@@ -1,6 +1,6 @@
 /**
  * Tests for issue #162: Custom StorageAdapter not being called inside NEMO middleware
- * https://github.com/z4nr34l/nemo/issues/162
+ * https://github.com/zanreal-labs/nemo/issues/162
  * 
  * This test reproduces the exact scenario from the issue to verify that
  * custom StorageAdapter methods are properly invoked.

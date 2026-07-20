@@ -1,10 +1,10 @@
 {
   "dependencies": {
     "@radix-ui/react-slot": "^1.3.0",
-    "@rescale/nemo": "workspace:*",
     "@types/flexsearch": "^0.7.42",
     "@vercel/analytics": "^1.6.1",
     "@vercel/speed-insights": "^1.3.1",
+    "@zanreal/nemo": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "fumadocs-core": "^16.11.5",
