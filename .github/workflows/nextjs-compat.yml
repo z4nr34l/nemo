@@ -109,17 +109,23 @@ jobs:
           # consumer-facing wrinkle, not a fixture problem — npm users testing a Next preview
           # alongside NEMO hit it too. Install past it here so this step still tests what it is
           # meant to test (the proxy convention), and say so loudly in the summary.
+          # Decide from the resolved version rather than the dist-tag name, so this stays correct
+          # whatever tags the matrix carries.
+          NEXT_VERSION="$(npm view "next@${{ matrix.next }}" version)"
           PEER_FLAG=""
-          if [ "${{ matrix.next }}" = "preview" ] || [ "${{ matrix.next }}" = "canary" ]; then
-            PEER_FLAG="--legacy-peer-deps"
-            {
-              echo "> [!NOTE]"
-              echo "> Installed with \`--legacy-peer-deps\`: the published peer range"
-              echo "> \`next: \">=13.0.0\"\` excludes prereleases, so npm rejects"
-              echo "> \`next@${{ matrix.next }}\`. Widening it to \`>=13.0.0-0\` would let"
-              echo "> consumers try Next previews without \`--legacy-peer-deps\`."
-            } >> "$GITHUB_STEP_SUMMARY"
-          fi
+          case "$NEXT_VERSION" in
+            *-*)
+              PEER_FLAG="--legacy-peer-deps"
+              {
+                echo "> [!NOTE]"
+                echo "> \`next@${{ matrix.next }}\` resolved to \`$NEXT_VERSION\`, a prerelease."
+                echo "> Installed with \`--legacy-peer-deps\`: the published peer range"
+                echo "> \`next: \">=13.0.0\"\` excludes prereleases, so npm rejects it."
+                echo "> Widening it to \`>=13.0.0-0\` would let consumers try Next previews"
+                echo "> without \`--legacy-peer-deps\`."
+              } >> "$GITHUB_STEP_SUMMARY"
+              ;;
+          esac
 
           npm install --no-audit --no-fund $PEER_FLAG \
             "next@${{ matrix.next }}" react react-dom "$TARBALL"
@@ -167,8 +173,9 @@ jobs:
             exit 1
           fi
           # 2. NEMO's own runtime must actually be bundled into it. `createNEMO` is minified away,
-          #    but the logger prefix is a string literal and survives.
-          if ! grep -rq '\[NEMO\]' .next/server/chunks; then
+          #    but the logger prefix is a string literal and survives. Restricted to emitted .js
+          #    so a source map alone can't satisfy the assertion.
+          if ! grep -rq --include='*.js' '\[NEMO\]' .next/server/chunks; then
             echo "::error::proxy entrypoint was emitted, but NEMO's runtime is not in the bundle."
             exit 1
           fi
