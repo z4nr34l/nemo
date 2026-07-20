@@ -4,17 +4,17 @@
     "url": "https://github.com/zanreal-labs/nemo/issues"
   },
   "overrides": {
-    "@types/react": "19.2.7",
+    "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.29.8",
-    "@commitlint/cli": "^19.7.1",
-    "@commitlint/config-conventional": "^19.7.1",
-    "eslint": "^9.39.2",
-    "eslint-config-next": "16.0.3",
+    "@changesets/cli": "^2.31.1",
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "16.2.10",
     "husky": "^9.1.7",
-    "turbo": "^2.7.2"
+    "turbo": "^2.10.5"
   },
   "homepage": "https://nemo.zanreal.com",
   "keywords": [

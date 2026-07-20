@@ -1,0 +1,182 @@
+name: Next.js compatibility
+
+# NEMO declares `next` as a peer dependency, so the version consumers actually install is not
+# the one pinned in this repo. This job builds and tests the library against the Next.js release
+# stream — stable today, preview for what is coming — so a breaking change surfaces here rather
+# than in someone's application.
+#
+# The scheduled run matters as much as the PR run: a preview release published after a PR merged
+# would otherwise go unnoticed until a user reported it.
+
+# Path filters keep this off pull requests that only touch the docs site or unrelated config.
+# The scheduled run has no filter, so a preview release is still caught even during quiet weeks.
+on:
+  pull_request:
+    paths:
+      - "packages/nemo/**"
+      - ".github/workflows/nextjs-compat.yml"
+      - "bun.lock"
+      - "package.json"
+      - "turbo.json"
+  push:
+    branches: [main, canary]
+    paths:
+      - "packages/nemo/**"
+      - ".github/workflows/nextjs-compat.yml"
+      - "bun.lock"
+      - "package.json"
+      - "turbo.json"
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: next@${{ matrix.next }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        next: [latest, preview]
+
+    steps:
+      # This job runs pull request code, so don't leave the job token in .git/config for it.
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Prepare
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Install next@${{ matrix.next }}
+        run: bun add --dev next@${{ matrix.next }}
+        working-directory: packages/nemo
+
+      - name: Report resolved version
+        run: |
+          echo "next: $(bun pm ls 2>/dev/null | grep -o 'next@[0-9][^ ]*' | head -1)" >> "$GITHUB_STEP_SUMMARY"
+        working-directory: packages/nemo
+
+      # Filter by path, not package name, so this keeps working across package renames.
+      - name: Build
+        run: bun run build --filter=./packages/nemo
+
+      # Scoped to the package: next@${{ matrix.next }} was only installed here, and the other
+      # workspace members have nothing to do with the Next.js version under test.
+      - name: Test
+        run: bun test
+        working-directory: packages/nemo
+
+      # The unit tests exercise the real next/server runtime, but never the file convention:
+      # Next discovers `proxy.ts` and validates its exports at build time, and that is exactly
+      # the surface a Next release is most likely to change. Build a throwaway app against the
+      # packed library to cover it. The package name is read from the manifest so this keeps
+      # working across the @rescale -> @zanreal rename.
+      - name: Smoke-build a Next app using NEMO as proxy
+        run: |
+          set -euxo pipefail
+          PKG_NAME="$(node -p "require('$GITHUB_WORKSPACE/packages/nemo/package.json').name")"
+
+          # Install the packed tarball rather than the workspace folder, so the fixture consumes
+          # exactly what npm would publish (the `files` allowlist included). The filename is
+          # discovered from disk rather than parsed out of npm's stdout, which varies by version.
+          PACKDIR="$RUNNER_TEMP/pack"
+          rm -rf "$PACKDIR" && mkdir -p "$PACKDIR"
+          (cd "$GITHUB_WORKSPACE/packages/nemo" && npm pack --pack-destination "$PACKDIR")
+          TARBALL="$(find "$PACKDIR" -name '*.tgz' -type f | head -1)"
+          test -n "$TARBALL" || { echo "::error::npm pack produced no tarball"; exit 1; }
+
+          APP="$RUNNER_TEMP/nemo-smoke"
+          rm -rf "$APP" && mkdir -p "$APP/app"
+          cd "$APP"
+          npm init -y >/dev/null
+          npm pkg set type=module >/dev/null
+
+          # NEMO's peer range is `next: ">=13.0.0"`. Under semver a prerelease only satisfies a
+          # range that itself carries a prerelease comparator, so 16.3.0-preview.6 does NOT
+          # satisfy ">=13.0.0" and npm refuses the install with ERESOLVE. That is a real
+          # consumer-facing wrinkle, not a fixture problem — npm users testing a Next preview
+          # alongside NEMO hit it too. Install past it here so this step still tests what it is
+          # meant to test (the proxy convention), and say so loudly in the summary.
+          # Decide from the resolved version rather than the dist-tag name, so this stays correct
+          # whatever tags the matrix carries.
+          NEXT_VERSION="$(npm view "next@${{ matrix.next }}" version)"
+          PEER_FLAG=""
+          case "$NEXT_VERSION" in
+            *-*)
+              PEER_FLAG="--legacy-peer-deps"
+              {
+                echo "> [!NOTE]"
+                echo "> \`next@${{ matrix.next }}\` resolved to \`$NEXT_VERSION\`, a prerelease."
+                echo "> Installed with \`--legacy-peer-deps\`: the published peer range"
+                echo "> \`next: \">=13.0.0\"\` excludes prereleases, so npm rejects it."
+                echo "> Widening it to \`>=13.0.0-0\` would let consumers try Next previews"
+                echo "> without \`--legacy-peer-deps\`."
+              } >> "$GITHUB_STEP_SUMMARY"
+              ;;
+          esac
+
+          npm install --no-audit --no-fund $PEER_FLAG \
+            "next@${{ matrix.next }}" react react-dom "$TARBALL"
+
+          # Plain JS on purpose: Next tries to self-install a TypeScript toolchain for a .ts
+          # fixture and that install is what breaks, not anything to do with NEMO. The file
+          # convention and export validation are identical either way.
+          cat > app/layout.js <<'JS'
+          export default function RootLayout({ children }) {
+            return (
+              <html lang="en">
+                <body>{children}</body>
+              </html>
+            );
+          }
+          JS
+          cat > app/page.js <<'JS'
+          export default function Page() {
+            return <main>ok</main>;
+          }
+          JS
+          cat > proxy.js <<JS
+          import { createNEMO } from "$PKG_NAME";
+
+          export const proxy = createNEMO({
+            "/api/:path*": async (request, { storage }) => {
+              storage.set("seen", request.nextUrl.pathname);
+            },
+          });
+
+          export const config = { matcher: ["/api/:path*"] };
+          JS
+
+          echo "Building a Next app with $PKG_NAME wired up as proxy.js…"
+          npx --yes next build
+
+          # Assert against build artifacts, not the CLI's human-readable summary: that wording
+          # changes between releases, which would both fail this job spuriously and let an
+          # unrelated line containing "Middleware" pass it.
+          #
+          # 1. Next emits a proxy/middleware entrypoint only when it discovered and accepted the
+          #    file and its exports.
+          if [ ! -f .next/server/middleware.js ]; then
+            echo "::error::Next produced no proxy entrypoint — proxy.js was not discovered, or its exports were rejected."
+            exit 1
+          fi
+          # 2. NEMO's own runtime must actually be bundled into it. `createNEMO` is minified away,
+          #    but the logger prefix is a string literal and survives. Restricted to emitted .js
+          #    so a source map alone can't satisfy the assertion.
+          if ! grep -rq --include='*.js' '\[NEMO\]' .next/server/chunks; then
+            echo "::error::proxy entrypoint was emitted, but NEMO's runtime is not in the bundle."
+            exit 1
+          fi
+          echo "- Smoke build: \`proxy.js\` discovered, and NEMO bundled into the proxy entrypoint (next@${{ matrix.next }})" >> "$GITHUB_STEP_SUMMARY"
