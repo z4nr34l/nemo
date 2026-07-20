@@ -102,7 +102,26 @@ jobs:
           cd "$APP"
           npm init -y >/dev/null
           npm pkg set type=module >/dev/null
-          npm install --no-audit --no-fund \
+
+          # NEMO's peer range is `next: ">=13.0.0"`. Under semver a prerelease only satisfies a
+          # range that itself carries a prerelease comparator, so 16.3.0-preview.6 does NOT
+          # satisfy ">=13.0.0" and npm refuses the install with ERESOLVE. That is a real
+          # consumer-facing wrinkle, not a fixture problem — npm users testing a Next preview
+          # alongside NEMO hit it too. Install past it here so this step still tests what it is
+          # meant to test (the proxy convention), and say so loudly in the summary.
+          PEER_FLAG=""
+          if [ "${{ matrix.next }}" = "preview" ] || [ "${{ matrix.next }}" = "canary" ]; then
+            PEER_FLAG="--legacy-peer-deps"
+            {
+              echo "> [!NOTE]"
+              echo "> Installed with \`--legacy-peer-deps\`: the published peer range"
+              echo "> \`next: \">=13.0.0\"\` excludes prereleases, so npm rejects"
+              echo "> \`next@${{ matrix.next }}\`. Widening it to \`>=13.0.0-0\` would let"
+              echo "> consumers try Next previews without \`--legacy-peer-deps\`."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          npm install --no-audit --no-fund $PEER_FLAG \
             "next@${{ matrix.next }}" react react-dom "$TARBALL"
 
           # Plain JS on purpose: Next tries to self-install a TypeScript toolchain for a .ts
