@@ -11,3 +11,23 @@ ignore:
   - "packages/codemod/**"
   - "packages/rescale-nemo/**"
   - "apps/**"
+
+coverage:
+  status:
+    # Absolute targets rather than `auto`. `auto` compares against the base commit, and the move
+    # to the zanreal-labs organisation reset Codecov's history for this repo — `codecov/patch`
+    # reported "No report found to compare against" and `codecov/project` was not posted at all.
+    # Both are required checks on main, so a status that silently declines to post deadlocks the
+    # release: no base until something lands on main, and nothing can land without the status.
+    #
+    # Stating the target outright also documents the invariant instead of inferring it from
+    # whatever the previous commit happened to score.
+    project:
+      default:
+        target: 100%
+        threshold: 0%
+        if_not_found: success
+    patch:
+      default:
+        target: 100%
+        if_not_found: success
