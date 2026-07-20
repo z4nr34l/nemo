@@ -1,5 +1,5 @@
 {
-  "description": "Latest version",
+  "description": "v2.0 and v3.0",
   "icon": "Tag",
   "pages": [
     "---Getting started---",
@@ -18,5 +18,5 @@
     "3rd-parties"
   ],
   "root": true,
-  "title": "v2.0"
+  "title": "Latest"
 }
