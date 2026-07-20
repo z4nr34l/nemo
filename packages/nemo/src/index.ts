@@ -631,7 +631,7 @@ export class NEMO {
         );
 
         if (processResult.shouldTerminate) {
-          return result;
+          return this.attachCarriedCookies(result, request);
         }
         if (processResult.shouldSkipChain) {
           skipCurrentChain = true;
@@ -688,6 +688,33 @@ export class NEMO {
     return !isNextResponse;
   }
 
+  /**
+   * Carries cookies set by earlier middleware onto a terminating response.
+   *
+   * A redirect or rewrite ends the chain and is returned as-is, so any `Set-Cookie` accumulated
+   * on the request carrier before it — a session refresh ahead of an i18n rewrite, say — would
+   * otherwise be dropped. Values already on the response are left alone rather than duplicated.
+   */
+  private attachCarriedCookies(
+    result: NextMiddlewareResult,
+    request: NextRequest,
+  ): NextMiddlewareResult {
+    if (!(result instanceof Response)) return result;
+
+    const carried = request.headers.getSetCookie();
+    if (carried.length === 0) return result;
+
+    const present = new Set(result.headers.getSetCookie());
+    for (const cookie of carried) {
+      if (!present.has(cookie)) {
+        result.headers.append("set-cookie", cookie);
+        present.add(cookie);
+      }
+    }
+
+    return result;
+  }
+
   private applyHeadersToRequest(
     result: NextMiddlewareResult,
     request: NextRequest,
@@ -700,6 +727,17 @@ export class NEMO {
         if (key.startsWith("x-middleware-request-")) {
           // Remove the x-middleware-request- prefix and apply to request
           const headerName = key.replace("x-middleware-request-", "");
+
+          // `set-cookie` is never a real request header. It only shows up here because
+          // NextResponse.next({ request }) serialises the request headers — including the
+          // cookies this chain has already accumulated — into x-middleware-request-set-cookie.
+          // That value is a snapshot taken when the middleware ran, so re-applying it with
+          // .set() clobbers every cookie appended since. The live carrier is append-only and
+          // therefore always a superset of the snapshot, so the snapshot can be dropped.
+          if (headerName.toLowerCase() === "set-cookie") {
+            return;
+          }
+
           request.headers.set(headerName, value);
         } else if (!key.startsWith("x-middleware-")) {
           // Apply other non-middleware headers directly
@@ -777,13 +815,26 @@ export class NEMO {
   ): NextMiddlewareResult {
     const finalHeaders = new Headers(request.headers);
     const headerDiff = this.getHeadersDiff(initialHeaders, finalHeaders);
+
+    // getHeadersDiff collapses to a plain object, and Headers.forEach yields one entry per
+    // set-cookie value — so every cookie but the last would be lost. Carry them across
+    // individually instead of through the diff record.
+    delete headerDiff["set-cookie"];
     this.logger.log("Headers modified:", headerDiff);
+
+    const responseHeaders = new Headers(headerDiff);
+    const alreadyOnRequest = new Set(initialHeaders.getSetCookie());
+    for (const cookie of finalHeaders.getSetCookie()) {
+      if (!alreadyOnRequest.has(cookie)) {
+        responseHeaders.append("set-cookie", cookie);
+      }
+    }
 
     // Pass headers diff for response headers and request headers for forwarding
     // This ensures both response headers and request headers (from x-middleware-request-*)
     // are properly handled
     return NextResponse.next({
-      headers: new Headers(headerDiff),
+      headers: responseHeaders,
       request: {
         headers: finalHeaders,
       },
