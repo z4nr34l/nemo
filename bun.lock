@@ -69,7 +69,7 @@
     },
     "packages/codemod": {
       "name": "@zanreal/nemo-codemod",
-      "version": "0.0.0",
+      "version": "1.0.0",
       "bin": {
         "nemo-codemod": "./bin/cli.js",
       },
@@ -79,7 +79,7 @@
     },
     "packages/nemo": {
       "name": "@zanreal/nemo",
-      "version": "2.1.1",
+      "version": "3.0.0",
       "dependencies": {
         "path-to-regexp": "^6.1.0",
       },
@@ -113,7 +113,7 @@
     },
     "packages/rescale-nemo": {
       "name": "@rescale/nemo",
-      "version": "2.1.1",
+      "version": "3.0.0",
       "dependencies": {
         "@zanreal/nemo": "workspace:^",
       },
