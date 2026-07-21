@@ -51,7 +51,7 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@zanreal/nemo": "workspace:^"
+    "@zanreal/nemo": "^3.0.0"
   },
   "peerDependencies": {
     "next": ">=13.0.0"
