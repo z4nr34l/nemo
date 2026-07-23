@@ -1,0 +1,23 @@
+{
+  "description": "Latest",
+  "icon": "Tag",
+  "pages": [
+    "---Getting started---",
+    "index",
+    "migration",
+    "stewardship",
+    "configuration",
+    "matcher",
+    "advanced-matching",
+    "nesting",
+    "functions",
+    "context",
+    "best-practices",
+    "---Conventions---",
+    "...conventions",
+    "---3rd parties---",
+    "3rd-parties"
+  ],
+  "root": true,
+  "title": "v3"
+}

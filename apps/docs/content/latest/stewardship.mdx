@@ -1,0 +1,44 @@
+---
+title: ZanReal OSS Program
+description: NEMO is now maintained by ZanReal as part of its OSS Program - what that means for you
+icon: Building2
+---
+
+NEMO started in 2024 as one developer's answer to a gap in Next.js: after Vercel collapsed
+`/**/_middleware.ts` into a single root middleware file, there was no good way to compose
+middleware by route. It was a personal project, on a personal npm scope and a personal GitHub
+account.
+
+It is now used in a lot of production applications. A project at that point should not depend on
+one person still having time for it.
+
+## The takeover
+
+As of v3.0.0, NEMO is maintained by **[ZanReal](https://zanreal.com)** as part of the company's
+**OSS Program** - open source maintained as company work rather than someone's evenings:
+
+- The package is published as `@zanreal/nemo`, under the company's npm scope.
+- The repository lives in the [zanreal-labs](https://github.com/zanreal-labs) GitHub organisation.
+- Maintenance, issue triage, and releases are company responsibilities.
+
+The practical point is the boring one: **the bus factor is no longer one.** Ownership of the npm
+scope, the repository, and the release pipeline sits with an organisation, so continuity does not
+hinge on a single account or a single person's schedule.
+
+## What did not change
+
+- **The licence is still MIT**, and it is not moving to source-available or dual licensing.
+- **The API is unchanged** - v3.0.0 is a rename, not a rewrite. See the
+  [migration guide](/docs/latest/migration).
+- **It stays free and open source.** No paid tier, no open-core split.
+- **The same people still maintain it.** Same maintainers, same direction, different letterhead.
+
+Issues and pull requests are welcome at
+[zanreal-labs/nemo](https://github.com/zanreal-labs/nemo), same as before, under MIT and with no
+CLA to sign.
+
+<Callout type="info">
+  Already on `@rescale/nemo`? Nothing breaks. It is still published as an alias that re-exports
+  `@zanreal/nemo` - the [migration guide](/docs/latest/migration) covers the one-command move when
+  you're ready.
+</Callout>
