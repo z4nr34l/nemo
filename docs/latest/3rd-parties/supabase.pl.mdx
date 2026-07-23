@@ -1,0 +1,155 @@
+---
+title: Supabase
+description: Jak wpiąć odświeżanie sesji Supabase w łańcuch middleware NEMO
+icon: SquareFunction
+---
+
+## Instalacja
+
+Supabase podłącz do projektu według oficjalnych przewodników:
+
+[Supabase Quickstart](https://supabase.com/docs/guides/getting-started/quickstarts/nextjs) albo [Supabase Next.js App](https://supabase.com/docs/guides/getting-started/tutorials/with-nextjs)
+
+Pod NEMO trzeba w nich zmienić dosłownie jedno miejsce.
+
+## Wpięcie w łańcuch NEMO
+
+<Steps>
+
+  <Step>
+    ### Utwórz `_middleware.ts`
+
+    Załóż plik `_middleware.ts` w katalogu `lib` albo `supabase` i wklej do niego kod middleware
+    skopiowany z dokumentacji Supabase.
+
+    Powinien wyglądać mniej więcej tak:
+
+    ```ts title="@/lib/supabase/middleware.ts"
+    import { createServerClient } from '@supabase/ssr';
+    import { type NextRequest, NextResponse } from 'next/server';
+
+    export async function updateSession(request: NextRequest) {
+      let supabaseResponse = NextResponse.next({
+        request,
+      })
+
+      const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        {
+          cookies: {
+            getAll() {
+              return request.cookies.getAll()
+            },
+            setAll(cookiesToSet) {
+              cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+                supabaseResponse = NextResponse.next({
+                request,
+              })
+              cookiesToSet.forEach(({ name, value, options }) =>
+                supabaseResponse.cookies.set(name, value, options)
+              )
+            },
+          },
+        }
+      );
+
+      // refreshing the auth token
+      await supabase.auth.getUser();
+
+      return supabaseResponse;
+    }
+
+    ```
+
+  </Step>
+
+  <Step>
+    ### Podepnij `updateSession` pod `before`
+
+    W głównym pliku middleware albo proxy `updateSession` trafia do łańcucha `before` - dzięki
+    temu token odświeży się, zanim ruszy cokolwiek innego.
+
+    <Tabs items={["Next.js 16", "Starszy Next.js"]}>
+      <Tab value="Next.js 16">
+        ```typescript title="@/proxy.ts"
+        import { type MiddlewareConfig, type GlobalMiddlewareConfig, createNEMO } from '@zanreal/nemo';
+        import { updateSession } from '@/lib/supabase/middleware';
+
+        const globalMiddlewares: GlobalMiddlewareConfig = {
+          before: updateSession, // REMEMBER TO IMPORT updateSession
+        }
+
+        const middlewares: MiddlewareConfig = {
+          '/': [
+            async (request) => {
+              console.log('There is NEMO', request.nextUrl.pathname);
+            },
+          ],
+        };
+
+        export const proxy = createNEMO(middlewares, globalMiddlewares);
+
+        export const config = {
+          matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+        };
+
+        ```
+      </Tab>
+      <Tab value="Starszy Next.js">
+        ```typescript title="@/middleware.ts"
+        import { type MiddlewareConfig, type GlobalMiddlewareConfig, createNEMO } from '@zanreal/nemo';
+        import { updateSession } from '@/lib/supabase/middleware';
+
+        const globalMiddlewares: GlobalMiddlewareConfig = {
+          before: updateSession, // REMEMBER TO IMPORT updateSession
+        }
+
+        const middlewares: MiddlewareConfig = {
+          '/': [
+            async (request) => {
+              console.log('There is NEMO', request.nextUrl.pathname);
+            },
+          ],
+        };
+
+        export const middleware = createNEMO(middlewares, globalMiddlewares);
+
+        export const config = {
+          matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+        };
+
+        ```
+      </Tab>
+    </Tabs>
+
+  </Step>
+
+  <Step>
+      ### (Opcjonalnie) Odłóż użytkownika do storage
+
+      `updateSession` i tak pyta Supabase o zalogowanego użytkownika, więc warto od razu zapisać
+      wynik dla pozostałych funkcji w łańcuchu:
+
+      ```typescript title="@/lib/supabase/middleware.ts"
+      // imports
+
+      export async function updateSession(request, { storage }) {  // [!code focus] [!code ++]
+
+        // prev code
+
+        // refreshing the auth token
+        await supabase.auth.getUser(); // [!code focus] [!code --]
+        const { user } = await supabase.auth.getUser(); // [!code focus] [!code ++]
+
+        // add user to storage
+        storage.set('user', user ?? undefined); // [!code focus] [!code ++]
+
+        return supabaseResponse;
+      }
+
+      ```
+
+  </Step>
+
+</Steps>

@@ -1,0 +1,90 @@
+---
+title: NextAuth (Auth.js)
+description: Jak udostępnić sesję Auth.js pozostałym funkcjom w łańcuchu NEMO
+icon: SquareFunction
+---
+
+## Instalacja
+
+NextAuth podłącz do projektu według oficjalnych przewodników:
+
+[Auth.js Quickstart](https://authjs.dev/getting-started/installation?framework=Next.js) albo [przykładowa aplikacja Next.js](https://github.com/vercel/next.js/tree/canary/examples/auth).
+
+Pomiń w nich rozdział o konfiguracji middleware - tę część zastępują kroki poniżej.
+
+<Steps>
+
+  <Step>
+    ### Podmień zawartość pliku middleware
+
+    Handler `auth` z Auth.js wywołujemy w łańcuchu `before`, a zalogowanego użytkownika
+    przekładamy z jego callbacku do `event.storage`.
+
+    <Tabs items={["Next.js 16", "Starszy Next.js"]}>
+      <Tab value="Next.js 16">
+        ```typescript title="@/proxy.ts"
+        import { auth as authMiddleware } from "@/auth";
+        import { type MiddlewareConfig, type GlobalMiddlewareConfig, createNEMO } from '@zanreal/nemo';
+
+        const globalMiddlewares: GlobalMiddlewareConfig = {
+          before: async (request, event) => {
+            await authMiddleware((_request, _event) => {
+              const { auth } = _request;
+              event.storage.set("user", auth?.user);
+            })(request, event);
+          }
+        }
+
+        const middlewares: MiddlewareConfig = {
+          '/': [
+            async (request, event) => {
+              console.log('There is NEMO', event.storage.get("user"));
+            },
+          ],
+        };
+
+        export const proxy = createNEMO(middlewares, globalMiddlewares);
+
+        export const config = {
+          matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+        };
+
+        ```
+      </Tab>
+      <Tab value="Starszy Next.js">
+        ```typescript title="@/middleware.ts"
+        import { auth as authMiddleware } from "@/auth";
+        import { type MiddlewareConfig, type GlobalMiddlewareConfig, createNEMO } from '@zanreal/nemo';
+
+        const globalMiddlewares: GlobalMiddlewareConfig = {
+          before: async (request, event) => {
+            await authMiddleware((_request, _event) => {
+              const { auth } = _request;
+              event.storage.set("user", auth?.user);
+            })(request, event);
+          }
+        }
+
+        const middlewares: MiddlewareConfig = {
+          '/': [
+            async (request, event) => {
+              console.log('There is NEMO', event.storage.get("user"));
+            },
+          ],
+        };
+
+        export const middleware = createNEMO(middlewares, globalMiddlewares);
+
+        export const config = {
+          matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+        };
+
+        ```
+      </Tab>
+    </Tabs>
+
+  </Step>
+
+<Step>Od tej pory sięgasz po klucz `user` w storage tam, gdzie go akurat potrzebujesz. 🎉</Step>
+
+</Steps>

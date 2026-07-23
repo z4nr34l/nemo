@@ -1,0 +1,178 @@
+---
+title: Overview
+description: Compose several Next.js middlewares behind one entry point and dispatch them by path.
+---
+
+<DocsHero
+  actions={[{ href: "https://github.com/zanreal-labs/nemo", label: "GitHub" }]}
+  description="Next.js gives you one middleware file. NEMO lets you keep writing small, named middleware functions and dispatches them by path, so the entry point stays a routing table instead of growing into a switch statement."
+  install="npm install @zanreal/nemo"
+  title="One entry point, every middleware"
+>
+
+```ts title="middleware.ts"
+import { createNEMO } from "@zanreal/nemo";
+
+export const middleware = createNEMO({
+  "/dashboard/:path*": [requireSession],
+  "/api/:path*": [rateLimit, requireApiKey],
+});
+```
+
+</DocsHero>
+
+<Callout title="Maintained by ZanReal as part of its OSS Program">
+  NEMO is a company project rather than one person's side project: the package, the repository and
+  the release process belong to ZanReal, and the licence stays MIT. [What that
+  means](/docs/latest/stewardship).
+</Callout>
+
+## First, let the code get the word out
+
+The same routing logic, written by hand and written with NEMO.
+
+<Tabs items={["Before", "After"]}>
+  <Tab value="Before">
+    ```ts title="middleware.ts"
+    import { NextResponse, type NextRequest } from "next/server";
+
+    export const middleware = async (req: NextRequest) => {
+      let user = undefined;
+      let team = undefined;
+      const token = req.headers.get("token");
+
+      if (req.nextUrl.pathname.startsWith("/auth")) {
+        user = await getUserByToken(token);
+
+        if (!user) {
+          return NextResponse.redirect("/login");
+        }
+
+        return NextResponse.next();
+      }
+
+      if (req.nextUrl.pathname.startsWith("/team/") || req.nextUrl.pathname.startsWith("/t/")) {
+        user = await getUserByToken(token);
+
+        if (!user) {
+          return NextResponse.redirect("/login");
+        }
+
+        team = await getTeamBySlug(req.nextUrl.searchParams.get("slug"));
+
+        if (!team) {
+          return NextResponse.redirect("/");
+        }
+
+        return NextResponse.next();
+      }
+
+      return NextResponse.next();
+    };
+    ```
+
+  </Tab>
+  <Tab value="After">
+    ```ts title="middleware.ts"
+    import { createNEMO } from "@zanreal/nemo";
+    import { auth } from "@/app/(auth)/auth/_middleware";
+    import { team } from "@/app/(team)/team/_middleware";
+
+    const globalMiddlewares = {
+      before: auth, // OR: [auth, ...]
+    };
+
+    const middlewares = {
+      "/auth/:path*": auth,
+      "/(team|t)/:slug/:path*": team, // OR: [team, ...]
+    };
+
+    export const middleware = createNEMO(middlewares, globalMiddlewares);
+    ```
+
+  </Tab>
+</Tabs>
+
+Every branch that used to be a path check is a key. The functions themselves live next to the
+routes they guard, and the entry point stops growing.
+
+## Simplify your middlewares now
+
+<Cards>
+  <Card
+    href="/docs/latest"
+    title="Get started"
+    description="Install the package, move your first branch into a named function, and let the matcher do the routing."
+  />
+</Cards>
+
+## Supports
+
+<Cards>
+  <Card
+    icon={<Activity />}
+    title="Dynamic segments"
+    description="Run your middleware for any route or dynamic segment."
+  />
+  <Card
+    icon={<Link2 />}
+    title="Functions chaining"
+    description="Chain multiple middlewares for a single group."
+  />
+  <Card
+    icon={<Globe />}
+    title="Shared context"
+    description="Functions can share context between each other."
+  />
+</Cards>
+
+## Open source
+
+<Cards>
+  <Card
+    icon={<PackageOpen />}
+    title="Open-source"
+    description="Something is missing? Just add it, or post an issue on GitHub."
+  />
+  <Card
+    icon={<Waypoints />}
+    title="Developer experience"
+    description="Typed end to end, no build step of its own, and an API small enough to hold in your head."
+  />
+</Cards>
+
+## Want to help with this project?
+
+Review existing issues, make PRs with what is missing.
+
+<Cards>
+  <Card
+    href="https://github.com/zanreal-labs/nemo"
+    icon={<Github />}
+    title="zanreal-labs/nemo"
+    description="Issues, pull requests and the release history."
+  />
+</Cards>
+
+## Other versions
+
+Each major keeps its own documentation. v1 and v2 stay published for anyone who has not upgraded
+yet.
+
+<Cards>
+  <Card
+    href="/docs/latest"
+    title="v3"
+    description="Latest. The version this page documents, and the one a new project should install."
+  />
+  <Card
+    href="/docs/v2"
+    title="v2"
+    description="Previous major. Still supported, no longer receiving new features."
+  />
+  <Card
+    href="/docs/v1"
+    title="v1"
+    description="Archived. Describes the package under its former name, @rescale/nemo."
+  />
+</Cards>

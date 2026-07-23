@@ -1,0 +1,528 @@
+---
+title: Dobre praktyki
+description: Wydajność, bezpieczeństwo i niezawodność middleware w projektach Next.js
+icon: ThumbsUp
+---
+
+## Wydajność
+
+Middleware wykonuje się przed każdym żądaniem, więc każda milisekunda spędzona w łańcuchu wprost
+przekłada się na TTFB (Time To First Byte). To warstwa, której nie da się obejść ani cache'em
+przeglądarki, ani statycznym prerenderem - dlatego pilnowanie czasu ma tu największy zwrot.
+
+### Równoległość
+
+Ogranicz liczbę operacji blokujących. Tam, gdzie i tak muszą się wydarzyć, puść je równolegle
+zamiast jedna po drugiej.
+
+```ts title="/app/auth/_middleware.ts"
+import { NextMiddleware } from "@zanreal/nemo";
+
+export const auth: NextMiddleware = () => {
+  // Fetch user and roles concurrently // [!code focus]
+  const [user, roles] = await Promise.all([
+    // [!code focus]
+    fetchUser(), // [!code focus]
+    fetchRoles(), // [!code focus]
+  ]); // [!code focus]
+
+  if (!user | !roles) {
+    return NextResponse.redirect("/login");
+  }
+};
+```
+
+### Cache
+
+Cache zdejmuje z łańcucha najdroższe operacje, przede wszystkim zapytania do bazy. Warto rozdzielić
+dwa poziomy.
+
+#### W obrębie jednego żądania
+
+Wbudowany `storage` wystarczy, żeby dane pobrane w jednej funkcji były gotowe dla następnych.
+Mniej zapytań do usług zewnętrznych, krótszy łańcuch.
+
+```ts title="/app/auth/_middleware.ts"
+import { NextMiddleware } from "@zanreal/nemo";
+
+export const auth: NextMiddleware = (request, { storage }) => {
+  // [!code focus]
+  const [user, roles] = await Promise.all([fetchUser(), fetchRoles()]);
+
+  storage.set("user", user); // [!code focus]
+  storage.set("roles", roles); // [!code focus]
+
+  if (!user | !roles) {
+    return NextResponse.redirect("/login");
+  }
+};
+```
+
+#### Między żądaniami
+
+Tu potrzebny jest własny adapter oparty o Redis, Vercel Edge Config albo inny magazyn
+klucz-wartość.
+
+<Callout type="warn">
+  **Pilnuj czasu odpowiedzi takiego magazynu.** Im dłużej trwa middleware, tym gorszy TTFB.
+</Callout>
+
+<Tabs items={["Next.js 16", "Starszy Next.js"]}>
+  <Tab value="Next.js 16">
+    ```ts title="proxy.ts"
+    import { createNEMO } from '@zanreal/nemo';
+    import { RedisAdapter } from "@/lib/nemo/redis";
+
+    export const proxy = createNEMO(middlewares, globalMiddleware, {
+      storage: () => new RedisAdapter()
+    });
+
+    ```
+
+  </Tab>
+  <Tab value="Starszy Next.js">
+    ```ts title="middleware.ts"
+    import { createNEMO } from '@zanreal/nemo';
+    import { RedisAdapter } from "@/lib/nemo/redis";
+
+    export const middleware = createNEMO(middlewares, globalMiddleware, {
+      storage: () => new RedisAdapter()
+    });
+
+    ```
+
+  </Tab>
+</Tabs>
+
+## Bezpieczeństwo
+
+### Ograniczanie liczby żądań
+
+Limit żądań chroni aplikację przed nadużyciami i próbami DoS. Możesz nałożyć go globalnie albo
+tylko na wybrane trasy.
+
+<Tabs items={["Next.js 16", "Starszy Next.js"]}>
+  <Tab value="Next.js 16">
+    ```ts title="proxy.ts"
+    import { createNEMO, NextMiddleware } from '@zanreal/nemo';
+    import { RateLimiter } from '@/lib/rate-limiter';
+
+    const rateLimiter: NextMiddleware = async (request, { storage }) => {
+      const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+      const limiter = new RateLimiter();
+
+      const { success, limit, remaining, reset } = await limiter.check(ip);
+
+      if (!success) {
+        return new Response('Too Many Requests', {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': limit.toString(),
+            'X-RateLimit-Remaining': remaining.toString(),
+            'X-RateLimit-Reset': reset.toString()
+          }
+        });
+      }
+    };
+
+    export const proxy = createNEMO([rateLimiter, ...otherMiddlewares]);
+    ```
+
+  </Tab>
+  <Tab value="Starszy Next.js">
+    ```ts title="middleware.ts"
+    import { createNEMO, NextMiddleware } from '@zanreal/nemo';
+    import { RateLimiter } from '@/lib/rate-limiter';
+
+    const rateLimiter: NextMiddleware = async (request, { storage }) => {
+      const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+      const limiter = new RateLimiter();
+
+      const { success, limit, remaining, reset } = await limiter.check(ip);
+
+      if (!success) {
+        return new Response('Too Many Requests', {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': limit.toString(),
+            'X-RateLimit-Remaining': remaining.toString(),
+            'X-RateLimit-Reset': reset.toString()
+          }
+        });
+      }
+    };
+
+    export const middleware = createNEMO([rateLimiter, ...otherMiddlewares]);
+    ```
+
+  </Tab>
+</Tabs>
+
+### Uwierzytelnianie
+
+Sprawdzanie tożsamości ustaw możliwie wcześnie w łańcuchu, a wynik odłóż do `storage` - kolejne
+funkcje nie będą wtedy powtarzać tej samej pracy.
+
+```ts title="/app/auth/_middleware.ts"
+import type { NextMiddleware } from "@zanreal/nemo";
+import { NextResponse } from "next/server";
+import { verifyToken } from "@/lib/auth";
+
+export const auth: NextMiddleware = async (request, { storage }) => {
+  const token = request.cookies.get("auth-token")?.value;
+
+  if (!token) {
+    return NextResponse.redirect("/login");
+  }
+
+  try {
+    // Verify token and get user
+    const user = await verifyToken(token);
+
+    // Store user in storage for other middleware to use
+    storage.set("user", user);
+  } catch (error) {
+    // Delete invalid token
+    const response = NextResponse.redirect("/login");
+    response.cookies.delete("auth-token");
+    return response;
+  }
+};
+```
+
+### Autoryzacja
+
+Skoro użytkownik leży już w `storage` po kroku uwierzytelniania, kontrola uprawnień mieści się
+w kilku linijkach:
+
+```ts title="/app/admin/_middleware.ts"
+import type { NextMiddleware } from "@zanreal/nemo";
+import { NextResponse } from "next/server";
+
+export const adminOnly: NextMiddleware = (request, { storage }) => {
+  const user = storage.get("user");
+
+  if (!user || !user.roles.includes("admin")) {
+    return NextResponse.redirect("/unauthorized");
+  }
+};
+```
+
+### Przekazywanie nagłówków
+
+Dane z middleware do komponentów strony przekazuj nagłówkami, a nie ciasteczkami ani parametrami
+w adresie.
+
+**Zasady:**
+
+- nadawaj nagłówkom czytelne nazwy z prefiksem (`x-app-locale`, `x-user-id`)
+- ustawiaj je wcześnie, na początku łańcucha
+- przekazuj wyłącznie to, co naprawdę potrzebne na stronie
+- resztę zostaw w `storage`
+
+**Przykład:**
+
+```ts title="middleware.ts"
+import type { NextMiddleware } from "@zanreal/nemo";
+import { NextResponse } from "next/server";
+
+const localeMiddleware: NextMiddleware = async (request) => {
+  const locale = detectLocale(request);
+
+  // Forward locale to page components
+  return NextResponse.next({
+    request: {
+      headers: new Headers({
+        ...Object.fromEntries(request.headers),
+        "x-locale": locale,
+      }),
+    },
+  });
+};
+
+const userMiddleware: NextMiddleware = async (request, { storage }) => {
+  const user = await getUser(request);
+
+  // Store user in storage for other middlewares
+  storage.set("user", user);
+
+  // Forward only user ID to page (not full user object)
+  return NextResponse.next({
+    request: {
+      headers: new Headers({
+        ...Object.fromEntries(request.headers),
+        "x-user-id": user.id,
+      }),
+    },
+  });
+};
+```
+
+**Po stronie komponentu:**
+
+```ts title="app/page.tsx"
+import { headers } from 'next/headers';
+
+export default async function Page() {
+  const headersList = await headers();
+  const locale = headersList.get('x-locale');
+  const userId = headersList.get('x-user-id');
+
+  // Use the forwarded headers
+  return <div>Locale: {locale}, User ID: {userId}</div>;
+}
+```
+
+### Pomijanie funkcji
+
+`event.skip()` ucina resztę bieżącej sekcji łańcucha, nie kończąc żądania żadną odpowiedzią.
+Przydaje się wszędzie tam, gdzie dalsza praca niczego już nie zmieni.
+
+**Kiedy sięgnąć po skip():**
+
+- warunek jest spełniony, ale sekcja `after` ma się jeszcze wykonać
+- funkcje mają się uruchamiać zależnie od zawartości żądania
+- dalsze przetwarzanie nic nie wniesie
+- nie ma czego sprzątać
+
+**Podstawowe użycie:**
+
+```ts title="middleware.ts"
+import type { NextMiddleware } from "@zanreal/nemo";
+import { NextResponse } from "next/server";
+
+const cacheCheck: NextMiddleware = async (request, { storage, event }) => {
+  const cacheKey = request.nextUrl.pathname;
+  const cached = storage.get(cacheKey);
+
+  if (cached) {
+    // Skip remaining middlewares, but allow after chain to run for cleanup
+    event.skip();
+    return NextResponse.next({
+      headers: {
+        "x-cached": "true",
+      },
+    });
+  }
+
+  // Continue with processing if not cached
+};
+
+const expensiveOperation: NextMiddleware = async (request) => {
+  // This will not execute if skip() was called in cacheCheck
+  await performExpensiveOperation();
+};
+```
+
+**Razem z sekcją after:**
+
+Opcja `skipAfter` obejmuje pominięciem również sekcję `after`:
+
+```ts title="middleware.ts"
+import type { NextMiddleware } from "@zanreal/nemo";
+import { NextResponse } from "next/server";
+
+const earlyExit: NextMiddleware = async (request, { event }) => {
+  if (request.headers.get("x-skip-all") === "true") {
+    // Skip remaining middlewares AND after chain (no cleanup needed)
+    event.skip({ skipAfter: true });
+    return NextResponse.next();
+  }
+
+  // Continue with normal processing
+};
+```
+
+**Kiedy `skipAfter: true`:**
+
+- sprzątanie w sekcji `after` ma zostać całkowicie ominięte
+- żądanie nie wymaga żadnej obróbki końcowej
+- z góry wiadomo, że nie ma czego domykać
+
+## Niezawodność
+
+### Monitoring
+
+Pomiary są wbudowane w bibliotekę - wystarczy włączyć je w opcjach:
+
+<Tabs items={["Next.js 16", "Starszy Next.js"]}>
+  <Tab value="Next.js 16">
+    ```ts title="proxy.ts"
+    import { createNEMO } from '@zanreal/nemo';
+
+    export const proxy = createNEMO(middlewares, globalMiddleware, {
+      debug: true,        // Enable detailed logs
+      enableTiming: true  // Enable performance measurements
+    });
+    ```
+
+  </Tab>
+  <Tab value="Starszy Next.js">
+    ```ts title="middleware.ts"
+    import { createNEMO } from '@zanreal/nemo';
+
+    export const middleware = createNEMO(middlewares, globalMiddleware, {
+      debug: true,        // Enable detailed logs
+      enableTiming: true  // Enable performance measurements
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+Przy włączonym `enableTiming` NEMO samo:
+
+- mierzy czas wykonania każdej funkcji z osobna
+- zlicza go w podziale na sekcje `before`, `main` i `after`
+- wypisuje wyniki w konsoli
+
+### Logowanie
+
+Logi ustrukturyzowane, z jednym identyfikatorem żądania przechodzącym przez cały łańcuch, mocno
+ułatwiają późniejsze dochodzenie, co poszło nie tak.
+
+<Tabs items={["Next.js 16", "Starszy Next.js"]}>
+  <Tab value="Next.js 16">
+    ```ts title="proxy.ts"
+    import { createNEMO, NextMiddleware } from '@zanreal/nemo';
+    import { logger } from '@/lib/logger';
+
+    const loggingMiddleware: NextMiddleware = async (request, { next, storage }) => {
+      const requestId = crypto.randomUUID();
+      const start = Date.now();
+
+      // Add request ID to storage for cross-middleware correlation
+      storage.set('requestId', requestId);
+
+      logger.info({
+        message: 'Request received',
+        requestId,
+        method: request.method,
+        path: request.nextUrl.pathname,
+        userAgent: request.headers.get('user-agent')
+      });
+
+      try {
+        const response = await next();
+
+        logger.info({
+          message: 'Request completed',
+          requestId,
+          status: response.status,
+          duration: Date.now() - start
+        });
+
+        return response;
+      } catch (error) {
+        logger.error({
+          message: 'Request failed',
+          requestId,
+          error: error.message,
+          stack: error.stack,
+          duration: Date.now() - start
+        });
+
+        throw error;
+      }
+    };
+
+    export const proxy = createNEMO([loggingMiddleware, ...otherMiddlewares]);
+    ```
+
+  </Tab>
+  <Tab value="Starszy Next.js">
+    ```ts title="middleware.ts"
+    import { createNEMO, NextMiddleware } from '@zanreal/nemo';
+    import { logger } from '@/lib/logger';
+
+    const loggingMiddleware: NextMiddleware = async (request, { next, storage }) => {
+      const requestId = crypto.randomUUID();
+      const start = Date.now();
+
+      // Add request ID to storage for cross-middleware correlation
+      storage.set('requestId', requestId);
+
+      logger.info({
+        message: 'Request received',
+        requestId,
+        method: request.method,
+        path: request.nextUrl.pathname,
+        userAgent: request.headers.get('user-agent')
+      });
+
+      try {
+        const response = await next();
+
+        logger.info({
+          message: 'Request completed',
+          requestId,
+          status: response.status,
+          duration: Date.now() - start
+        });
+
+        return response;
+      } catch (error) {
+        logger.error({
+          message: 'Request failed',
+          requestId,
+          error: error.message,
+          stack: error.stack,
+          duration: Date.now() - start
+        });
+
+        throw error;
+      }
+    };
+
+    export const middleware = createNEMO([loggingMiddleware, ...otherMiddlewares]);
+    ```
+
+  </Tab>
+</Tabs>
+
+### Testy
+
+Funkcja middleware to zwykła funkcja asynchroniczna, więc sprawdzisz ją bez stawiania serwera:
+podstawiasz `NextRequest`, atrapę storage'u i patrzysz, co wróciło.
+
+```ts title="middleware.test.ts"
+import { NextRequest } from "next/server";
+import { auth } from "./app/auth/_middleware";
+import { createMockStorage } from "@/lib/test-utils";
+
+describe("Auth middleware", () => {
+  it("should redirect to login when no token is present", async () => {
+    // Arrange
+    const request = new NextRequest("https://example.com/dashboard");
+    const storage = createMockStorage();
+
+    // Act
+    const response = await auth(request, { storage, next: async () => new Response() });
+
+    // Assert
+    expect(response.status).toBe(307);
+    expect(response.headers.get("Location")).toBe("/login");
+  });
+
+  it("should proceed and store user when token is valid", async () => {
+    // Arrange
+    const request = new NextRequest("https://example.com/dashboard");
+    request.cookies.set("auth-token", "valid-token");
+
+    const storage = createMockStorage();
+    const mockUser = { id: "123", name: "Test User" };
+
+    // Mock verifyToken function
+    jest.mock("@/lib/auth", () => ({
+      verifyToken: jest.fn().mockResolvedValue(mockUser),
+    }));
+
+    // Act
+    const response = await auth(request, { storage, next: async () => new Response() });
+
+    // Assert
+    expect(response).toBeUndefined(); // No response means middleware passes through
+    expect(storage.get("user")).toEqual(mockUser);
+  });
+});
+```

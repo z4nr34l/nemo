@@ -1,0 +1,46 @@
+---
+title: Program OSS ZanReal
+description: Opiekę nad NEMO przejął ZanReal w ramach firmowego programu OSS - co się przez to zmienia dla Ciebie
+icon: Building2
+---
+
+NEMO powstało w 2024 roku jako prywatna odpowiedź na lukę w Next.js: po tym, jak Vercel zwinął
+pliki `/**/_middleware.ts` do jednego middleware w katalogu głównym, zabrakło sensownego sposobu na
+składanie middleware osobno dla każdej trasy. Prywatny projekt, prywatny scope w npm, prywatne
+konto na GitHubie.
+
+Dziś NEMO chodzi na produkcji w wielu aplikacjach. Projekt na tym etapie nie powinien wisieć na
+tym, czy jedna osoba nadal ma dla niego czas.
+
+## Zmiana opiekuna
+
+Od wersji 3.0.0 NEMO utrzymuje **[ZanReal](https://zanreal.com)** w ramach firmowego
+**programu OSS**, czyli open source rozwijanego w godzinach pracy, a nie po nich:
+
+- Pakiet wychodzi jako `@zanreal/nemo`, w firmowym scope npm.
+- Repozytorium mieszka w organizacji [zanreal-labs](https://github.com/zanreal-labs) na GitHubie.
+- Utrzymanie, przeglądanie zgłoszeń i wydawanie kolejnych wersji to obowiązki firmy.
+
+Praktyczny wniosek jest najnudniejszy z możliwych: **bus factor przestał wynosić jeden.** Scope
+w npm, repozytorium i pipeline wydawniczy należą do organizacji, więc ciągłość projektu nie zależy
+już od jednego konta ani od kalendarza jednej osoby.
+
+## Co zostaje po staremu
+
+- **Licencja to nadal MIT.** Nie ma planów przejścia na source-available ani na podwójne
+  licencjonowanie.
+- **API zostaje bez zmian** - 3.0.0 to zmiana nazwy, nie przepisanie biblioteki. Szczegóły opisuje
+  [instrukcja migracji](/docs/latest/migration).
+- **Dalej za darmo i na otwartym kodzie.** Bez płatnego wariantu, bez podziału na open core
+  i resztę.
+- **Opiekują się nim ci sami ludzie.** Ten sam zespół, ten sam kierunek, inna pieczątka.
+
+Zgłoszenia i pull requesty przyjmujemy w
+[zanreal-labs/nemo](https://github.com/zanreal-labs/nemo) na tych samych zasadach co wcześniej: na
+licencji MIT i bez żadnego CLA do podpisania.
+
+<Callout type="info">
+  Masz u siebie `@rescale/nemo`? Nic się nie psuje. Ta nazwa wychodzi dalej jako alias, który
+  reeksportuje `@zanreal/nemo`, a [instrukcja migracji](/docs/latest/migration) opisuje
+  przejście jednym poleceniem, kiedy przyjdzie na to pora.
+</Callout>

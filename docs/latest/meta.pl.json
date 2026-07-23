@@ -1,0 +1,23 @@
+{
+  "description": "Najnowsza",
+  "icon": "Tag",
+  "pages": [
+    "---Przewodnik---",
+    "index",
+    "migration",
+    "stewardship",
+    "configuration",
+    "matcher",
+    "advanced-matching",
+    "nesting",
+    "functions",
+    "context",
+    "best-practices",
+    "---Konwencje---",
+    "...conventions",
+    "---Integracje---",
+    "3rd-parties"
+  ],
+  "root": true,
+  "title": "v3"
+}
