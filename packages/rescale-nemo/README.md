@@ -44,4 +44,4 @@ published as an alias means nothing breaks for the projects already depending on
 ## Documentation
 
 Full docs: [nemo.zanreal.com](https://nemo.zanreal.com) ·
-Migration guide: [nemo.zanreal.com/docs/2.0/migration](https://nemo.zanreal.com/docs/2.0/migration)
+Migration guide: [nemo.zanreal.com/docs/v2/migration](https://nemo.zanreal.com/docs/v2/migration)

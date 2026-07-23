@@ -5,7 +5,7 @@ import { Button } from "../ui/button";
 
 export function OssProgram() {
   return (
-    <Link href="/docs/2.0/stewardship" className="cursor-pointer">
+    <Link href="/docs/v3/stewardship" className="cursor-pointer">
       <div className="bg-black text-white flex flex-col md:flex-row items-start md:items-center justify-between py-2 px-6 border-b">
         <div className="flex items-center gap-3">
           <Image

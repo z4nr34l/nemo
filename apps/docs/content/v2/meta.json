@@ -1,11 +1,10 @@
 {
-  "description": "v3.0",
+  "description": "Previous major",
   "icon": "Tag",
   "pages": [
     "---Getting started---",
     "index",
     "migration",
-    "stewardship",
     "configuration",
     "matcher",
     "advanced-matching",
@@ -18,5 +17,5 @@
     "3rd-parties"
   ],
   "root": true,
-  "title": "Latest"
+  "title": "v2"
 }

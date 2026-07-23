@@ -9,7 +9,7 @@
     "codemod",
     "migration"
   ],
-  "homepage": "https://nemo.zanreal.com/docs/2.0/migration",
+  "homepage": "https://nemo.zanreal.com/docs/v2/migration",
   "bugs": {
     "url": "https://github.com/zanreal-labs/nemo/issues"
   },
