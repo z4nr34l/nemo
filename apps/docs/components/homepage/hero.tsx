@@ -1,5 +1,6 @@
 import { CopyButton } from "@/components/copy-button";
 import { Button } from "@/components/ui/button";
+import { docsUrl } from "@/lib/metadata";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -65,7 +66,7 @@ function Content() {
           />
         </div>
         <Button className="rounded-full h-12 px-8 w-full md:w-auto" variant="outline" asChild>
-          <Link href="/docs">Get started</Link>
+          <Link href={docsUrl}>Get started</Link>
         </Button>
       </div>
       <div className="hidden md:block" />

@@ -2,6 +2,7 @@ import { Comparizon } from "@/components/homepage/comparizon";
 import { Hero } from "@/components/homepage/hero";
 import { OssProgram } from "@/components/homepage/oss-program";
 import { Button } from "@/components/ui/button";
+import { docsUrl } from "@/lib/metadata";
 import { Activity, Github, Globe, Link2, PackageOpen } from "lucide-react";
 import Link from "next/link";
 import { ReactElement } from "react";
@@ -23,7 +24,7 @@ export default function HomePage(): ReactElement {
               <span className="text-foreground">now</span>!
             </h2>
             <Button className="rounded-full border" asChild>
-              <Link href="/docs">Get started</Link>
+              <Link href={docsUrl}>Get started</Link>
             </Button>
           </div>
 
