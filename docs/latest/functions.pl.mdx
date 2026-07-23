@@ -1,0 +1,225 @@
+---
+title: Funkcje middleware
+description: Sygnatura funkcji, przekazywanie nagłówków w głąb aplikacji i rozszerzenia obiektu event
+icon: Play
+---
+
+import { WaypointsIcon, ArrowRightIcon } from "lucide-react";
+
+Funkcja middleware w NEMO ma dokładnie tę samą sygnaturę co natywne middleware w Next.js. Dzięki
+temu gotowe funkcje z zewnętrznych pakietów wchodzą do łańcucha bez żadnego adaptera, a Ty piszesz
+własne tak jak dotąd.
+
+## Sygnatura
+
+Zgodność jest pełna w obie strony. NEMO dokłada tylko kilka pól i metod do drugiego argumentu,
+czyli do `event`.
+
+```ts title="_middleware.ts"
+import { NextMiddleware } from "@zanreal/nemo";
+
+const example: NextMiddleware = async (request, event) => {
+  // function body
+};
+```
+
+<Callout>
+#### Podpowiedź
+
+Najedź kursorem na fragment sygnatury albo na nazwę pola, żeby zobaczyć pełne typy.
+
+</Callout>
+
+## Argumenty
+
+### Argument:&nbsp;&nbsp;`request`
+
+Typ: [NextRequest](https://nextjs.org/docs/app/functions/next-request)
+
+Żądanie użytkownika w postaci, w jakiej weszło do łańcucha. Kolejne funkcje mogą je **zmieniać**.
+
+Ciasteczka odbiegają od pierwotnego żądania tylko wtedy, gdy wcześniejsze ogniwo przekazało dalej
+własną odpowiedź.
+
+#### Przekazywanie nagłówków
+
+Nagłówki dołożone przez `NextResponse.next()` z opcją `request` docierają zarówno do kolejnych
+ogniw łańcucha, jak i do komponentów strony:
+
+```ts
+const middleware: NextMiddleware = async (request) => {
+  const newHeaders = new Headers(request.headers);
+  newHeaders.set("x-custom-header", "value");
+
+  return NextResponse.next({
+    request: {
+      headers: newHeaders,
+    },
+  });
+};
+```
+
+**Jak to działa:**
+
+- nagłówki ustawione przez `NextResponse.next({ request: { headers } })` widzą kolejne funkcje w łańcuchu
+- w komponentach strony sięgasz po nie funkcją `headers()` z Next.js
+- przechodzą przez cały łańcuch aż do renderowania strony
+
+**Przykład z dwiema funkcjami:**
+
+```ts
+const addLocale: NextMiddleware = async (request) => {
+  const locale = detectLocale(request);
+  const newHeaders = new Headers(request.headers);
+  newHeaders.set('x-locale', locale);
+
+  return NextResponse.next({
+    request: {
+      headers: newHeaders,
+    },
+  });
+};
+
+const addUser: NextMiddleware = async (request) => {
+  // The x-locale header from previous middleware is available here
+  const locale = request.headers.get('x-locale');
+
+  const user = await getUser(request);
+  const newHeaders = new Headers(request.headers);
+  newHeaders.set('x-user-id', user.id);
+
+  return NextResponse.next({
+    request: {
+      headers: newHeaders,
+    },
+  });
+};
+
+// In your page.tsx
+export default async function Page() {
+  const headersList = await headers();
+  const locale = headersList.get('x-locale'); // Available!
+  const userId = headersList.get('x-user-id'); // Available!
+
+  return <div>Locale: {locale}, User: {userId}</div>;
+}
+```
+
+<Callout type="info">
+**Uwaga na dwa różne miejsca.** `NextResponse.next({ request: { headers } })` przekazuje dane w głąb aplikacji - do kolejnych middleware i do strony. Nagłówki, które mają dotrzeć do przeglądarki, ustawia się w `NextResponse.next({ headers: { ... } })`.
+</Callout>
+
+### Argument:&nbsp;&nbsp;`event`
+
+Typ: `NemoEvent`, rozszerza [NextFetchEvent](https://nextjs.org/docs/app/building-your-application/routing/middleware#waituntil-and-nextfetchevent)
+
+Poza tym, co daje `NextFetchEvent`, obiekt niesie stan całego przebiegu: wspólny `storage`,
+wyłuskane `params`, metody logowania oraz `skip()`.
+
+<Card
+  href="/docs/latest/context"
+  title="Storage"
+  description="Jak dzielić dane między funkcjami w łańcuchu"
+  icon={<WaypointsIcon />}
+/>
+
+#### Logowanie
+
+Do dyspozycji masz ten sam logger, z którego korzysta samo NEMO:
+
+```ts
+// Debug logging (only displayed when debug is enabled in config)
+event.log("Processing user request", userId);
+
+// Error logging (always displayed)
+event.error("Failed to process request", error);
+
+// Warning logging (always displayed)
+event.warn("Deprecated feature used", featureName);
+```
+
+Każdy wpis dostaje prefiks `[NEMO]`, więc logi z Twoich funkcji i te z biblioteki czyta się razem.
+
+#### Pomijanie dalszych funkcji
+
+`event.skip()` przerywa bieżącą sekcję łańcucha (`before`, `main` albo `after`), nie kończąc przy
+tym żądania żadną odpowiedzią:
+
+```ts
+const middleware: NextMiddleware = async (request, event) => {
+  // Do some processing
+  if (someCondition) {
+    event.skip(); // Skip remaining middlewares in this chain section
+    // You can still return a response if needed
+    return NextResponse.next();
+  }
+
+  // This code will execute if skip() was not called
+};
+```
+
+**Skip z opcją:**
+
+Opcja `skipAfter` rozszerza pominięcie na sekcję `after`:
+
+```ts
+const middleware: NextMiddleware = async (request, event) => {
+  if (someCondition) {
+    // Skip remaining middlewares in current chain AND skip after chain
+    event.skip({ skipAfter: true });
+    return NextResponse.next();
+  }
+};
+```
+
+<Callout type="info">
+**Sekcje łańcucha.** `skip()` działa w obrębie jednej sekcji. Wywołane w `main` zatrzymuje resztę sekcji `main`, ale `after` i tak się wykona - dzięki temu sprzątanie zapisane w `after` odpala się zawsze.
+
+Wariant `event.skip({ skipAfter: true })` zdejmuje jedno i drugie: resztę bieżącej sekcji oraz całą sekcję `after`.
+
+</Callout>
+
+**Kiedy się przydaje:**
+
+- wcześniejsze wyjście, gdy warunek jest spełniony, a przekierowanie byłoby nie na miejscu
+- warunkowe uruchamianie funkcji w zależności od tego, co przyszło w żądaniu
+- oszczędność czasu na pracy, która i tak niczego nie wniesie
+- pominięcie sprzątania w `after`, kiedy nie ma czego sprzątać
+
+**Przykłady:**
+
+```ts
+// Skip only current chain section
+const authCheck: NextMiddleware = async (request, event) => {
+  const token = request.cookies.get("auth-token");
+
+  if (!token) {
+    // Skip remaining auth middlewares, but allow after chain to run
+    event.skip();
+    return NextResponse.next();
+  }
+
+  // Continue with authentication logic
+};
+
+// Skip current chain and after chain
+const cacheCheck: NextMiddleware = async (request, event) => {
+  const cached = await checkCache(request);
+
+  if (cached) {
+    // Skip remaining middlewares AND after chain (no cleanup needed)
+    event.skip({ skipAfter: true });
+    return NextResponse.next({
+      headers: { "x-cached": "true" },
+    });
+  }
+};
+
+const adminCheck: NextMiddleware = async (request, event) => {
+  // This will not execute if skip() was called in authCheck
+  const user = storage.get("user");
+  if (!user?.isAdmin) {
+    return NextResponse.redirect("/unauthorized");
+  }
+};
+```

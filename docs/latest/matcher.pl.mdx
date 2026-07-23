@@ -1,0 +1,207 @@
+---
+title: Dopasowywanie tras
+description: Wzorce path-to-regexp, po których NEMO przypisuje funkcje do ścieżek
+icon: Variable
+---
+
+import { WrenchIcon } from "lucide-react";
+
+Wzorce tras obsługuje biblioteka [path-to-regexp](https://github.com/component/path-to-regexp) -
+ta sama składnia, której Next.js używa w polu `matcher` obiektu `config`. Parametry ze ścieżki
+wyłuskują się przy okazji dopasowania i trafiają do `event.params`.
+
+## Przykłady
+
+Najszybciej zrozumieć to na przykładach. W każdym z nich zakładka „Wzorzec” pokazuje zapis, a
+„Wynik” - które ścieżki go przechodzą.
+
+### Ścieżka dosłowna
+
+Pasuje wyłącznie do `/dashboard`, bez żadnych parametrów.
+
+<Tabs items={["Wzorzec", "Wynik"]}>
+  <Tab value="Wzorzec">
+
+    ```plaintext
+      /dashboard
+    ```
+
+  </Tab>
+  <Tab value="Wynik">
+
+    ```ts
+      /
+      /home
+      /dashboard [PASS] // [!code ++]
+      /settings
+    ```
+
+  </Tab>
+</Tabs>
+
+### Warianty w nawiasach
+
+Alternatywa `(v1|v2)` łapie oba prefiksy naraz, więc jeden wpis obsłuży dwie wersje API.
+
+<Tabs items={["Wzorzec", "Wynik"]}>
+  <Tab value="Wzorzec">
+
+    ```plaintext
+      /(v1|v2)/:path*
+    ```
+
+  </Tab>
+  <Tab value="Wynik">
+
+    ```ts
+      /
+      /home
+      /v1/anything [PASS] // [!code ++]
+      /v2/anything [PASS] // [!code ++]
+      /settings
+    ```
+
+  </Tab>
+</Tabs>
+
+### Parametry
+
+Parametr zapisuje się jako `:nazwa`. Pod tą właśnie nazwą wartość segmentu trafia później do
+`event.params`.
+
+#### Jeden segment
+
+Łapie `/dashboard/cokolwiek` i oddaje parametr `team` o wartości `cokolwiek`.
+
+<Tabs items={["Wzorzec", "Wynik"]}>
+  <Tab value="Wzorzec">
+
+    ```plaintext
+      /dashboard/:team
+    ```
+
+  </Tab>
+  <Tab value="Wynik">
+
+    ```ts
+      /
+      /home
+      /dashboard
+      /dashboard/team1 [PASS] // [!code ++]
+      /dashboard/team2 [PASS] // [!code ++]
+      /settings
+    ```
+
+  </Tab>
+</Tabs>
+
+Segment parametryczny nie musi kończyć ścieżki. Postawiony w środku wymaga, żeby zgadzało się
+również to, co idzie po nim:
+
+<Tabs items={["Wzorzec", "Wynik"]}>
+  <Tab value="Wzorzec">
+
+    ```plaintext
+      /dashboard/:team/delete
+    ```
+
+  </Tab>
+  <Tab value="Wynik">
+
+    ```ts
+      /
+      /home
+      /dashboard
+      /dashboard/team1
+      /dashboard/team2/delete [PASS] // [!code ++]
+      /settings
+    ```
+
+  </Tab>
+</Tabs>
+
+#### Segment opcjonalny
+
+Znak zapytania zwalnia segment z obowiązku istnienia: wzorzec przechodzi zarówno dla samego
+`/team`, jak i dla `/team/cokolwiek`. W pierwszym przypadku `slug` zostaje pusty.
+
+<Tabs items={["Wzorzec", "Wynik"]}>
+  <Tab value="Wzorzec">
+
+    ```plaintext
+      /team/:slug?
+    ```
+
+  </Tab>
+  <Tab value="Wynik">
+
+    ```ts
+      /
+      /home
+      /dashboard
+      /team                [PASS] // [!code ++]
+      /team/team1          [PASS] // [!code ++]
+      /team/team2/settings
+      /settings
+    ```
+
+  </Tab>
+</Tabs>
+
+#### Ogon opcjonalny
+
+<Callout>Zero segmentów lub więcej</Callout>
+
+Gwiazdka zbiera całą resztę ścieżki do tablicy: `/team/team2/settings` daje `slug` o wartości
+`["team2", "settings"]`. Zero powtórzeń też jest dopuszczalne, więc sam `/team` przechodzi.
+
+<Tabs items={["Wzorzec", "Wynik"]}>
+  <Tab value="Wzorzec">
+
+    ```plaintext
+      /team/:slug*
+    ```
+
+  </Tab>
+  <Tab value="Wynik">
+
+    ```ts
+      /
+      /home
+      /dashboard
+      /team/team1          [PASS] // [!code ++]
+      /team/team2/settings [PASS] // [!code ++]
+      /settings
+    ```
+
+  </Tab>
+</Tabs>
+
+#### Ogon wymagany
+
+<Callout>Jeden segment lub więcej</Callout>
+
+Plus zachowuje się jak gwiazdka, z jedną różnicą: wymaga przynajmniej jednego segmentu, więc samo
+`/team` już odpada.
+
+<Tabs items={["Wzorzec", "Wynik"]}>
+  <Tab value="Wzorzec">
+
+    ```plaintext
+      /team/:slug+
+    ```
+
+  </Tab>
+  <Tab value="Wynik">
+
+    ```ts
+      /
+      /home
+      /dashboard
+      /team/team1          [PASS] // [!code ++]
+      /team/team2/settings [PASS] // [!code ++]
+      /settings
+    ```
+
+  </Tab>
+</Tabs>

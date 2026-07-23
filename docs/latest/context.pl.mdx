@@ -1,0 +1,166 @@
+---
+title: Storage
+description: Wspólne miejsce na dane dzielone przez funkcje w łańcuchu wykonania
+icon: Waypoints
+---
+
+`storage` to wspólne miejsce na dane, do którego sięgają wszystkie funkcje w łańcuchu. Zamiast
+pobierać użytkownika osobno w każdej z nich, pobierasz go raz i zostawiasz tam dla pozostałych.
+
+Domyślna implementacja trzyma wszystko w pamięci. Możesz ją podmienić na własną - również taką,
+która odpytuje zewnętrzną usługę.
+
+<Callout type="warn">
+  **Ostrożnie z bazą danych po drugiej stronie adaptera.** Każde zapytanie wydłuża łańcuch, a razem z nim TTFB całej strony.
+
+**Zalecenie**: sięgaj po magazyny klucz-wartość, czyli Redis, Vercel Edge Config i podobne.
+
+[Więcej o dobrych praktykach](/docs/latest/best-practices)
+
+</Callout>
+
+## Przykład użycia
+
+Typowy wzorzec wygląda tak: sprawdź, czy dane już leżą w storage, a jeśli nie - pobierz je i
+odłóż dla kolejnych funkcji.
+
+<Callout type="warn">
+  Każde żądanie dostaje własną instancję `event`, więc zawartość storage nie przechodzi między
+  żądaniami.
+</Callout>
+
+```ts title="_middleware.ts"
+import type { NextMiddleware } from "@zanreal/nemo";
+
+const example: NextMiddleware = async (req, { storage }) => {
+  // [!code focus]
+  let user = undefined; // [!code focus]
+
+  if (!storage.has("user")) {
+    // [!code focus]
+    user = await fetchUser(); // [!code focus]
+    storage.set("user", user); // [!code focus]
+  } else {
+    // [!code focus]
+    user = storage.get("user"); // [!code focus]
+  } // [!code focus]
+
+  if (!user) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+};
+```
+
+### Typowanie
+
+`set` i `get` przyjmują parametr generyczny, więc odczytana wartość zachowuje kształt, który
+zapisałeś:
+
+```typescript
+interface UserData {
+  id: number;
+  name: string;
+  roles: string[];
+}
+
+// Store data with type
+storage.set<UserData>("user", {
+  id: 1,
+  name: "John",
+  roles: ["admin", "editor"],
+});
+
+// Retrieve with correct type
+const user = storage.get<UserData>("user");
+if (user) {
+  // TypeScript knows the shape of user
+  console.log(user.name);
+  console.log(user.roles.join(", "));
+}
+```
+
+## Własny adapter
+
+Domyślny magazyn w pamięci podmienisz na dowolny inny, tworząc klasę rozszerzającą
+`StorageAdapter`:
+
+```ts title="StorageAdapter.ts"
+import { StorageAdapter } from "@zanreal/nemo/storage";
+
+export class CustomStorageAdapter extends StorageAdapter {
+  // Implement required methods
+  async get<T>(key: string): T | undefined {
+    // Your implementation
+    return undefined;
+  }
+
+  async set<T>(key: string, value: T): void {
+    // Your implementation
+  }
+
+  async has(key: string): boolean {
+    // Your implementation
+    return false;
+  }
+
+  async delete(key: string): boolean {
+    // Your implementation
+    return false;
+  }
+
+  async clear(): void {
+    // Your implementation
+  }
+
+  // Implement other required methods
+  entries(): IterableIterator<[string, unknown]> {
+    // Your implementation
+    return [][Symbol.iterator]();
+  }
+
+  keys(): IterableIterator<string> {
+    // Your implementation
+    return [][Symbol.iterator]();
+  }
+
+  values(): IterableIterator<unknown> {
+    // Your implementation
+    return [][Symbol.iterator]();
+  }
+
+  get size(): number {
+    // Your implementation
+    return 0;
+  }
+}
+```
+
+Gotowy adapter przekazujesz w opcjach `createNEMO()` pod kluczem `storage`. Do wyboru masz jedną
+instancję współdzieloną przez cały proces albo funkcję, która utworzy nową dla każdego żądania.
+
+<Tabs items={["Gotowa instancja", "Funkcja fabryczna"]}>
+  <Tab value="Gotowa instancja">
+    ```ts title="middleware.ts"
+    import { NEMO } from "@zanreal/nemo";
+    import { CustomStorageAdapter } from "./StorageAdapter";
+
+    export const middleware = createNEMO(middlewares, globalMiddleware, {
+      storage: new CustomStorageAdapter()
+    });
+
+    ```
+
+  </Tab>
+  <Tab value="Funkcja fabryczna">
+    ```ts title="middleware.ts"
+    import { NEMO } from "@zanreal/nemo";
+    import { CustomStorageAdapter } from "./StorageAdapter";
+
+    export const middleware = createNEMO(middlewares, globalMiddleware, {
+      storage: () => new CustomStorageAdapter()
+    });
+
+    ```
+
+  </Tab>
+</Tabs>

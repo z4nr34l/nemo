@@ -1,0 +1,66 @@
+---
+title: Struktura projektu
+description: Propozycja rozmieszczenia funkcji middleware w drzewie katalogów aplikacji
+icon: Folder
+---
+
+import { SquareFunctionIcon } from "lucide-react";
+
+### Po co to komu
+
+NEMO zbiera całą konfigurację w jednym pliku wejściowym, ale nic nie każe trzymać tam również ciał
+funkcji. Kiedy leżą przy trasach, których dotyczą, szybciej się je znajduje i trudniej o nich
+zapomnieć przy przebudowie katalogów.
+
+### Propozycja
+
+<Files>
+  <Folder name="app" defaultOpen>
+    <Folder name="(internal)" defaultOpen>
+      <File name="_middleware.ts" icon={<SquareFunctionIcon className="text-amber-500" />} />
+      <Folder name="[slug]" defaultOpen>
+        <File name="_middleware.ts" icon={<SquareFunctionIcon className="text-amber-500" />} />
+        <File name="layout.tsx" />
+        <File name="page.tsx" />
+      </Folder>
+    </Folder>
+    <Folder name="(public)" defaultOpen>
+      <File name="layout.tsx" />
+      <File name="page.tsx" />
+    </Folder>
+    <File name="_middleware.ts" icon={<SquareFunctionIcon className="text-amber-500" />} />
+    <File name="layout.tsx" />
+    <File name="page.tsx" />
+    <File name="global.css" />
+  </Folder>
+  <Folder name="components">
+    <File name="button.tsx" />
+    <File name="tabs.tsx" />
+    <File name="dialog.tsx" />
+  </Folder>
+  <File name="middleware.ts" icon={<SquareFunctionIcon className="text-amber-500" />} />
+  <File name="package.json" />
+</Files>
+
+### Jak to czytać
+
+Kod aplikacji siedzi w katalogu `app`, rozdzielony na dwie grupy tras: `(internal)` i `(public)`.
+Każda z nich ma własny `layout.tsx` i `page.tsx`. Plik `_middleware.ts` zbiera funkcje przeznaczone
+dla grupy albo strony, w której katalogu leży, a podkreślenie na początku nazwy trzyma go poza
+routingiem Next.js.
+
+<Callout>
+  Same pliki niczego jeszcze nie uruchamiają. Dopiero import w `middleware.ts` wpina funkcje w
+  konfigurację i przypisuje im trasy.
+</Callout>
+
+### Zobacz też
+
+<Cards>
+  <Card
+    title="Nazewnictwo funkcji"
+    icon={<SquareFunctionIcon />}
+    description="Jak nazywać funkcje middleware"
+    href="/docs/latest/conventions/functions-naming"
+  />
+</Cards>

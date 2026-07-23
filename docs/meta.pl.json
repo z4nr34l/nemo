@@ -1,0 +1,5 @@
+{
+  "title": "@zanreal/nemo",
+  "description": "Middleware Next.js składane w jeden punkt wejścia i rozdzielane po ścieżkach.",
+  "pages": ["latest", "v2", "v1"]
+}

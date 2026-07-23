@@ -1,7 +1,0 @@
-{
-  "pages": [
-    "supabase",
-    "next-auth"
-  ],
-  "title": "Packages"
-}

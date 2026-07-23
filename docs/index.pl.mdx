@@ -1,0 +1,180 @@
+---
+title: Wprowadzenie
+description: Wiele funkcji middleware w Next.js za jednym punktem wejścia, rozdzielanych po ścieżkach.
+---
+
+<DocsHero
+  actions={[{ href: "https://github.com/zanreal-labs/nemo", label: "GitHub" }]}
+  description="Next.js daje Ci jeden plik middleware. NEMO pozwala dalej pisać małe, nazwane funkcje i rozdziela je po ścieżkach, dzięki czemu punkt wejścia zostaje tablicą tras, zamiast puchnąć do rozmiarów jednego wielkiego switcha."
+  install="npm install @zanreal/nemo"
+  title="Jeden punkt wejścia, wszystkie middleware"
+>
+
+```ts title="middleware.ts"
+import { createNEMO } from "@zanreal/nemo";
+
+export const middleware = createNEMO({
+  "/dashboard/:path*": [requireSession],
+  "/api/:path*": [rateLimit, requireApiKey],
+});
+```
+
+</DocsHero>
+
+<Callout title="Rozwijane przez ZanReal w ramach programu OSS">
+  NEMO to projekt firmowy, a nie czyjeś zajęcie po godzinach: pakiet, repozytorium i proces
+  wydawniczy należą do ZanReal, a licencja pozostaje MIT. [Co z tego
+  wynika](/docs/latest/stewardship).
+</Callout>
+
+## Niech przemówi kod
+
+Ta sama logika rozdzielania ruchu: raz napisana ręcznie, raz na NEMO.
+
+<Tabs items={["Przed", "Po"]}>
+  <Tab value="Przed">
+
+    ```ts title="middleware.ts"
+    import { NextResponse, type NextRequest } from "next/server";
+
+    export const middleware = async (req: NextRequest) => {
+      let user = undefined;
+      let team = undefined;
+      const token = req.headers.get("token");
+
+      if (req.nextUrl.pathname.startsWith("/auth")) {
+        user = await getUserByToken(token);
+
+        if (!user) {
+          return NextResponse.redirect("/login");
+        }
+
+        return NextResponse.next();
+      }
+
+      if (req.nextUrl.pathname.startsWith("/team/") || req.nextUrl.pathname.startsWith("/t/")) {
+        user = await getUserByToken(token);
+
+        if (!user) {
+          return NextResponse.redirect("/login");
+        }
+
+        team = await getTeamBySlug(req.nextUrl.searchParams.get("slug"));
+
+        if (!team) {
+          return NextResponse.redirect("/");
+        }
+
+        return NextResponse.next();
+      }
+
+      return NextResponse.next();
+    };
+    ```
+
+  </Tab>
+  <Tab value="Po">
+
+    ```ts title="middleware.ts"
+    import { createNEMO } from "@zanreal/nemo";
+    import { auth } from "@/app/(auth)/auth/_middleware";
+    import { team } from "@/app/(team)/team/_middleware";
+
+    const globalMiddlewares = {
+      before: auth, // OR: [auth, ...]
+    };
+
+    const middlewares = {
+      "/auth/:path*": auth,
+      "/(team|t)/:slug/:path*": team, // OR: [team, ...]
+    };
+
+    export const middleware = createNEMO(middlewares, globalMiddlewares);
+    ```
+
+  </Tab>
+</Tabs>
+
+Każde `if` sprawdzające ścieżkę zamienia się w klucz. Same funkcje leżą przy trasach, których
+pilnują, a punkt wejścia przestaje rosnąć.
+
+## Zacznij porządki
+
+<Cards>
+  <Card
+    href="/docs/latest"
+    title="Pierwsze kroki"
+    description="Zainstaluj pakiet, przenieś pierwsze rozgałęzienie do nazwanej funkcji i zostaw rozdzielanie ścieżek matcherowi."
+  />
+</Cards>
+
+## Co potrafi
+
+<Cards>
+  <Card
+    icon={<Activity />}
+    title="Segmenty dynamiczne"
+    description="Uruchamiaj middleware na dowolnej trasie, również tej z segmentami dynamicznymi."
+  />
+  <Card
+    icon={<Link2 />}
+    title="Łańcuchy funkcji"
+    description="Podepnij pod jedną trasę kilka funkcji wykonywanych po kolei."
+  />
+  <Card
+    icon={<Globe />}
+    title="Wspólny kontekst"
+    description="Funkcje w łańcuchu wymieniają się danymi przez wspólny storage."
+  />
+</Cards>
+
+## Otwarty kod
+
+<Cards>
+  <Card
+    icon={<PackageOpen />}
+    title="Otwarte źródła"
+    description="Czegoś brakuje? Dopisz to albo zgłoś issue na GitHubie."
+  />
+  <Card
+    icon={<Waypoints />}
+    title="Wygoda pracy"
+    description="Otypowane od początku do końca, bez własnego kroku budowania i z API, które mieści się w głowie."
+  />
+</Cards>
+
+## Chcesz pomóc?
+
+Przejrzyj otwarte zgłoszenia albo przyślij pull request z tym, czego brakuje.
+
+<Cards>
+  <Card
+    href="https://github.com/zanreal-labs/nemo"
+    icon={<Github />}
+    title="zanreal-labs/nemo"
+    description="Zgłoszenia, pull requesty i historia wydań."
+  />
+</Cards>
+
+## Pozostałe wersje
+
+Każda wersja major ma własną dokumentację. v1 i v2 zostają opublikowane dla tych, którzy jeszcze
+nie podnieśli zależności.
+
+<Cards>
+  <Card
+    href="/docs/latest"
+    title="v3"
+    description="Najnowsza. Wersja opisana na tej stronie i ta, którą warto wybrać w nowym projekcie."
+  />
+  <Card
+    href="/docs/v2"
+    title="v2"
+    description="Poprzednia major. Nadal wspierana, ale bez nowych funkcji."
+  />
+  <Card
+    href="/docs/v1"
+    title="v1"
+    description="Archiwalna. Opisuje pakiet pod dawną nazwą @rescale/nemo."
+  />
+</Cards>

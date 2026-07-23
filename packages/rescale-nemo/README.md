@@ -1,4 +1,4 @@
-# @rescale/nemo — deprecated
+# @rescale/nemo - deprecated
 
 > [!WARNING]
 > **This package has moved to [`@zanreal/nemo`](https://www.npmjs.com/package/@zanreal/nemo).**
@@ -14,7 +14,7 @@ npx @zanreal/nemo-codemod
 npm install
 ```
 
-Or do it by hand — it is only a rename:
+Or do it by hand - it is only a rename:
 
 ```bash
 npm uninstall @rescale/nemo && npm install @zanreal/nemo
@@ -25,7 +25,7 @@ npm uninstall @rescale/nemo && npm install @zanreal/nemo
 + import { createNEMO } from '@zanreal/nemo';
 ```
 
-That is the whole migration. **The API is identical** — same exports, same signatures, same
+That is the whole migration. **The API is identical** - same exports, same signatures, same
 behaviour. Only the package name changed.
 
 Subpath imports move the same way:
@@ -43,5 +43,5 @@ published as an alias means nothing breaks for the projects already depending on
 
 ## Documentation
 
-Full docs: [nemo.zanreal.com](https://nemo.zanreal.com) ·
-Migration guide: [nemo.zanreal.com/docs/2.0/migration](https://nemo.zanreal.com/docs/2.0/migration)
+Full docs: [zanreal.com/docs/oss/nemo](https://zanreal.com/docs/oss/nemo) ·
+Migration guide: [zanreal.com/docs/oss/nemo/latest/migration](https://zanreal.com/docs/oss/nemo/latest/migration)

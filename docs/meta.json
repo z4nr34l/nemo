@@ -1,0 +1,5 @@
+{
+  "title": "@zanreal/nemo",
+  "description": "Compose Next.js middleware and dispatch it by path.",
+  "pages": ["latest", "v2", "v1"]
+}

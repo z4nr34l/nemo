@@ -1,0 +1,107 @@
+---
+title: Migrating to @zanreal/nemo
+description: NEMO moved from the @rescale npm scope to @zanreal in v3.0.0 - here is what changes for you
+icon: PackageOpen
+---
+
+Starting with **v3.0.0**, NEMO is published as `@zanreal/nemo`.
+
+The API did not change. Same exports, same signatures, same behaviour - only the package name
+is different. For most projects this is a two-line migration.
+
+## Automatic migration
+
+A codemod does the whole thing - imports and `package.json` - in one pass:
+
+```bash
+npx @zanreal/nemo-codemod
+```
+
+Then reinstall with your own package manager so the lockfile picks up the new package -
+`npm install`, `pnpm install`, `yarn` or `bun install`.
+
+Want to look before you leap? `--dry` reports what would change without writing; add `--print` to
+see the transformed source:
+
+```bash
+npx @zanreal/nemo-codemod --dry --print
+```
+
+The codemod is an AST transform, so it only rewrites real module specifiers - mentions of
+`@rescale/nemo` in comments or strings are left alone. Full options are in the
+[codemod README](https://github.com/zanreal-labs/nemo/tree/main/packages/codemod).
+
+## Manual migration
+
+It is a rename, so doing it by hand is fine too.
+
+<Steps>
+  <Step>
+    ### Install the new package
+
+    ```package-install
+    @zanreal/nemo
+    ```
+
+    …and remove the old one:
+
+    ```bash
+    npm uninstall @rescale/nemo
+    ```
+
+  </Step>
+  <Step>
+    ### Update your imports
+
+    ```ts title="proxy.ts"
+    import { createNEMO } from '@rescale/nemo'; // [!code --]
+    import { createNEMO } from '@zanreal/nemo'; // [!code ++]
+    ```
+
+    Subpath imports move the same way:
+
+    ```ts
+    import { MemoryStorageAdapter } from '@rescale/nemo/storage'; // [!code --]
+    import { MemoryStorageAdapter } from '@zanreal/nemo/storage'; // [!code ++]
+    ```
+
+  </Step>
+</Steps>
+
+That's it. No code changes, no config changes.
+
+## Do I have to migrate right now?
+
+No. Your existing install keeps working exactly as it does today - nothing about it changes.
+
+Be aware of what the alias does and does not give you, though. The alias starts at **v3.0.0**,
+which is a major, so a `^2` range will not pick it up: projects on `@rescale/nemo` 2.x stay on 2.x
+and do **not** receive upstream fixes automatically. To keep getting fixes without changing your
+imports yet, move to `@rescale/nemo@3`, which re-exports `@zanreal/nemo`:
+
+```bash
+npm install @rescale/nemo@^3
+```
+
+That is a stopgap. The alias is **deprecated** - installing it prints a deprecation notice, and it
+will eventually stop being published. Migrating to `@zanreal/nemo` is the destination.
+
+<Callout type="info">
+  Both packages resolve to the same code at runtime, so a dependency tree containing both - for
+  example, your app on `@zanreal/nemo` and a library still on `@rescale/nemo` - works correctly. You
+  will just have the alias package installed alongside it.
+</Callout>
+
+## Why the move
+
+NEMO is now maintained by [ZanReal](https://zanreal.com) as a company project rather than one
+person's side project, so the package and the repository moved to the organisation's own scope.
+Nothing about the licence (MIT), the maintainers, or the project's direction changes.
+
+[Project stewardship](/docs/latest/stewardship) has the longer version.
+
+## Still on v1.4?
+
+The [v1.4 documentation](/docs/v1) continues to describe `@rescale/nemo`, because that version
+was only ever published under the old name. Upgrade to v2 first - see the v1.4 docs for the API
+differences - then follow this guide.

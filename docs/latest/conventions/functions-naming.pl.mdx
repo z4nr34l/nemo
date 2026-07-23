@@ -1,0 +1,42 @@
+---
+title: Nazewnictwo funkcji
+description: Konwencja nazw dla funkcji middleware w projekcie
+icon: SquareFunction
+---
+
+import { FolderIcon } from "lucide-react";
+
+Nie nazywaj funkcji `middleware` i nie doklejaj tego słowa jako przedrostka ani przyrostka.
+W pliku wejściowym zbiega się ich kilkanaście z różnych zakątków projektu, więc nazwa powinna
+mówić, czego funkcja dotyczy, a nie czym jest. Najprościej wziąć ją od sekcji, którą obsługuje.
+
+## Propozycja
+
+```ts title="/app/(internal)/_middleware.ts" /internal/
+export const internal = async ({ request }: MiddlewareFunctionProps) => {
+  // function body
+};
+```
+
+```ts title="/app/(team)/t/_middleware.ts" /team/
+export const team = async ({ request }: MiddlewareFunctionProps) => {
+  // function body
+};
+```
+
+```ts title="/app/_middleware.ts" /analytics/
+export const analytics = async ({ request }: MiddlewareFunctionProps) => {
+  // function body
+};
+```
+
+### Zobacz też
+
+<Cards>
+  <Card
+    title="Struktura projektu"
+    icon={<FolderIcon />}
+    description="Gdzie trzymać funkcje middleware"
+    href="/docs/latest/conventions/project-structure"
+  />
+</Cards>

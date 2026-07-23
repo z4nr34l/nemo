@@ -1,0 +1,479 @@
+---
+title: Konfiguracja
+description: Mapa tras, middleware globalne i opcje biblioteki - trzy argumenty createNEMO
+icon: Settings
+---
+
+Konfiguracja NEMO dzieli się na trzy niezależne części: mapę tras, middleware globalne i opcje
+samej biblioteki. Każda z nich to osobny argument `createNEMO()`.
+
+## Mapa middleware
+
+**Typ**: `MiddlewareConfig`
+
+**Rodzaj łańcucha**: `"main"`
+
+Obiekt `middlewares` przypisuje wzorcom ścieżek to, co ma się dla nich wykonać: pojedynczą funkcję
+albo tablicę funkcji uruchamianych po kolei. Każda dostaje dokładnie te same argumenty co natywne
+middleware Next.js - `request` oraz `event`.
+
+<Tabs items={["Next.js 16", "Starszy Next.js"]}>
+  <Tab value="Next.js 16">
+    ```ts title="proxy.ts"
+    import { type MiddlewareConfig } from "@zanreal/nemo";
+
+    const middlewares = {
+      "/:path*": async (request, event) => {
+        console.log("There is NEMO", request.nextUrl.pathname);
+      },
+    } satisfies MiddlewareConfig;
+    ```
+
+  </Tab>
+  <Tab value="Starszy Next.js">
+    ```ts title="middleware.ts"
+    import { type MiddlewareConfig } from "@zanreal/nemo";
+
+    const middlewares = {
+      "/:path*": async (request, event) => {
+        console.log("There is NEMO", request.nextUrl.pathname);
+      },
+    } satisfies MiddlewareConfig;
+    ```
+
+  </Tab>
+</Tabs>
+
+### Jedna funkcja na trasę
+
+Najkrótszy zapis to funkcja przypisana wprost do wzorca:
+
+```ts
+import { createNEMO } from "@zanreal/nemo";
+
+const middleware = createNEMO({
+  // Simple middleware for /api route
+  "/api": async (request, event) => {
+    console.log("API request:", request.nextUrl.pathname);
+  },
+});
+```
+
+### Tablica funkcji
+
+Pod jednym wzorcem może stać tablica. Funkcje idą kolejno, a to, co jedna zapisze w `event.storage`,
+widzą następne:
+
+```ts
+import { createNEMO } from "@zanreal/nemo";
+
+const middleware = createNEMO({
+  // Multiple middleware functions for /auth route
+  "/auth": [
+    // First function in chain
+    async (request, event) => {
+      event.storage.set("startTime", Date.now());
+    },
+    // Second function in chain
+    async (request, event) => {
+      const startTime = event.storage.get("startTime");
+      console.log(`Request processing time: ${Date.now() - startTime}ms`);
+    },
+  ],
+});
+```
+
+### Trasy zagnieżdżone
+
+Wzorzec może zamiast funkcji dostać obiekt. Klucz `middleware` opisuje wtedy samą trasę, a
+pozostałe klucze to trasy podrzędne:
+
+```ts
+import { createNEMO } from "@zanreal/nemo";
+
+const middleware = createNEMO({
+  "/admin": {
+    // Middleware for /admin route
+    middleware: async (request) => {
+      console.log("Admin section accessed");
+    },
+
+    // Nested routes under /admin
+    "/users": async (request) => {
+      console.log("Admin users section");
+    },
+    "/settings": async (request) => {
+      console.log("Admin settings section");
+    },
+  },
+});
+```
+
+<Callout type="info">
+  Middleware trasy nadrzędnej wykonuje się przed middleware każdej pasującej trasy podrzędnej.
+</Callout>
+
+### Głębokie zagnieżdżenie z parametrami
+
+Zagnieżdżenie nie ma sztywnego limitu głębokości, a segmenty parametryczne działają na każdym
+poziomie:
+
+```ts
+import { createNEMO } from "@zanreal/nemo";
+
+const middleware = createNEMO({
+  "/shop": {
+    middleware: shopMiddleware,
+    "/categories": {
+      middleware: categoriesMiddleware,
+      "/:categoryId": {
+        middleware: categoryMiddleware,
+        "/products": {
+          middleware: productsMiddleware,
+          "/:productId": productMiddleware,
+        },
+      },
+    },
+  },
+});
+```
+
+Taka struktura obsłuży ścieżkę `/shop/categories/electronics/products/laptop`, a wyłuskane segmenty
+znajdziesz w `event.params`.
+
+## Middleware globalne
+
+**Typ**: `GlobalMiddlewareConfig`
+
+Middleware globalne uruchamiają się przy każdym żądaniu, które przejdzie przez `matcher` - także
+wtedy, gdy żaden wzorzec z mapy do niego nie pasuje.
+
+<Tabs items={["Next.js 16", "Starszy Next.js"]}>
+  <Tab value="Next.js 16">
+    ```ts title="proxy.ts"
+    import { type GlobalMiddlewareConfig } from "@zanreal/nemo";
+
+    const globalMiddlewares = {
+      before: async (request, event) => {
+        console.log("Before any route middleware");
+      },
+      after: async (request, event) => {
+        console.log("After all route middleware");
+      },
+    } satisfies GlobalMiddlewareConfig;
+    ```
+
+  </Tab>
+  <Tab value="Starszy Next.js">
+    ```ts title="middleware.ts"
+    import { type GlobalMiddlewareConfig } from "@zanreal/nemo";
+
+    const globalMiddlewares = {
+      before: async (request, event) => {
+        console.log("Before any route middleware");
+      },
+      after: async (request, event) => {
+        console.log("After all route middleware");
+      },
+    } satisfies GlobalMiddlewareConfig;
+    ```
+
+  </Tab>
+</Tabs>
+
+### Before
+
+**Typ**: [`MiddlewareFunction | MiddlewareFunction[]`](/docs/latest/functions)
+
+Łańcuch `before` idzie przed wszystkim, co przypisałeś do tras. To dobre miejsce na odświeżenie
+sesji albo na znacznik czasu, po który sięgnie później `after`:
+
+<Tabs items={["Next.js 16", "Starszy Next.js"]}>
+  <Tab value="Next.js 16">
+    <Tabs items={["Jedna funkcja", "Łańcuch funkcji"]}>
+      <Tab value="Jedna funkcja">
+        ```ts title="proxy.ts"
+        const globalMiddlewares = {
+          before: async (request, event) => {
+            console.log("Before route middleware");
+            event.storage.set("startTime", Date.now());
+          }
+        };
+        ```
+      </Tab>
+      <Tab value="Łańcuch funkcji">
+        ```ts title="proxy.ts"
+        const globalMiddlewares = {
+          before: [
+            async (request, event) => {
+              event.storage.set("startTime", Date.now());
+            },
+            async (request, event) => {
+              // Another before middleware
+            }
+          ]
+        };
+        ```
+      </Tab>
+    </Tabs>
+  </Tab>
+  <Tab value="Starszy Next.js">
+    <Tabs items={["Jedna funkcja", "Łańcuch funkcji"]}>
+      <Tab value="Jedna funkcja">
+        ```ts title="middleware.ts"
+        const globalMiddlewares = {
+          before: async (request, event) => {
+            console.log("Before route middleware");
+            event.storage.set("startTime", Date.now());
+          }
+        };
+        ```
+      </Tab>
+      <Tab value="Łańcuch funkcji">
+        ```ts title="middleware.ts"
+        const globalMiddlewares = {
+          before: [
+            async (request, event) => {
+              event.storage.set("startTime", Date.now());
+            },
+            async (request, event) => {
+              // Another before middleware
+            }
+          ]
+        };
+        ```
+      </Tab>
+    </Tabs>
+  </Tab>
+</Tabs>
+
+### After
+
+**Typ**: [`MiddlewareFunction | MiddlewareFunction[]`](/docs/latest/functions)
+
+Łańcuch `after` domyka żądanie: wchodzi dopiero wtedy, gdy middleware tras zrobią swoje.
+
+<Tabs items={["Next.js 16", "Starszy Next.js"]}>
+  <Tab value="Next.js 16">
+    <Tabs items={["Jedna funkcja", "Łańcuch funkcji"]}>
+      <Tab value="Jedna funkcja">
+        ```ts title="proxy.ts"
+        const globalMiddlewares = {
+          after: async (request, event) => {
+            const startTime = event.storage.get("startTime");
+            console.log(`Request took: ${Date.now() - startTime}ms`);
+          },
+        };
+        ```
+      </Tab>
+      <Tab value="Łańcuch funkcji">
+        ```ts title="proxy.ts"
+        const globalMiddlewares = {
+          after: [
+            async (request, event) => {
+              // First after middleware
+            },
+            async (request, event) => {
+              // Second after middleware
+            }
+          ]
+        };
+        ```
+      </Tab>
+    </Tabs>
+  </Tab>
+  <Tab value="Starszy Next.js">
+    <Tabs items={["Jedna funkcja", "Łańcuch funkcji"]}>
+      <Tab value="Jedna funkcja">
+        ```ts title="middleware.ts"
+        const globalMiddlewares = {
+          after: async (request, event) => {
+            const startTime = event.storage.get("startTime");
+            console.log(`Request took: ${Date.now() - startTime}ms`);
+          },
+        };
+        ```
+      </Tab>
+      <Tab value="Łańcuch funkcji">
+        ```ts title="middleware.ts"
+        const globalMiddlewares = {
+          after: [
+            async (request, event) => {
+              // First after middleware
+            },
+            async (request, event) => {
+              // Second after middleware
+            }
+          ]
+        };
+        ```
+      </Tab>
+    </Tabs>
+  </Tab>
+</Tabs>
+
+## Obiekt konfiguracyjny
+
+Typ: `NemoConfig`
+
+Trzeci argument steruje zachowaniem samej biblioteki - logami, pomiarem czasu i obsługą błędów.
+Do wyboru są cztery opcje:
+
+<TypeTable
+  type={{
+    debug: {
+      description: "Włącza tryb debugowania i szczegółowe logi biblioteki.",
+      type: "boolean",
+      default: "false",
+    },
+    silent: {
+      description: "Wycisza logi biblioteki.",
+      type: "boolean",
+      default: "false",
+    },
+    enableTiming: {
+      description: "Włącza pomiar czasu wykonania funkcji w łańcuchu.",
+      type: "boolean",
+      default: "false",
+    },
+    errorHandler: {
+      description:
+        "Funkcja przechwytująca błędy z łańcucha. Dostaje dwa argumenty: `error` i `metadata`.",
+      type: "ErrorHandler",
+      default: "undefined",
+    },
+  }}
+/>
+
+<Tabs items={["Next.js 16", "Starszy Next.js"]}>
+  <Tab value="Next.js 16">
+    ```ts title="proxy.ts"
+    import { type NemoConfig } from "@zanreal/nemo";
+
+    const config = {
+      debug: true,
+      silent: true,
+      enableTiming: true,
+      errorHandler: (error, metadata) => {
+        console.error(error, metadata);
+      },
+    } satisfies NemoConfig;
+
+    ```
+
+  </Tab>
+  <Tab value="Starszy Next.js">
+    ```ts title="middleware.ts"
+    import { type NemoConfig } from "@zanreal/nemo";
+
+    const config = {
+      debug: true,
+      silent: true,
+      enableTiming: true,
+      errorHandler: (error, metadata) => {
+        console.error(error, metadata);
+      },
+    } satisfies NemoConfig;
+
+    ```
+
+  </Tab>
+</Tabs>
+
+## Wszystko razem
+
+`createNEMO()` przyjmuje te trzy argumenty w kolejności: mapa tras, middleware globalne, opcje.
+Dwa ostatnie możesz pominąć. Poniżej komplet, w którym każdy z nich jest wypełniony.
+
+<Tabs items={["Next.js 16", "Starszy Next.js"]}>
+  <Tab value="Next.js 16">
+    ```ts title="proxy.ts"
+    import {
+      createNEMO,
+      type MiddlewareConfig,
+      type GlobalMiddlewareConfig,
+      type NemoConfig,
+    } from "@zanreal/nemo";
+
+    const middlewares = {
+      "/:path*": async (request) => {
+        // middleware functions for /api route
+      },
+    } satisfies MiddlewareConfig;
+
+    const globalMiddlewares = {
+      before: async () => {
+        // global middleware function that will be executed before any route middleware
+      },
+      after: async () => {
+        // global middleware function that will be executed after any route middleware
+      },
+    } satisfies GlobalMiddlewareConfig;
+
+    const nemoConfig = {
+      debug: true, // default is false
+      silent: true, // default is false
+      enableTiming: true, // default is false
+      errorHandler: (error, metadata) => {
+        // custom error handler
+      },
+    } satisfies NemoConfig;
+
+    export const proxy = createNEMO(
+      middlewares,
+      globalMiddlewares,
+      nemoConfig,
+    );
+
+    export const config = {
+      matcher: ["/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)"],
+    };
+    ```
+
+  </Tab>
+  <Tab value="Starszy Next.js">
+    ```ts title="middleware.ts"
+    import {
+      createNEMO,
+      type MiddlewareConfig,
+      type GlobalMiddlewareConfig,
+      type NemoConfig,
+    } from "@zanreal/nemo";
+
+    const middlewares = {
+      "/:path*": async (request) => {
+        // middleware functions for /api route
+      },
+    } satisfies MiddlewareConfig;
+
+    const globalMiddlewares = {
+      before: async () => {
+        // global middleware function that will be executed before any route middleware
+      },
+      after: async () => {
+        // global middleware function that will be executed after any route middleware
+      },
+    } satisfies GlobalMiddlewareConfig;
+
+    const nemoConfig = {
+      debug: true, // default is false
+      silent: true, // default is false
+      enableTiming: true, // default is false
+      errorHandler: (error, metadata) => {
+        // custom error handler
+      },
+    } satisfies NemoConfig;
+
+    export const middleware = createNEMO(
+      middlewares,
+      globalMiddlewares,
+      nemoConfig,
+    );
+
+    export const config = {
+      matcher: ["/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)"],
+    };
+    ```
+
+  </Tab>
+</Tabs>
