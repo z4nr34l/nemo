@@ -28,7 +28,7 @@ const config = {
     return [
       {
         source: "/docs",
-        destination: "/docs/2.0",
+        destination: "/docs/3.0",
         permanent: process.env.NODE_ENV === "production",
       },
     ];
