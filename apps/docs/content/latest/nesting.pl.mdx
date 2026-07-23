@@ -1,0 +1,151 @@
+---
+title: Trasy zagnieżdżone
+description: Hierarchia middleware w NEMO - kolejność wykonania, przerywanie łańcucha i parametry z wyższych poziomów
+icon: GitFork
+---
+
+Zagnieżdżanie pozwala ułożyć middleware w hierarchię odwzorowującą strukturę tras w aplikacji.
+Logika wspólna dla całej sekcji zostaje na jej poziomie, a szczegóły schodzą niżej.
+
+## Podstawowy zapis
+
+Zagnieżdżenie powstaje wtedy, gdy pod kluczem trasy stoi obiekt z polem `middleware` i dodatkowymi
+kluczami tras:
+
+```ts
+import { createNEMO } from "@zanreal/nemo";
+
+const middleware = createNEMO({
+  "/admin": {
+    // Middleware for /admin route
+    middleware: async (req) => {
+      req.headers.set("x-section", "admin");
+      return NextResponse.next();
+    },
+
+    // Nested route for /admin/users
+    "/users": async (req) => {
+      // This middleware only runs for /admin/users
+      return NextResponse.next({
+        headers: { "x-admin-users": "true" },
+      });
+    },
+  },
+});
+```
+
+Co się tutaj dzieje:
+
+- middleware nadrzędne obsługuje `/admin` oraz każdą pasującą trasę podrzędną
+- middleware podrzędne wchodzi wyłącznie na `/admin/users`
+- przy trafieniu w trasę podrzędną wykonują się oba, jedno po drugim
+
+## Kolejność wykonania
+
+Żądanie trafiające w trasę zagnieżdżoną przechodzi przez łańcuch w tej kolejności:
+
+1. globalne `before`, jeśli zostało zdefiniowane
+2. middleware korzenia (`/`) - dla wszystkich żądań spoza samego korzenia
+3. middleware nadrzędne
+4. middleware podrzędne
+5. globalne `after`, jeśli zostało zdefiniowane
+
+<Callout type="info">
+  Zwrócenie odpowiedzi przez którekolwiek ogniwo - choćby przekierowania - przerywa łańcuch, a ta
+  odpowiedź trafia od razu do przeglądarki.
+</Callout>
+
+## Przerywanie łańcucha
+
+Na tej regule opiera się typowa bramka autoryzacyjna. Skoro odpowiedź zwrócona wyżej kończy
+przetwarzanie, trasy podrzędne po prostu się nie uruchomią:
+
+```ts
+const middleware = createNEMO({
+  "/protected": {
+    middleware: (req) => {
+      // If user is not authenticated, redirect to login
+      if (!isAuthenticated(req)) {
+        return NextResponse.redirect("/login");
+      }
+      // Otherwise continue to child routes
+      return NextResponse.next();
+    },
+    "/dashboard": (req) => {
+      // This won't run if the parent redirected
+      return NextResponse.next({
+        headers: { "x-dashboard": "true" },
+      });
+    },
+  },
+});
+```
+
+## Głębokie zagnieżdżenie z parametrami
+
+Poziomów może być dowolnie wiele, a parametry zbierają się po drodze i schodzą w dół:
+
+```ts
+const middleware = createNEMO({
+  "/shop": {
+    middleware: shopMiddleware,
+    "/categories": {
+      middleware: categoriesMiddleware,
+      "/:categoryId": {
+        middleware: (req, event) => {
+          // Access the categoryId parameter
+          const categoryId = event.params.categoryId;
+          req.headers.set("x-category-id", categoryId);
+          return NextResponse.next();
+        },
+        "/products": {
+          middleware: productsMiddleware,
+          "/:productId": (req, event) => {
+            const { categoryId, productId } = event.params;
+            // Both parent and child parameters are available
+            return NextResponse.next({
+              headers: {
+                "x-product-id": productId,
+                "x-full-path": `category-${categoryId}/product-${productId}`,
+              },
+            });
+          },
+        },
+      },
+    },
+  },
+});
+```
+
+Ścieżka `/shop/categories/electronics/products/laptop` uruchomi w tym układzie cały łańcuch,
+a w `event.params` znajdzie się:
+
+- `categoryId: "electronics"`
+- `productId: "laptop"`
+
+## O czym pamiętać
+
+1. **Trasa najwyższego poziomu bez zagnieżdżeń dopasowuje się dokładnie.** Ścieżki podrzędne nie
+   wchodzą w jej zakres.
+
+   ```ts
+   // This will ONLY match /foo exactly, not /foo/bar
+   const middleware = createNEMO({
+     "/foo": fooMiddleware,
+   });
+   ```
+
+2. **Trasa z dziećmi łapie i samą siebie, i ścieżki podrzędne.**
+
+   ```ts
+   // This matches both /parent and /parent/child
+   const middleware = createNEMO({
+     "/parent": {
+       middleware: parentMiddleware,
+       "/child": childMiddleware,
+     },
+   });
+   ```
+
+3. **Parametry działają na tych samych zasadach co w zwykłym dopasowaniu**, a te wyłuskane wyżej
+   pozostają widoczne na niższych poziomach.

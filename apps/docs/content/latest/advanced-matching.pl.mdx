@@ -1,0 +1,134 @@
+---
+title: Zaawansowane dopasowywanie tras
+description: Ograniczanie parametrów do listy wartości, wykluczenia i wyrażenia regularne we wzorcach NEMO
+icon: Variable
+---
+
+Sam kształt ścieżki to nie wszystko, co da się zapisać we wzorcu. Parametrowi można narzucić listę
+dopuszczalnych wartości, wykluczyć z niej konkretne albo opisać go pełnym wyrażeniem regularnym.
+
+## Ograniczenia parametrów
+
+### Lista dopuszczalnych wartości
+
+Nawias tuż po nazwie parametru zawęża go do wypisanych wariantów, rozdzielonych pionową kreską:
+
+```typescript
+const nemo = new NEMO({
+  "/:lang(en|fr|es)/documentation": [
+    (req) => {
+      const { lang } = req.params;
+      // lang will be either 'en', 'fr', or 'es'
+      return NextResponse.next();
+    },
+  ],
+});
+```
+
+Wzorzec przejdzie dla:
+
+- `/en/documentation`
+- `/fr/documentation`
+- `/es/documentation`
+
+Odpadnie natomiast na:
+
+- `/de/documentation`
+- `/jp/documentation`
+
+### Wykluczanie wartości
+
+Wykrzyknik odwraca warunek: parametr przyjmie wtedy wszystko poza wskazaną wartością.
+
+```typescript
+const nemo = new NEMO({
+  "/:section(!api)/details": [
+    (req) => {
+      const { section } = req.params;
+      // section will be anything EXCEPT 'api'
+      return NextResponse.next();
+    },
+  ],
+});
+```
+
+Wzorzec przejdzie dla:
+
+- `/products/details`
+- `/users/details`
+- `/settings/details`
+
+Odpadnie natomiast na:
+
+- `/api/details`
+
+### Kilka ograniczeń naraz
+
+Warunki nakłada się niezależnie na każdy parametr, więc oba zapisy mogą stanąć w jednym wzorcu:
+
+```typescript
+const nemo = new NEMO({
+  "/:project/:env(dev|staging|prod)/:resource(!secrets)": [
+    (req) => {
+      const { project, env, resource } = req.params;
+      // env will be either 'dev', 'staging', or 'prod'
+      // resource will be anything EXCEPT 'secrets'
+      return NextResponse.next();
+    },
+  ],
+});
+```
+
+## Przykłady
+
+### Trasy językowe
+
+Typowe zastosowanie listy wariantów: middleware ma objąć wyłącznie wersje językowe, które
+rzeczywiście istnieją.
+
+```typescript
+const nemo = new NEMO({
+  "/:lang(en|cn)/blog/:postId": [
+    // Only matches English and Chinese blog pages
+    (req) => {
+      const { lang, postId } = req.params;
+      // lang will be either 'en' or 'cn'
+      return NextResponse.next();
+    },
+  ],
+});
+```
+
+### Omijanie sekcji chronionych
+
+Wykluczenia przydają się w drugą stronę: middleware ogólnego przeznaczenia nie powinno wchodzić
+w drogę panelowi administracyjnemu ani ustawieniom.
+
+```typescript
+const nemo = new NEMO({
+  "/:area(!admin|!settings)/:page": [
+    // This middleware runs for any routes EXCEPT in admin or settings areas
+    (req) => {
+      const { area, page } = req.params;
+      return NextResponse.next();
+    },
+  ],
+});
+```
+
+## Wyrażenia regularne
+
+Gdy lista wariantów nie wystarcza, w nawiasie może stanąć pełne wyrażenie regularne. Poniższy
+wzorzec dopuszcza wyłącznie identyfikatory złożone z dokładnie pięciu cyfr:
+
+```typescript
+const nemo = new NEMO({
+  "/:id([0-9]{5})/profile": [
+    // Only matches if id consists of exactly 5 digits
+    (req) => {
+      const { id } = req.params;
+      return NextResponse.next();
+    },
+  ],
+});
+```

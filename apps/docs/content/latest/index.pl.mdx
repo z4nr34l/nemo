@@ -1,0 +1,219 @@
+---
+title: Pierwsze kroki
+description: Instalacja NEMO i pierwsza konfiguracja middleware w projekcie Next.js
+icon: Book
+---
+
+import { SquareFunctionIcon, WrenchIcon } from "lucide-react";
+
+## Instalacja i pierwsze uruchomienie
+
+<Steps>
+  <Step>
+    ### Zainstaluj pakiet
+
+    ```package-install
+    @zanreal/nemo
+    ```
+
+  </Step>
+  <Step>
+    ### Zaimportuj pakiet w pliku middleware
+
+    W Next.js 16 ten plik nazywa się `proxy.ts`, we wcześniejszych wersjach `middleware.ts`.
+    Jeśli jeszcze go nie masz, załóż go w katalogu głównym projektu.
+
+    <Tabs items={["Next.js 16", "Starszy Next.js"]}>
+      <Tab value="Next.js 16">
+        ```typescript title="proxy.ts"
+        import { createNEMO } from '@zanreal/nemo';  // [!code ++]
+
+        // [...]
+
+        ```
+      </Tab>
+      <Tab value="Starszy Next.js">
+        ```typescript title="middleware.ts"
+        import { createNEMO } from '@zanreal/nemo';  // [!code ++]
+
+        // [...]
+
+        ```
+      </Tab>
+    </Tabs>
+
+  </Step>
+  <Step>
+    ### Utwórz handler funkcją createNEMO
+
+    Na razie bez argumentów - konfigurację dołożysz w kolejnym kroku.
+
+    <Tabs items={["Next.js 16", "Starszy Next.js"]}>
+      <Tab value="Next.js 16">
+        ```typescript title="proxy.ts"
+        import { createNEMO } from '@zanreal/nemo';
+
+        export const proxy = createNEMO(/* your functions will go here */); // [!code ++]
+
+        // [...]
+
+        ```
+      </Tab>
+      <Tab value="Starszy Next.js">
+        ```typescript title="middleware.ts"
+        import { createNEMO } from '@zanreal/nemo';
+
+        export const middleware = createNEMO(/* your functions will go here */); // [!code ++]
+
+        // [...]
+
+        ```
+      </Tab>
+    </Tabs>
+
+  </Step>
+  <Step>
+    ### Opisz mapę middleware i przekaż ją do createNEMO
+
+    <Tabs items={["Next.js 16", "Starszy Next.js"]}>
+      <Tab value="Next.js 16">
+        ```typescript title="proxy.ts"
+        import { createNEMO, type MiddlewareConfig } from '@zanreal/nemo'; // [!code ++]
+
+        const middlewares: MiddlewareConfig = { // [!code ++]
+          '/': [ // [!code ++]
+            async (request) => { // [!code ++]
+              console.log('There is NEMO', request.nextUrl.pathname); // [!code ++]
+            }, // [!code ++]
+          ], // [!code ++]
+        }; // [!code ++]
+
+        export const proxy = createNEMO(/* your functions will go here */); // [!code --]
+        export const proxy = createNEMO(middlewares); // [!code ++]
+
+        // [...]
+
+        ```
+      </Tab>
+      <Tab value="Starszy Next.js">
+        ```typescript title="middleware.ts"
+        import { createNEMO, type MiddlewareConfig } from '@zanreal/nemo'; // [!code ++]
+
+        const middlewares: MiddlewareConfig = { // [!code ++]
+          '/': [ // [!code ++]
+            async (request) => { // [!code ++]
+              console.log('There is NEMO', request.nextUrl.pathname); // [!code ++]
+            }, // [!code ++]
+          ], // [!code ++]
+        }; // [!code ++]
+
+        export const middleware = createNEMO(/* your functions will go here */); // [!code --]
+        export const middleware = createNEMO(middlewares); // [!code ++]
+
+        // [...]
+
+        ```
+      </Tab>
+    </Tabs>
+
+    Od tej chwili każde żądanie do aplikacji zostawia w konsoli wpis `There is NEMO`.
+
+    <Cards>
+      <Card href="/docs/latest/configuration" title="Konfiguracja" description="Z czego składa się mapa middleware" icon={<WrenchIcon/>}/>
+      <Card href="/docs/latest/functions" title="Funkcje" description="Jak wygląda pojedyncza funkcja middleware" icon={<SquareFunctionIcon/>}/>
+    </Cards>
+
+  </Step>
+  <Step>
+    ### Zawęź matcher, żeby middleware nie uruchamiał się przy każdym żądaniu
+
+    <Tabs items={["Next.js 16", "Starszy Next.js"]}>
+      <Tab value="Next.js 16">
+        ```typescript title="proxy.ts"
+        // [...]
+
+        export const config = { // [!code ++]
+          matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'], // [!code ++]
+        }; // [!code ++]
+
+        ```
+      </Tab>
+      <Tab value="Starszy Next.js">
+        ```typescript title="middleware.ts"
+        // [...]
+
+        export const config = { // [!code ++]
+          matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'], // [!code ++]
+        }; // [!code ++]
+
+        ```
+      </Tab>
+    </Tabs>
+
+    Taki wzorzec pomija cztery grupy ścieżek:
+    1. `/_next/` - wewnętrzne zasoby Next.js
+    2. `/_static` - zawartość katalogu /public
+    3. `/_vercel` - wewnętrzne zasoby Vercela
+    4. pliki z rozszerzeniem, czyli `/favicon.ico`, `/sitemap.xml`, `/robots.txt` i podobne
+
+    <Callout>
+      Wszystkie warianty `matcher` opisuje [dokumentacja Next.js](https://nextjs.org/docs/app/file-conventions/middleware#config-object-optional)
+    </Callout>
+
+  </Step>
+  <Step>
+    ### Złóż wszystko w całość
+
+    <Tabs items={["Next.js 16", "Starszy Next.js"]}>
+      <Tab value="Next.js 16">
+        ```typescript title="proxy.ts"
+        import { createNEMO, type MiddlewareConfig } from '@zanreal/nemo';
+
+        const middlewares = {
+          '/': [
+            async (request) => {
+              console.log('There is NEMO', request.nextUrl.pathname);
+            },
+          ],
+        } satisfies MiddlewareConfig;
+
+        export const proxy = createNEMO(middlewares);
+
+        export const config = {
+          matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+        };
+
+        ```
+      </Tab>
+      <Tab value="Starszy Next.js">
+        ```typescript title="middleware.ts"
+        import { createNEMO, type MiddlewareConfig } from '@zanreal/nemo';
+
+        const middlewares = {
+          '/': [
+            async (request) => {
+              console.log('There is NEMO', request.nextUrl.pathname);
+            },
+          ],
+        } satisfies MiddlewareConfig;
+
+        export const middleware = createNEMO(middlewares);
+
+        export const config = {
+          matcher: ['/((?!_next/|_static|_vercel|[\\w-]+\\.\\w+).*)'],
+        };
+
+        ```
+      </Tab>
+    </Tabs>
+
+    Tak wygląda gotowy plik po wszystkich krokach.
+
+  </Step>
+</Steps>
+
+## Skąd wzięło się NEMO
+
+Z Next.js pracuję od kilku lat. Kiedy Vercel zwinął pliki `/**/_middleware.ts` do jednego `/middleware.ts` w katalogu głównym, zniknął wygodny sposób trzymania logiki blisko tras, których dotyczy. Miało to być rozwiązanie tymczasowe. Na retrospektywie w 2023 roku doszedłem do wniosku, że nikt tej luki nie załatał, więc wziąłem się za to sam.
+
+Zostawiam tę historię tutaj, bo warto pamiętać, od czego się zaczęło. Liczę na to, że NEMO oszczędzi Ci trochę czasu i poprawi DX w Twoim projekcie.
