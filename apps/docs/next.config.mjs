@@ -1,35 +1,19 @@
-import { createMDX } from "fumadocs-mdx/next";
-
-const withMDX = createMDX();
-
-// NEMO's documentation now lives on the ZanReal marketing site, which builds
-// `apps/docs/content/` into its own docs tree. This app keeps the project
-// landing page; from here on its `/docs/**` space exists only to forward the
-// old documentation URLs to their new home.
+// Redirect-only shell.
+//
+// The documentation moved to the repository root (`docs/`) and is published at
+// https://zanreal.com/docs/oss/nemo, which the marketing site builds from that
+// directory - the same arrangement as every other ZanReal OSS package.
+//
+// Nothing here renders documentation any more. This app exists solely to serve
+// the redirect table below, so that every URL this host ever published keeps
+// resolving. Some of them are baked into immutable npm metadata and can never
+// be allowed to 404.
 const DOCS = "https://zanreal.com/docs/oss/nemo";
 
 /** @type {import('next').NextConfig} */
 const config = {
   reactStrictMode: true,
   poweredByHeader: false,
-  compiler: {
-    ...(process.env.VERCEL_ENV === "production"
-      ? {
-        removeConsole: {
-          exclude: ["error"],
-        },
-      }
-      : {}),
-  },
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "cdn.zanreal.com",
-        pathname: "/public/**",
-      },
-    ],
-  },
   // Every rule below is `permanent`, which Next.js serves as a 308. Search
   // engines consolidate a 308 exactly as they do a 301, and nothing here is
   // temporary: these paths are never coming back to this host.
@@ -54,6 +38,7 @@ const config = {
   redirects: () => {
     return [
       // The old docs root.
+      { source: "/", destination: DOCS, permanent: true },
       { source: "/docs", destination: DOCS, permanent: true },
 
       // MUST come before the generic /docs/2.0/:path* rule below. The
@@ -92,13 +77,6 @@ const config = {
       { source: "/docs/:path*", destination: `${DOCS}/:path*`, permanent: true },
     ];
   },
-  async rewrites() {
-    return {
-      beforeFiles: [],
-      afterFiles: [],
-      fallback: [],
-    };
-  },
 };
 
-export default withMDX(config);
+export default config;
