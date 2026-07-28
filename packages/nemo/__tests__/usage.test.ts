@@ -25,7 +25,7 @@ describe("Usage and DX Tests", () => {
       });
 
       const response = await nemo.middleware(mockRequest(), mockEvent);
-      expect(response instanceof Response).toBe(true);
+      expect(response).toBeInstanceOf(Response);
     });
 
     test("should maintain type safety when using storage", async () => {
@@ -52,7 +52,7 @@ describe("Usage and DX Tests", () => {
       });
 
       const response = await nemo.middleware(mockRequest(), mockEvent);
-      expect(response instanceof Response).toBe(true);
+      expect(response).toBeInstanceOf(Response);
     });
 
     test("should handle complex storage operations", async () => {
@@ -74,7 +74,7 @@ describe("Usage and DX Tests", () => {
       });
 
       const response = await nemo.middleware(mockRequest(), mockEvent);
-      expect(response instanceof Response).toBe(true);
+      expect(response).toBeInstanceOf(Response);
     });
 
     test("should maintain data between before/main/after middleware", async () => {
@@ -103,7 +103,7 @@ describe("Usage and DX Tests", () => {
       );
 
       const response = await nemo.middleware(mockRequest(), mockEvent);
-      expect(response instanceof Response).toBe(true);
+      expect(response).toBeInstanceOf(Response);
       expect(order).toEqual(["before", "main", "after"]);
     });
   });
@@ -120,7 +120,7 @@ describe("Usage and DX Tests", () => {
       });
 
       const response = await middleware(mockRequest("/api"), mockEvent);
-      expect(response instanceof Response).toBe(true);
+      expect(response).toBeInstanceOf(Response);
       expect(testMiddleware).toHaveBeenCalled();
       expect(response?.headers.get("x-test-header")).toBe("test-value");
     });
@@ -188,7 +188,7 @@ describe("Usage and DX Tests", () => {
       });
 
       const response = await middleware(mockRequest(), mockEvent);
-      expect(response instanceof Response).toBe(true);
+      expect(response).toBeInstanceOf(Response);
     });
   });
 
@@ -223,7 +223,7 @@ describe("Usage and DX Tests", () => {
       });
 
       const response = await middleware(mockRequest("/api"), mockEvent);
-      expect(response instanceof Response).toBe(true);
+      expect(response).toBeInstanceOf(Response);
       expect(testMiddleware).toHaveBeenCalled();
       expect(response?.headers.get("x-test-header")).toBe("deprecated-value");
     });
