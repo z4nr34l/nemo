@@ -147,15 +147,13 @@ function migrateManifests(paths, { depRange, dry, ignorePattern = [] }) {
     return ignores.some((re) => re.test(rel) || re.test(file));
   };
 
-  const targets = new Set();
+  const found = new Set();
   for (const target of paths) {
     const stat = fs.statSync(target);
-    if (stat.isDirectory()) findManifests(target).forEach((f) => targets.add(f));
-    else if (path.basename(target) === "package.json") targets.add(target);
+    if (stat.isDirectory()) findManifests(target).forEach((f) => found.add(f));
+    else if (path.basename(target) === "package.json") found.add(target);
   }
-  for (const target of [...targets]) {
-    if (ignored(target)) targets.delete(target);
-  }
+  const targets = [...found].filter((file) => !ignored(file));
 
   const touched = [];
   for (const manifest of targets) {
@@ -174,6 +172,29 @@ function migrateManifests(paths, { depRange, dry, ignorePattern = [] }) {
   return touched;
 }
 
+/** Stops before any rewriting if a requested path is not there. */
+function assertPathsExist(paths) {
+  for (const target of paths) {
+    if (!fs.existsSync(target)) {
+      console.error(`Path does not exist: ${target}`);
+      process.exit(1);
+    }
+  }
+}
+
+/** Prints one line per rewritten manifest, and one per change under it. */
+function reportManifests(manifests) {
+  if (manifests.length === 0) {
+    console.log("  no @rescale/nemo dependency found");
+    return;
+  }
+
+  for (const { manifest, changes } of manifests) {
+    console.log(`  ${manifest}`);
+    for (const change of changes) console.log(`    ${change}`);
+  }
+}
+
 async function main() {
   let options;
   try {
@@ -188,12 +209,7 @@ async function main() {
     return;
   }
 
-  for (const target of options.paths) {
-    if (!fs.existsSync(target)) {
-      console.error(`Path does not exist: ${target}`);
-      process.exit(1);
-    }
-  }
+  assertPathsExist(options.paths);
 
   if (options.dry) console.log("Dry run — nothing will be written.\n");
 
@@ -226,14 +242,7 @@ async function main() {
   if (!options.skipManifests) {
     console.log("\nUpdating package.json files…");
     manifests = migrateManifests(options.paths, options);
-    if (manifests.length === 0) {
-      console.log("  no @rescale/nemo dependency found");
-    } else {
-      for (const { manifest, changes } of manifests) {
-        console.log(`  ${manifest}`);
-        for (const change of changes) console.log(`    ${change}`);
-      }
-    }
+    reportManifests(manifests);
   }
 
   if (stats.ok === 0 && manifests.length === 0) {
