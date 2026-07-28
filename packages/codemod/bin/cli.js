@@ -261,11 +261,19 @@ async function main() {
   console.log("  2. Review the diff and run your test suite");
 }
 
-if (require.main === module) {
-  main().catch((error) => {
+// The last-resort handler, named and exported instead of left inline in the `require.main`
+// guard, so the suite can drive it. Anything main() rejects with lands here: a manifest that
+// turns out to be a dangling symlink, a permission error mid-write, a bug. The raw error is
+// logged rather than error.message because at that point the stack is the useful part.
+async function runCli() {
+  try {
+    await main();
+  } catch (error) {
     console.error(error);
     process.exit(1);
-  });
+  }
 }
 
-module.exports = { main, parseArgs, findManifests, migrateManifests, DEFAULT_RANGE, HELP };
+if (require.main === module) runCli();
+
+module.exports = { main, runCli, parseArgs, findManifests, migrateManifests, DEFAULT_RANGE, HELP };
