@@ -1,0 +1,127 @@
+# SonarQube Cloud analysis, driven from CI so that bun's test coverage is
+# included. Configuration lives in sonar-project.properties at the repository
+# root.
+#
+# SonarCloud's Automatic Analysis cannot read coverage reports - zanreal-labs_nemo
+# exposes an `ncloc` measure and no `coverage` measure at all, despite the suite
+# having produced an lcov for Codecov all along - so this workflow replaces it.
+# The two modes are mutually exclusive. Until Automatic Analysis is switched off,
+# the scanner rejects the submission with "You are running manual analysis while
+# Automatic Analysis is enabled", which is the expected intermediate state.
+#
+# The repository owner has to do two things, in this order:
+#
+#   1. gh secret set SONAR_TOKEN --repo zanreal-labs/nemo
+#   2. SonarCloud > zanreal-labs_nemo > Administration > Analysis Method, turn
+#      Automatic Analysis off.
+#
+# Before step 1 the Scan job self-skips and this workflow concludes successfully,
+# so nothing here can turn CI red while it is still unconfigured.
+#
+# Codecov is untouched: the Tests workflow (codecov.yml) keeps running its own
+# `bun test` and uploading packages/nemo/coverage. The two systems share nothing
+# but the report path, and this job produces its own copy in its own runner.
+#
+# Leak-period gotcha, for whoever the quality gate first blocks: touching a line
+# that already contained a hotspot pulls that hotspot into your pull request's
+# new-code period, where it becomes yours to answer for. A cosmetic reformat is
+# enough to do it. Either fix the hotspot properly or leave the line alone.
+name: SonarQube
+
+on:
+  push:
+    branches: [canary, main]
+  pull_request:
+    branches: [canary, main]
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Secrets cannot be read from a job-level `if:`, so token presence is probed in
+  # a job of its own and the scan depends on its output. A missing SONAR_TOKEN is
+  # a configuration state, not a broken pull request: the scan is skipped, never
+  # failed. Pull requests from forks never receive the secret, so this is also
+  # what keeps contributor pull requests green.
+  guard:
+    name: Check configuration
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Least privilege, declared per job as Sonar's githubactions:S8264 asks. This
+    # job touches nothing but its own step output.
+    permissions: {}
+    outputs:
+      has_token: ${{ steps.token.outputs.has_token }}
+
+    steps:
+      - name: Detect SONAR_TOKEN
+        id: token
+        env:
+          HAS_TOKEN: ${{ secrets.SONAR_TOKEN != '' }}
+        run: |
+          echo "has_token=$HAS_TOKEN" >> "$GITHUB_OUTPUT"
+          if [ "$HAS_TOKEN" != "true" ]; then
+            echo "::notice title=SonarQube skipped::SONAR_TOKEN is not set on this repository, so no analysis was submitted. Set the secret to enable the scan."
+          fi
+
+  sonarqube:
+    name: Scan
+    needs: guard
+    if: needs.guard.outputs.has_token == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Read-only: the scan clones the repository and submits results to SonarQube
+    # Cloud with SONAR_TOKEN. Pull request decoration is posted by the SonarCloud
+    # GitHub App, not by this workflow's token, so no write scope is needed.
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # Sonar needs the full history to attribute blame and to resolve the new
+          # code period; a shallow clone silently degrades both.
+          fetch-depth: 0
+
+      - name: Prepare
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+
+      # --ignore-scripts keeps install lifecycle hooks out of the scan job, which
+      # is what Sonar's githubactions:S6505 asks for, and matches what the Tests
+      # workflow already does. Nothing on the coverage path needs them: the root
+      # `prepare` script only installs husky's git hooks.
+      - name: Install dependencies
+        run: bun install --frozen-lockfile --ignore-scripts
+
+      # Deliberately not continue-on-error. Coverage measured against a red suite
+      # is not worth publishing, so a failing test fails this workflow.
+      #
+      # This must run at the repository root. bun reads bunfig.toml from the
+      # working directory and does not walk up, so a per-package run produces no
+      # coverage at all; the root run instruments every package it loads and
+      # writes one lcov with repository-root-relative paths. The reporters are
+      # named explicitly rather than inherited from bunfig.toml so that this job
+      # cannot silently stop emitting lcov, and `text` is kept for the log.
+      - name: Run tests with coverage
+        run: bun test --coverage --coverage-reporter=text --coverage-reporter=lcov
+
+      # A missing report does not fail the scan. It publishes 0% coverage and
+      # quietly resets the baseline, which is worse, so fail loudly instead.
+      - name: Verify coverage report
+        run: |
+          report=packages/nemo/coverage/lcov.info
+          if [ ! -s "$report" ]; then
+            echo "::error title=No coverage report::$report is missing or empty. Check the coverageDir setting in bunfig.toml."
+            exit 1
+          fi
+          echo "$report covers $(grep -c '^SF:' "$report") source files."
+
+      - name: SonarQube scan
+        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
+        env:
+          # SONAR_HOST_URL is deliberately unset: the action targets SonarQube
+          # Cloud by default and only needs the URL for self-hosted servers.
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
