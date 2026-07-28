@@ -91,8 +91,8 @@ describe("FetchEvent", () => {
     expect(event.CAPTURING_PHASE).toBe(1);
     expect(event.AT_TARGET).toBe(2);
     expect(event.BUBBLING_PHASE).toBe(3);
-    expect(event.target).toBe(null);
-    expect(event.currentTarget).toBe(null);
+    expect(event.target).toBeNull();
+    expect(event.currentTarget).toBeNull();
     expect(event.eventPhase).toBeDefined();
   });
 
@@ -159,7 +159,7 @@ describe("NextFetchEvent", () => {
       page: "/test",
       context: mockContext,
     });
-    expect(event instanceof FetchEvent).toBe(true);
+    expect(event).toBeInstanceOf(FetchEvent);
   });
 });
 

@@ -99,7 +99,7 @@ describe("NEMO", () => {
       const response = await nemo.middleware(mockRequest(), mockEvent);
 
       expect(response).toBeDefined();
-      expect(response instanceof NextResponse).toBe(true);
+      expect(response).toBeInstanceOf(NextResponse);
       expect(response?.headers.get("x-test")).toBe("value");
     });
 
@@ -209,7 +209,6 @@ describe("NEMO", () => {
 
       test("should skip remaining code in middleware when NextResponse.next() is returned", async () => {
         const order: string[] = [];
-        const shouldNeverRun = false;
 
         const middleware1: NextMiddleware = () => {
           order.push("first-start");
@@ -224,7 +223,6 @@ describe("NEMO", () => {
         await nemo.middleware(mockRequest(), mockEvent);
 
         expect(order).toEqual(["first-start", "second"]);
-        expect(shouldNeverRun).toBe(false);
       });
     });
   });
