@@ -20,7 +20,7 @@ A middleware composition library for Next.js applications that allows you to org
   <img alt="ZanReal" src="https://cdn.zanreal.com/public/logo.svg" height="32" />
 </a>
 
-NEMO is maintained by [ZanReal](https://zanreal.com) as part of its OSS Program - see
+NEMO is maintained by [ZanReal](https://zanreal.com) as part of its [OSS Program](https://zanreal.com/oss) - see
 [project stewardship](https://zanreal.com/docs/oss/nemo/latest/stewardship) for what that means.
 
 ## Installation
