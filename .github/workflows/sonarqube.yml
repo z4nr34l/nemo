@@ -2,21 +2,28 @@
 # included. Configuration lives in sonar-project.properties at the repository
 # root.
 #
-# SonarCloud's Automatic Analysis cannot read coverage reports - zanreal-labs_nemo
-# exposes an `ncloc` measure and no `coverage` measure at all, despite the suite
-# having produced an lcov for Codecov all along - so this workflow replaces it.
-# The two modes are mutually exclusive. Until Automatic Analysis is switched off,
-# the scanner rejects the submission with "You are running manual analysis while
-# Automatic Analysis is enabled", which is the expected intermediate state.
+# SonarCloud's Automatic Analysis cannot read coverage reports - the canary
+# branch of zanreal-labs_nemo exposes an `ncloc` measure and no `coverage`
+# measure at all, despite the suite having produced an lcov for Codecov all along
+# - so this workflow replaces it.
 #
-# The repository owner has to do two things, in this order:
+# SONAR_TOKEN is already set on this repository, left behind when #205 removed the
+# previous scanner workflow, so the scan runs as soon as this lands. One thing is
+# still outstanding for the repository owner:
 #
-#   1. gh secret set SONAR_TOKEN --repo zanreal-labs/nemo
-#   2. SonarCloud > zanreal-labs_nemo > Administration > Analysis Method, turn
-#      Automatic Analysis off.
+#   SonarCloud > zanreal-labs_nemo > Administration > Analysis Method, turn
+#   Automatic Analysis off.
 #
-# Before step 1 the Scan job self-skips and this workflow concludes successfully,
-# so nothing here can turn CI red while it is still unconfigured.
+# Do that before merging. Pull request analysis was empirically accepted with
+# Automatic Analysis still enabled - see the run on the pull request that added
+# this file - but the two modes are documented as mutually exclusive, and the
+# push-to-canary path is the one that would report "You are running manual
+# analysis while Automatic Analysis is enabled". Automatic Analysis also has to
+# go for the branch measures to gain coverage at all, which is the entire point.
+#
+# If SONAR_TOKEN is ever unset or rotated away, the Scan job self-skips and this
+# workflow concludes successfully rather than failing. Pull requests from forks
+# never receive the secret and take that path too.
 #
 # Codecov is untouched: the Tests workflow (codecov.yml) keeps running its own
 # `bun test` and uploading packages/nemo/coverage. The two systems share nothing
@@ -79,8 +86,12 @@ jobs:
       contents: read
 
     steps:
+      # v5 rather than the v4 the other workflows in this repository still use:
+      # v4 runs on Node.js 20, which GitHub has deprecated, and every run of it
+      # publishes a deprecation warning as a job annotation. v5.1.0 declares
+      # `using: node24`.
       - name: Checkout
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           # Sonar needs the full history to attribute blame and to resolve the new
           # code period; a shallow clone silently degrades both.
