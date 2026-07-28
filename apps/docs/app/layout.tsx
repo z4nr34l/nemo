@@ -8,7 +8,9 @@ import type { ReactNode } from "react";
  * in immutable npm metadata. Next.js still requires a root layout and a page
  * for the build to succeed, so these two files are the whole application.
  */
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en">
       <body>{children}</body>

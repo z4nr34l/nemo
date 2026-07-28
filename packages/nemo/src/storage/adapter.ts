@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars -- library */
 export abstract class StorageAdapter {
   abstract get<T>(key: string): T | undefined;
   abstract set<T>(key: string, value: T): void;
@@ -12,6 +11,4 @@ export abstract class StorageAdapter {
   abstract fromEntries(entries: Iterable<readonly [string, unknown]>): void;
   abstract toString(): string;
   abstract fromString(json: string): boolean;
-
-  constructor(initialContext?: Record<string, unknown>) {}
 }

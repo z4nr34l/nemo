@@ -48,7 +48,7 @@ describe("NEMO Edge Cases", () => {
   test("should handle empty middleware arrays", async () => {
     const nemo = new NEMO({ "/": [] });
     const response = await nemo.middleware(mockRequest(), mockEvent);
-    expect(response instanceof NextResponse).toBe(true);
+    expect(response).toBeInstanceOf(NextResponse);
   });
 
   test("should handle unicode paths", async () => {
@@ -78,6 +78,6 @@ describe("NEMO Edge Cases", () => {
     const nemo = new NEMO({ "/": middleware });
 
     const response = await nemo.middleware(mockRequest(), mockEvent);
-    expect(response instanceof NextResponse).toBe(true);
+    expect(response).toBeInstanceOf(NextResponse);
   });
 });

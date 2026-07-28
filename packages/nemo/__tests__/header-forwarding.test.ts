@@ -59,7 +59,7 @@ describe("Header Forwarding in Middlewares", () => {
       const result = await middleware(request, event as any);
 
       expect(result).toBeDefined();
-      expect(result instanceof NextResponse).toBe(true);
+      expect(result).toBeInstanceOf(NextResponse);
       if (!result) return; // Type guard
 
       // When NextResponse.next({ request: { headers } }) is used,
@@ -91,7 +91,7 @@ describe("Header Forwarding in Middlewares", () => {
       const result = await middleware(request, event as any);
 
       expect(result).toBeDefined();
-      expect(result instanceof NextResponse).toBe(true);
+      expect(result).toBeInstanceOf(NextResponse);
       if (!result) return; // Type guard
 
       // Check that the header was forwarded
@@ -122,7 +122,7 @@ describe("Header Forwarding in Middlewares", () => {
       const result = await middleware(request, event as any);
 
       expect(result).toBeDefined();
-      expect(result instanceof NextResponse).toBe(true);
+      expect(result).toBeInstanceOf(NextResponse);
       if (!result) return; // Type guard
 
       // Check that all headers were forwarded
@@ -167,7 +167,7 @@ describe("Header Forwarding in Middlewares", () => {
       const result = await middleware(request, event as any);
 
       expect(result).toBeDefined();
-      expect(result instanceof NextResponse).toBe(true);
+      expect(result).toBeInstanceOf(NextResponse);
       if (!result) return; // Type guard
 
       // Both headers should be forwarded in the final response
@@ -219,7 +219,7 @@ describe("Header Forwarding in Middlewares", () => {
       const result = await middleware(request, event as any);
 
       expect(result).toBeDefined();
-      expect(result instanceof NextResponse).toBe(true);
+      expect(result).toBeInstanceOf(NextResponse);
       if (!result) return; // Type guard
 
       // Both headers should be forwarded in the final response
@@ -249,7 +249,7 @@ describe("Header Forwarding in Middlewares", () => {
       const result = await middleware(request, event as any);
 
       expect(result).toBeDefined();
-      expect(result instanceof NextResponse).toBe(true);
+      expect(result).toBeInstanceOf(NextResponse);
       if (!result) return; // Type guard
 
       // Header should be forwarded
@@ -279,7 +279,7 @@ describe("Header Forwarding in Middlewares", () => {
       const result = await middleware(request, event as any);
 
       expect(result).toBeDefined();
-      expect(result instanceof NextResponse).toBe(true);
+      expect(result).toBeInstanceOf(NextResponse);
       if (!result) return; // Type guard
       expect(result.headers.has("x-middleware-request-x-nemo-header")).toBe(true);
     });
@@ -305,7 +305,7 @@ describe("Header Forwarding in Middlewares", () => {
       const result = await middleware(request, event as any);
 
       expect(result).toBeDefined();
-      expect(result instanceof NextResponse).toBe(true);
+      expect(result).toBeInstanceOf(NextResponse);
       if (!result) return; // Type guard
       // Rewrite responses are terminating, so headers forwarding works differently
       expect(result.headers.has("x-middleware-rewrite")).toBe(true);
@@ -329,7 +329,7 @@ describe("Header Forwarding in Middlewares", () => {
       const result = await middleware(request, event as any);
 
       expect(result).toBeDefined();
-      expect(result instanceof NextResponse).toBe(true);
+      expect(result).toBeInstanceOf(NextResponse);
       if (!result) return; // Type guard
       // Redirect responses are terminating
       expect(result.headers.has("Location")).toBe(true);
@@ -369,7 +369,7 @@ describe("Header Forwarding in Middlewares", () => {
       const result = await proxy(request, event as any);
 
       expect(result).toBeDefined();
-      expect(result instanceof NextResponse).toBe(true);
+      expect(result).toBeInstanceOf(NextResponse);
       if (!result) return; // Type guard
 
       // The header should be forwarded in x-middleware-request-* format
@@ -400,7 +400,7 @@ describe("Header Forwarding in Middlewares", () => {
       const result = await middleware(request, event as any);
 
       expect(result).toBeDefined();
-      expect(result instanceof NextResponse).toBe(true);
+      expect(result).toBeInstanceOf(NextResponse);
       if (!result) return; // Type guard
 
       // Headers should be forwarded so they can be accessed in page.tsx
@@ -431,7 +431,7 @@ describe("Header Forwarding in Middlewares", () => {
       const result = await middleware(request, event as any);
 
       expect(result).toBeDefined();
-      expect(result instanceof NextResponse).toBe(true);
+      expect(result).toBeInstanceOf(NextResponse);
     });
 
     it("should preserve existing headers when adding new ones", async () => {
@@ -458,7 +458,7 @@ describe("Header Forwarding in Middlewares", () => {
       const result = await middleware(request, event as any);
 
       expect(result).toBeDefined();
-      expect(result instanceof NextResponse).toBe(true);
+      expect(result).toBeInstanceOf(NextResponse);
       if (!result) return; // Type guard
 
       // Both headers should be forwarded
@@ -496,7 +496,7 @@ describe("Header Forwarding in Middlewares", () => {
       const result = await middleware(request, event as any);
 
       expect(result).toBeDefined();
-      expect(result instanceof NextResponse).toBe(true);
+      expect(result).toBeInstanceOf(NextResponse);
       if (!result) return; // Type guard
 
       // Last value should win

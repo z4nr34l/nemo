@@ -111,7 +111,7 @@ describe("Issue #162: Custom StorageAdapter not being called", () => {
     const result = await middleware(request, event as any);
 
     expect(result).toBeDefined();
-    expect(result instanceof NextResponse).toBe(true);
+    expect(result).toBeInstanceOf(NextResponse);
 
     // Verify that adapter methods were called
     expect(customAdapter.logs.length).toBeGreaterThan(0);
@@ -145,7 +145,7 @@ describe("Issue #162: Custom StorageAdapter not being called", () => {
     const result = await middleware(request, event as any);
 
     expect(result).toBeDefined();
-    expect(result instanceof NextResponse).toBe(true);
+    expect(result).toBeInstanceOf(NextResponse);
 
     // Verify that adapter methods were called
     expect(customAdapter.logs.length).toBeGreaterThan(0);
@@ -179,7 +179,7 @@ describe("Issue #162: Custom StorageAdapter not being called", () => {
 
     // Verify that adapter was used
     expect(customAdapter.logs.length).toBeGreaterThan(0);
-    expect(customAdapter.logs.filter(log => log.includes("set key=counter")).length).toBe(2);
+    expect(customAdapter.logs.filter(log => log.includes("set key=counter"))).toHaveLength(2);
   });
 
   it("should properly isolate storage between requests when using factory function", async () => {
@@ -249,7 +249,7 @@ describe("Issue #162: Custom StorageAdapter not being called", () => {
       const result = await middleware(request, event as any);
 
       expect(result).toBeDefined();
-      expect(result instanceof NextResponse).toBe(true);
+      expect(result).toBeInstanceOf(NextResponse);
 
       // Verify that adapter methods were called (this is what was missing in the issue)
       expect(customAdapter.logs.length).toBeGreaterThan(0);

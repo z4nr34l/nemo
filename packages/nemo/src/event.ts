@@ -315,14 +315,9 @@ export class NemoEvent extends NextFetchEvent {
   ): Record<string, string | string[]> {
     // Handle backward compatibility with just metadata parameter
     if (options && "chain" in options) {
-      // It's the old-style metadata parameter
-      const meta = options || this.currentMetadata;
-
-      if (!meta) {
-        return {};
-      }
-
-      return this.extractParamsFromPath(meta.routeKey, meta.pathname);
+      // It's the old-style metadata parameter. The branch has already proved it is
+      // present, so there is nothing to fall back to and nothing to null-check.
+      return this.extractParamsFromPath(options.routeKey, options.pathname);
     }
 
     // Handle new options object

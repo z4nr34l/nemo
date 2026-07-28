@@ -12,7 +12,7 @@ A middleware composition library for Next.js applications that allows you to org
 > [migration guide](https://zanreal.com/docs/oss/nemo/latest/migration).
 
 [![codecov](https://codecov.io/gh/z4nr34l/nemo/graph/badge.svg?token=10CXWSP5BA)](https://codecov.io/gh/z4nr34l/nemo)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=z4nr34l_nemo&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=z4nr34l_nemo)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=zanreal-labs_nemo&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=zanreal-labs_nemo)
 
 ## Maintained by
 
@@ -20,7 +20,7 @@ A middleware composition library for Next.js applications that allows you to org
   <img alt="ZanReal" src="https://cdn.zanreal.com/public/logo.svg" height="32" />
 </a>
 
-NEMO is maintained by [ZanReal](https://zanreal.com) as part of its OSS Program - see
+NEMO is maintained by [ZanReal](https://zanreal.com) as part of its [OSS Program](https://zanreal.com/oss) - see
 [project stewardship](https://zanreal.com/docs/oss/nemo/latest/stewardship) for what that means.
 
 ## Installation
