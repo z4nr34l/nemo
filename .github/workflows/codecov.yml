@@ -1,10 +1,12 @@
 name: Tests
 
+# canary is the default branch, so leaving these on main alone meant the suite and the coverage
+# upload never ran for the branch almost every pull request targets.
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "canary"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "canary"]
 
 jobs:
   analyze:
