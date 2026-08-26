@@ -1,5 +1,12 @@
 # @rescale/nemo
 
+## 3.0.2
+
+### Patch Changes
+
+- Updated dependencies [f18f4c7]
+  - @zanreal/nemo@3.0.2
+
 ## 3.0.1
 
 ### Patch Changes

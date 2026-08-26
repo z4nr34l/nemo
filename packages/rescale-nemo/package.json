@@ -1,6 +1,6 @@
 {
   "name": "@rescale/nemo",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Deprecated alias for @zanreal/nemo. Re-exports the package under its previous name so existing installs keep working. Install @zanreal/nemo instead.",
   "deprecated": "@rescale/nemo has moved to @zanreal/nemo. This alias re-exports @zanreal/nemo and will stop receiving updates - please run `npm install @zanreal/nemo` and update your imports. See https://zanreal.com/docs/oss/nemo/latest/migration",
   "keywords": [
@@ -51,7 +51,7 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@zanreal/nemo": "^3.0.1"
+    "@zanreal/nemo": "^3.0.2"
   },
   "peerDependencies": {
     "next": ">=13.0.0"
