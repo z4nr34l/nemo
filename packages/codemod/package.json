@@ -1,6 +1,6 @@
 {
   "name": "@zanreal/nemo-codemod",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Codemod that migrates a project from @rescale/nemo to @zanreal/nemo",
   "keywords": [
     "Next.js",
