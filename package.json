@@ -16,7 +16,7 @@
     "husky": "^9.1.7",
     "turbo": "^2.10.5"
   },
-  "homepage": "https://nemo.zanreal.com",
+  "homepage": "https://zanreal.com/docs/oss/nemo",
   "keywords": [
     "Next.js",
     "Middleware",
